@@ -99,8 +99,8 @@ struct RedactionAnimationView: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(
                 allMasked
-                ? "Documento con la información personal tapada."
-                : "Tapando la información personal del documento."
+                ? UIText.redactionCompleteA11y
+                : UIText.redactionInProgressA11y
             )
 
             if phase == .processing {

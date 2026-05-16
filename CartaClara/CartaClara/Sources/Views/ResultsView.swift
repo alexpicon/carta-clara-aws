@@ -49,9 +49,9 @@ struct ResultsView: View {
             VStack(spacing: CCSpacing.md) {
                 redactionConfirmation(result)
 
-                if let summaryEs = result.summaryEs, !summaryEs.isEmpty {
+                if let summary = pickSummary(result), !summary.isEmpty {
                     SummaryCard(
-                        summaryEs: summaryEs,
+                        summary: summary,
                         audioURL: result.audioUrl,
                         isDemo: result.extraction?.isDemoDocument == true,
                         playback: summaryAudio
@@ -172,6 +172,13 @@ struct ResultsView: View {
         return result.scamCheckSummaryEs?.isEmpty == false
     }
 
+    /// Pick the English summary in English-default mode, with the Spanish
+    /// field as a fallback for backends that haven't been re-prompted yet.
+    private func pickSummary(_ result: ScanResult) -> String? {
+        if let en = result.summaryEn, !en.isEmpty { return en }
+        return result.summaryEs
+    }
+
     /// Resolve the Citation objects referenced by a section's `citation_ids`.
     private func citations(for section: DocumentSection, in result: ScanResult) -> [Citation] {
         guard let ids = section.citationIds, let all = result.citations else { return [] }
@@ -195,7 +202,7 @@ private struct RefusedScanView: View {
                 CardContainer(accent: CCColor.urgent) {
                     CardTitle(
                         icon: "hand.raised.fill",
-                        text: "No podemos analizar este documento",
+                        text: UIText.refusedScanTitle,
                         tint: CCColor.urgent
                     )
                     Text(result.refusalTextEs ?? "")

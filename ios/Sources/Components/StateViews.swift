@@ -99,6 +99,6 @@ struct DemoBadge: View {
             .padding(.horizontal, CCSpacing.sm)
             .background(CCColor.inkSecondary)
             .clipShape(Capsule())
-            .accessibilityLabel("Documento de demostración. No es un caso real.")
+            .accessibilityLabel(UIText.demoDocumentA11y)
     }
 }

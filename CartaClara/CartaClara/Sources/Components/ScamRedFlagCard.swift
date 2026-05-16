@@ -33,7 +33,7 @@ struct ScamRedFlagCard: View {
         CardContainer(accent: accent) {
             CardTitle(
                 icon: hasFlags ? "exclamationmark.shield.fill" : "checkmark.shield.fill",
-                text: hasFlags ? "Señales para tener cuidado" : "Revisión de estafas",
+                text: hasFlags ? UIText.scamCardTitleAlert : UIText.scamCardTitleSafe,
                 tint: accent
             )
 

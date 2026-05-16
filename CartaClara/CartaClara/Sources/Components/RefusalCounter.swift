@@ -56,8 +56,8 @@ struct RefusalCounter: View {
         .accessibilityLabel("\(UIText.refusalCounterA11y): \(count)")
         .accessibilityValue(
             count == 0
-            ? "Ninguna pregunta rechazada todavía."
-            : "\(count) \(count == 1 ? "pregunta rechazada" : "preguntas rechazadas")."
+            ? UIText.refusalCounterEmptyA11y
+            : "\(count) \(count == 1 ? "question refused" : "questions refused")."
         )
         .accessibilityHint(UIText.refusalCounterA11yHint)
         .accessibilityAddTraits(.isButton)

@@ -19,7 +19,7 @@ struct CourtBriefCard: View {
 
     var body: some View {
         CardContainer(accent: CCColor.primary) {
-            CardTitle(icon: "building.columns.fill", text: "Sobre la corte")
+            CardTitle(icon: "building.columns.fill", text: UIText.courtBriefTitle)
 
             VStack(alignment: .leading, spacing: CCSpacing.xs) {
                 Text(brief.courtName)
@@ -42,26 +42,26 @@ struct CourtBriefCard: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(CCColor.primary)
                 .frame(minHeight: 44, alignment: .leading)
-                .accessibilityLabel("Llamar a la corte: \(spelledOut(phone))")
+                .accessibilityLabel("\(UIText.courtCallA11yPrefix) \(spelledOut(phone))")
                 .accessibilityAddTraits(.isButton)
             }
 
-            briefBlock(title: "Qué esperar", body: brief.whatToExpectEs)
+            briefBlock(title: UIText.courtWhatToExpect, body: brief.whatToExpectEs)
 
             if !brief.whatToBringEs.isEmpty {
                 listBlock(icon: "checkmark.circle.fill",
                           tint: CCColor.success,
-                          title: "Qué llevar",
+                          title: UIText.courtWhatToBring,
                           items: brief.whatToBringEs)
             }
             if !brief.whatNotToBringEs.isEmpty {
                 listBlock(icon: "xmark.circle.fill",
                           tint: CCColor.urgent,
-                          title: "Qué NO llevar",
+                          title: UIText.courtWhatNotToBring,
                           items: brief.whatNotToBringEs)
             }
 
-            briefBlock(title: "Cómo vestir", body: brief.dressCodeEs)
+            briefBlock(title: UIText.courtDressCode, body: brief.dressCodeEs)
         }
     }
 

@@ -39,7 +39,7 @@ struct SectionCard: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(section.sectionTitleEs)
-            .accessibilityValue(expanded ? "Desplegado" : "Contraído")
+            .accessibilityValue(expanded ? UIText.sectionExpandedA11y : UIText.sectionCollapsedA11y)
             .accessibilityHint(expanded ? UIText.sectionCollapse : UIText.sectionExpand)
             .accessibilityAddTraits(.isButton)
 

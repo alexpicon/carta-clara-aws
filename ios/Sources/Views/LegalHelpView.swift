@@ -79,24 +79,24 @@ struct LegalHelpView: View {
             name: "Northwest Immigrant Rights Project (NWIRP)",
             phone: "206-587-4009",
             address: "615 Second Avenue, Suite 400, Seattle, WA 98104",
-            hours: "Lunes a viernes, 9:00 AM–12:00 PM y 1:00 PM–4:30 PM",
-            languages: ["Español", "interpretación disponible"],
+            hours: "Monday to Friday, 9:00 AM–12:00 PM and 1:00 PM–4:30 PM",
+            languages: ["Spanish", "interpretation available"],
             free: true
         ),
         LegalAidOption(
             name: "Colectiva Legal del Pueblo",
             phone: "206-931-1514",
             address: "13838 First Avenue S, Burien, WA 98168",
-            hours: "Lunes, martes, jueves y viernes, 9:00 AM–5:00 PM",
-            languages: ["Español"],
+            hours: "Monday, Tuesday, Thursday and Friday, 9:00 AM–5:00 PM",
+            languages: ["Spanish"],
             free: true
         ),
         LegalAidOption(
             name: "Refugee Women's Alliance (ReWA)",
             phone: "206-721-0243",
             address: "4008 Martin Luther King Jr. Way S, Seattle, WA 98108",
-            hours: "Lunes a viernes, horario de oficina (llama para confirmar la clínica legal)",
-            languages: ["Español", "y muchos otros idiomas"],
+            hours: "Monday to Friday, office hours (call to confirm the legal clinic)",
+            languages: ["Spanish", "and many other languages"],
             free: true
         )
     ]

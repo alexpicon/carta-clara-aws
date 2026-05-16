@@ -55,7 +55,7 @@ struct SplashView: View {
                         appState.path.append(.camera)
                     }
                     .buttonStyle(CCPrimaryButtonStyle())
-                    .accessibilityHint("Abre la cámara para fotografiar tu documento.")
+                    .accessibilityHint(UIText.splashCameraHint)
 
                     Button {
                         showDisclaimer = true
@@ -78,7 +78,7 @@ struct SplashView: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(CCColor.inkSecondary)
                     .frame(minHeight: 44)
-                    .accessibilityHint("Carga un documento de ejemplo sin usar la cámara.")
+                    .accessibilityHint(UIText.splashDemoHint)
                 }
                 .padding(.horizontal, CCSpacing.lg)
                 .padding(.bottom, CCSpacing.xl)

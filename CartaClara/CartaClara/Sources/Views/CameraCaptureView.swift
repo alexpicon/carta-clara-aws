@@ -63,7 +63,7 @@ struct CameraCaptureView: View {
             guard let newValue else { return }
             Task { await loadPickedImage(newValue) }
         }
-        .alert("No pudimos abrir esa foto", isPresented: $pickerFailed) {
+        .alert(UIText.pickerFailedTitle, isPresented: $pickerFailed) {
             Button("OK", role: .cancel) {}
         }
     }
@@ -82,7 +82,7 @@ struct CameraCaptureView: View {
                     .accessibilityHidden(true)
             }
             .accessibilityElement()
-            .accessibilityLabel("Vista de la cámara")
+            .accessibilityLabel(UIText.cameraPreviewA11y)
             .accessibilityHint(UIText.cameraHint)
 
             controlBar
@@ -117,7 +117,7 @@ struct CameraCaptureView: View {
                     .foregroundStyle(.white)
                     .frame(minHeight: 44)
             }
-            .accessibilityHint("Elige una foto que ya tienes guardada.")
+            .accessibilityHint(UIText.libraryHint)
         }
         .padding(CCSpacing.lg)
         .frame(maxWidth: .infinity)
@@ -171,7 +171,7 @@ struct CameraCaptureView: View {
                 .frame(maxWidth: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: CCRadius.card))
                 .padding(CCSpacing.md)
-                .accessibilityLabel("Foto del documento que tomaste")
+                .accessibilityLabel(UIText.confirmPhotoA11y)
 
             Spacer()
 
