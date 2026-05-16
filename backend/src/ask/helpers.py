@@ -226,6 +226,23 @@ def image_block(image_bytes: bytes, fmt: str) -> dict:
     return {"image": {"format": fmt, "source": {"bytes": image_bytes}}}
 
 
+def textract_detect_text(image_bytes: bytes) -> str:
+    """OCR an image with Amazon Textract; return text concatenated by line.
+
+    Textract is the primary text-extraction path for /scan — much cheaper and
+    faster than asking a multimodal LLM to read pixels, and more reliable for
+    pure text. Semantic structuring (which date is the hearing date, etc.)
+    still happens in Claude downstream — Textract just gives it clean text.
+    """
+    resp = client("textract").detect_document_text(Document={"Bytes": image_bytes})
+    lines = [
+        b.get("Text", "")
+        for b in resp.get("Blocks", [])
+        if b.get("BlockType") == "LINE" and b.get("Text")
+    ]
+    return "\n".join(lines)
+
+
 def converse(model_id, content_blocks, system=None, max_tokens=1500, temperature=0.2):
     """Invoke a Bedrock model via the Converse API with the Guardrail attached.
 

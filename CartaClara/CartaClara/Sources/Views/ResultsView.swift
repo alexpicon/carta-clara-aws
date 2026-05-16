@@ -58,7 +58,7 @@ struct ResultsView: View {
                     )
                 }
 
-                if let urgency = result.urgency {
+                if let urgency = result.urgency, urgency.isUrgent {
                     UrgencyCard(urgency: urgency)
                 }
 

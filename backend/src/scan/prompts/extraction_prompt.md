@@ -1,11 +1,11 @@
-# Carta Clara — Document Extraction Prompt (multimodal)
+# Carta Clara — Document Extraction Prompt (text input)
 
 > Contract
 > - PREPEND: backend/prompts/system_prompt.md
-> - INPUT: one document image (JPEG/PNG) passed as a multimodal content block.
->   The image has already passed through Guardrails PII masking — visible PII
->   appears as redaction tokens (`[REDACTED_NAME]`, `[REDACTED_A_NUMBER]`,
->   `[REDACTED_ADDRESS]`, `[REDACTED_CASE_NUMBER]`, `[REDACTED_RECEIPT_NUMBER]`).
+> - INPUT: a block of plain text that was OCR-extracted from a document image
+>   by Amazon Textract (line-by-line). The text may include redaction tokens
+>   (`[REDACTED_NAME]`, `[REDACTED_A_NUMBER]`, `[REDACTED_ADDRESS]`,
+>   `[REDACTED_CASE_NUMBER]`, `[REDACTED_RECEIPT_NUMBER]`).
 > - OUTPUT: a single JSON object, no prose, no markdown fences. Matches the
 >   `extraction` object in docs/API_CONTRACT.md (POST /scan response).
 > - Koda parses this with `json.loads()`. Any non-JSON output is a hard failure.
@@ -14,9 +14,11 @@
 
 ## Task
 
-You are reading a photograph of an English-language government or civic document.
-Extract structured facts into the JSON schema below. Read only what is on the page.
-Do not infer, guess, or fill in fields from outside knowledge.
+You are processing OCR-extracted text from an English-language government or
+civic document. Extract structured facts into the JSON schema below. Read only
+what appears in the OCR text. Do not infer, guess, or fill in fields from
+outside knowledge. If OCR clearly garbled a token (random characters, missing
+spaces), prefer marking that field uncertain over guessing the intended word.
 
 ## Output schema (return EXACTLY these keys)
 
@@ -67,14 +69,16 @@ Do not infer, guess, or fill in fields from outside knowledge.
 
 ## Synthetic-data safety gate (MANDATORY)
 
-This product is tested only on synthetic documents. Before extracting, check the page:
+This product is tested only on synthetic documents. Before extracting, scan the
+OCR text:
 
-- If you see the watermark `DEMO – NOT A REAL CASE` (or `*** DEMO DOCUMENT ***` /
-  `SYNTHETIC`), set `is_demo_document` and `demo_watermark_detected` to `true` and
-  proceed normally.
-- If the document shows **real, unmasked PII** — a real full name, A-number, SSN, date
-  of birth, or address that is NOT behind a redaction token — and there is **no demo
-  watermark**, do NOT extract. Instead return this object exactly:
+- If the text contains the watermark `DEMO – NOT A REAL CASE` (or
+  `*** DEMO DOCUMENT ***` / `SYNTHETIC`), set `is_demo_document` and
+  `demo_watermark_detected` to `true` and proceed normally.
+- If the text contains **real, unmasked PII** — a real full name, A-number, SSN,
+  date of birth, or address that is NOT a redaction token — and there is **no
+  demo watermark** in the text, do NOT extract. Instead return this object
+  exactly:
 
 ```json
 {

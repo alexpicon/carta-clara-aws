@@ -168,6 +168,11 @@ Resources:
                   - s3:PutObjectTagging
                   - s3:DeleteObject
                 Resource: !Sub "${UploadsBucket.Arn}/*"
+              - Sid: TextractDocumentRead
+                Effect: Allow
+                Action:
+                  - textract:DetectDocumentText
+                Resource: "*"
               - Sid: DynamoDBRefusalAccess
                 Effect: Allow
                 Action:

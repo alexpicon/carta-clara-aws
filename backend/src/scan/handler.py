@@ -3,11 +3,13 @@
 Flow (API_CONTRACT.md § POST /scan):
   1. Validate the base64 image (presence, size, JPEG/PNG magic bytes).
   2. Write the image to S3 under the session, tagged ephemeral (TENETS §7).
-  3. Bedrock multimodal (Claude Sonnet 4.6) + extraction_prompt -> structured JSON.
-     Guardrail attached -> if it intervenes, return the refusal-case shape.
-  4. Bedrock text + spanish_summary_prompt -> headline summary + section cards.
-  5. Polly -> Spanish audio of the headline summary -> S3 -> presigned URL.
-  6. Assemble and return the response in the API_CONTRACT shape.
+  3. Amazon Textract -> OCR the image to plain text (fast, cheap, deterministic).
+  4. Bedrock text-only (Claude Sonnet 4.6) + extraction_prompt + the Textract
+     text -> structured JSON. Guardrail attached -> if it intervenes, return
+     the refusal-case shape.
+  5. Bedrock text + spanish_summary_prompt -> headline summary + section cards.
+  6. Polly -> Spanish audio of the headline summary -> S3 -> presigned URL.
+  7. Assemble and return the response in the API_CONTRACT shape.
 
 Tenets enforced here:
   §1 Trust before features — redaction flags surfaced, citations carried through.
@@ -97,14 +99,30 @@ def _handle(event, started):
     image_key = f"{session_id}/{document_id}.{ext}"
     h.s3_put_ephemeral(image_key, image_bytes, f"image/{fmt}")
 
-    # --- 3. multimodal extraction (Guardrail attached) -------------------
+    # --- 3. OCR with Amazon Textract -------------------------------------
+    # Textract is the dedicated text-extraction service: faster, cheaper, and
+    # more deterministic than asking a multimodal LLM to read pixels.
+    document_text = h.textract_detect_text(image_bytes)
+    if not document_text.strip():
+        return h.response(
+            422,
+            {"error": "could not extract text from image",
+             "detail": "Textract returned no readable text — retake the photo with better lighting and framing."},
+        )
+
+    # --- 4. semantic extraction (text-only LLM, Guardrail attached) ------
     extraction_prompt = h.load_prompt("extraction_prompt.md", _FALLBACK_EXTRACTION)
     system_prompt = h.load_prompt("system_prompt.md", "")
-    multimodal_model = h.env("MULTIMODAL_MODEL_ID", "us.anthropic.claude-sonnet-4-6")
+    text_model = h.env("TEXT_MODEL_ID", "us.anthropic.claude-sonnet-4-6")
 
+    extract_input = (
+        f"{extraction_prompt}\n\n"
+        f"---\nOCR-EXTRACTED DOCUMENT TEXT (verbatim from Textract, line-by-line):\n"
+        f"{document_text}\n---"
+    )
     extract_res = h.converse(
-        model_id=multimodal_model,
-        content_blocks=[h.image_block(image_bytes, fmt), h.text_block(extraction_prompt)],
+        model_id=text_model,
+        content_blocks=[h.text_block(extract_input)],
         system=system_prompt or None,
         max_tokens=1200,
     )
