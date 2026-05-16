@@ -1,0 +1,42 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# AWS SAM
+.aws-sam/
+samconfig.toml.bak
+
+# Xcode
+ios/build/
+ios/DerivedData/
+ios/*.xcuserdata/
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcuserstate
+
+# Environment
+.env
+.env.local
+*.pem
+
+# Editor
+.vscode/
+.idea/
+
+# Node (if any frontend tooling sneaks in)
+node_modules/
+
+# Logs
+*.log
+
+# Sensitive — never commit real documents or PII
+*.real.pdf
+*.real.jpg
+*.real.png
