@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+    Configuration.plist — Carta Clara runtime configuration.
+
+    Drag this file into the Xcode project (Target Membership: CartaClara) so
+    it is copied into the app bundle. CartaClaraAPI reads API_BASE_URL from it
+    at runtime.
+
+    ACTION FOR ALEX: after `sam deploy`, replace the placeholder below with the
+    API Gateway base URL printed in the deploy output. It looks like:
+        https://abc123xyz.execute-api.us-west-2.amazonaws.com
+    Do NOT add a trailing slash (a trailing slash is tolerated, but cleaner
+    without). Until this is set, the app shows a clear "not connected" notice
+    instead of failing silently.
+-->
+<plist version="1.0">
+<dict>
+    <key>API_BASE_URL</key>
+    <string>https://hkl22yruzi.execute-api.us-west-2.amazonaws.com</string>
+</dict>
+</plist>
