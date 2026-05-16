@@ -8,7 +8,9 @@ Everything here is consolidated from `PRESS_RELEASE.md`, `PHASE_PLAN.md`, `TENET
 
 ## One-line definition
 
-**Carta Clara MVP** is a native iPhone app that photographs an English immigration document and returns, within 30 seconds, a plain-Spanish summary, a deadline, a scam check, and a printable Response Preparation Packet for free legal aid — refusing every legal-strategy question and routing to a real lawyer instead.
+**Carta Clara MVP** is a native iPhone app that photographs an English immigration document and returns, within 30 seconds, a plain summary, a deadline, a scam check, and a printable Response Preparation Packet for free legal aid — refusing every legal-strategy question and routing to a real lawyer instead.
+
+> **Language status (team-development phase, 2026-05-16 →):** the iOS app currently runs **English-default** for team review and operation (TENETS §9, temporarily amended). The backend still produces Spanish content and Polly Lupe audio; the app reads `summary_en` while in this phase. The production target remains **Spanish-first**, and the app will flip back before the pitch. Acceptance criteria below mention Spanish where the backend still owns the content (audio, evaluator-graded grounded prompts).
 
 ---
 
@@ -17,7 +19,7 @@ Everything here is consolidated from `PRESS_RELEASE.md`, `PHASE_PLAN.md`, `TENET
 These are the features that ship, in priority order. The "Cut order" section below states what gets dropped first if we run out of time — these do **not** get dropped:
 
 1. **Visible PII redaction** — A-number, name, address, DOB, case number are masked on screen *before* anything is sent to a model. The redaction is animated and pedagogical, not silent.
-2. **Spanish-language summary** — plain 5th-grade-reading-level Spanish text of what the document says. Text form is non-negotiable; audio is preferred but cuttable (see Cut order).
+2. **Plain-language summary** — 5th-grade-reading-level text of what the document says. **Currently English** (read from `summary_en` while in dev-mode default). Production target flips back to Spanish (`summary_es`). Polly Spanish audio remains attached either way; audio is preferred but cuttable (see Cut order).
 3. **Deadline / urgency card** — the next date the user must act, in Spanish, with a verification line ("Verify this date against the document — Carta Clara can misread handwritten dates").
 4. **Scam / notario red-flag card** — pattern-matches against the FTC + USCIS published warning signs. Conditional (only renders when patterns match). Cites the source.
 5. **Court Brief card** — for NTAs only. Court name, address, what to expect, what to bring, what to wear. **Never** analyzes the judge.
@@ -33,7 +35,7 @@ These are the features that ship, in priority order. The "Cut order" section bel
 
 These are deliberate cuts. Each one is a "Think Big" talking point — we considered it, we have a reason, and we will articulate the reason on stage:
 
-- **Languages other than Spanish.** Korean, Hindi, Mandarin, Tagalog are roadmap. We refuse to ship a language we can't validate against a native speaker on the team. (TENETS §9)
+- **Languages other than English (dev-mode default) and Spanish (production target).** Korean, Hindi, Mandarin, Tagalog are roadmap. We refuse to ship a language we can't validate against a native speaker on the team. (TENETS §9)
 - **User accounts, login, signup, email field.** Ephemeral session only. No password reset flow, ever. (TENETS §7)
 - **Persistent document storage.** S3 has a 1-hour TTL. We do not keep the user's documents. (TENETS §7)
 - **Legal advice in any form.** No "you should…" answers. No form-selection. No admit/deny guidance. No eligibility opinions. No outcome predictions. (TENETS §3, bright lines)
@@ -53,8 +55,8 @@ A feature is **done** when its row here is true. Not when the code compiles. Not
 | Feature | Done means… |
 |---------|-------------|
 | PII redaction | A live demo on a physical iPhone shows the A-number visibly being masked on screen before the network request fires. Verified in Network Inspector that the outbound payload contains the redacted form. |
-| Spanish summary (text) | A synthetic NTA scan returns a Spanish summary that a native speaker on the team reads aloud and confirms is (a) correct, (b) at 5th-grade reading level, (c) uses no untranslated English legal terminology. |
-| Spanish summary (audio) | Tapping the audio button plays back the same Spanish text via Polly voice `Lupe`, within 3 seconds of tap, audible without headphones in a quiet room. |
+| Plain summary (text) | A synthetic NTA scan returns a headline summary that a team reviewer confirms is (a) correct, (b) at 5th-grade reading level, (c) uses no untranslated legal jargon. **Currently graded in English**; before pitch, re-grade in Spanish against a native speaker. |
+| Spanish summary (audio) | Tapping the audio button plays back the Spanish text via Polly voice `Lupe`, within 3 seconds of tap, audible without headphones in a quiet room. (Audio remains Spanish even while UI is English — it's the bilingual helper handle.) |
 | Deadline card | The deadline card renders the exact date from the synthetic NTA (2026-10-15) with the verification line in Spanish. |
 | Scam red-flag card | Running the synthetic notario SMS through the app surfaces at least 3 FTC/USCIS-defined red flags, each with a citation chip linking back to a `kb-corpus/` source. |
 | Court Brief card | Running the synthetic NTA surfaces a Court Brief naming "Seattle Immigration Court, 1000 Second Avenue, Suite 2900, Seattle, WA 98104" with a what-to-expect paragraph and zero analysis of any judge. |
@@ -102,7 +104,7 @@ In this order, cut features Saturday night if behind. This list lives in `PHASE_
 
 Cannot be cut (these are MVP):
 - Visible PII redaction
-- Spanish text summary
+- Plain-language text summary (English during dev mode; Spanish in production)
 - Scam / notario red-flag card
 - Refusal of legal-strategy questions
 - Legal-aid escalation with real phone numbers

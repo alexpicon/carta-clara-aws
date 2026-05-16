@@ -40,7 +40,9 @@ We use Amazon Bedrock Guardrails, AWS-managed services, and an explicit deny-lis
 
 ## 9. One language, polished
 
-Spanish only for MVP. Adding a half-baked second language hurts the demo more than a single excellent language helps. Korean, Hindi, Mandarin, Tagalog are roadmap.
+One language, polished — never a half-baked second language. Korean, Hindi, Mandarin, Tagalog are roadmap.
+
+**Temporary deviation (team development phase, 2026-05-16 → pitch):** the iPhone app currently ships with **English as the default UI and content language** so the full team can review and operate it during build-out. The Spanish capability remains in the backend (`summary_es`, Polly Lupe audio) and is still the production target — the iOS app will flip back to Spanish-first before the demo. See `docs/MVP.md` for the per-feature acceptance criteria during this phase.
 
 ## 10. The roadmap is the Think Big
 

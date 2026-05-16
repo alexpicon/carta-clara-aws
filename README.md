@@ -51,7 +51,7 @@ carta-clara/
 1. **No real immigration documents.** Synthetic only, watermarked `DEMO – NOT A REAL CASE`.
 2. **No legal advice.** The product refuses legal-strategy questions and routes to legal aid.
 3. **PII redacted before any model call.** Visible in the UI.
-4. **Spanish-only for MVP.** Korean / Hindi / others are roadmap.
+4. **One language, polished — never half-baked.** The iOS app currently runs **English-default** during team development (see `docs/TENETS.md` §9); Spanish remains the production target and the backend still produces Spanish content. Korean / Hindi / others are roadmap.
 5. **No accounts.** Ephemeral session. S3 1-hour TTL.
 6. **Sunday 8am = scope freeze.** Anything not working by then doesn't ship.
 
