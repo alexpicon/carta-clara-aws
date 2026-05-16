@@ -276,11 +276,11 @@ final class CartaClaraAPI {
         return object["error"] as? String
     }
 
-    /// Encode an image as base64 JPEG, downscaling until it fits the 10MB cap.
-    static func jpegBase64(from image: UIImage, maxBytes: Int = 10 * 1_024 * 1_024) -> String? {
-        // Cap the longest edge so big sensor photos don't blow the budget.
-        let resized = downscale(image, longestEdge: 2_200)
-        var quality: CGFloat = 0.85
+    /// Encode an image as base64 JPEG. The 6MB raw cap leaves headroom for the
+    /// 4:3 base64 inflation so the HTTP body stays under API Gateway's 10MB hard limit.
+    static func jpegBase64(from image: UIImage, maxBytes: Int = 6 * 1_024 * 1_024) -> String? {
+        let resized = downscale(image, longestEdge: 1_600)
+        var quality: CGFloat = 0.70
         var data = resized.jpegData(compressionQuality: quality)
         while let current = data, current.count > maxBytes, quality > 0.3 {
             quality -= 0.15
