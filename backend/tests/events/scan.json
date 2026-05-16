@@ -1,0 +1,14 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /scan",
+  "rawPath": "/scan",
+  "requestContext": {
+    "http": {
+      "method": "POST",
+      "path": "/scan"
+    }
+  },
+  "queryStringParameters": null,
+  "body": "{\"image_base64\": \"iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAAtUlEQVR42u3SMREAMBDDsCAJf2TBUQq/dNNiAD6l7Ta9NC7cGxfIIossssgiywWyyCKLLLLIcoEsssgiiyyyXCCLLLLIIossF8giiyyyyCLLBbLIIosssshygSyyyCKLLLJcIIssssgiiyyyXCCLLLLIIossF8j60gceyIXW7E1TMAAAAABJRU5ErkJggg==\", \"reading_level\": \"intermediate\"}",
+  "isBase64Encoded": false
+}

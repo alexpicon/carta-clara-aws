@@ -1,0 +1,5 @@
+# Test-only dependencies for the Carta Clara backend smoke tests.
+# Install:  pip install -r backend/tests/requirements.txt
+# Run:      cd backend && python -m pytest tests/ -v
+pytest>=8.0
+boto3>=1.34

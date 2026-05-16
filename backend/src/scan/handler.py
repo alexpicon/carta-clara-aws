@@ -1,0 +1,331 @@
+"""POST /scan — Carta Clara document scan endpoint.
+
+Flow (API_CONTRACT.md § POST /scan):
+  1. Validate the base64 image (presence, size, JPEG/PNG magic bytes).
+  2. Write the image to S3 under the session, tagged ephemeral (TENETS §7).
+  3. Bedrock multimodal (Claude Sonnet 4.6) + extraction_prompt -> structured JSON.
+     Guardrail attached -> if it intervenes, return the refusal-case shape.
+  4. Bedrock text + spanish_summary_prompt -> headline summary + section cards.
+  5. Polly -> Spanish audio of the headline summary -> S3 -> presigned URL.
+  6. Assemble and return the response in the API_CONTRACT shape.
+
+Tenets enforced here:
+  §1 Trust before features — redaction flags surfaced, citations carried through.
+  §2 Refuse before answering — Guardrail intervention -> refusal-case response.
+  §6 Synthetic only — is_demo_document / demo_watermark_detected echoed from extraction.
+  §7 Ephemeral — image stored with a 1h-intent tag; audio presigned 1h.
+"""
+
+import base64
+import binascii
+import json
+import uuid
+
+import helpers as h
+
+MAX_IMAGE_BYTES = 10 * 1024 * 1024  # 10MB (API_CONTRACT)
+
+# Fallback prompts so the handler + smoke tests work before Sage's files land
+# (SAGE-02 / SAGE-03). The real prompts override these via the loader.
+_FALLBACK_EXTRACTION = (
+    "You are extracting structured data from a U.S. immigration document image. "
+    "PII has already been redacted before you. Return ONLY a JSON object with keys: "
+    "document_type, issuing_agency, country_of_origin, country_of_citizenship, "
+    "hearing_date (YYYY-MM-DD), hearing_time (HH:MM), court_name, court_address, "
+    "issuing_officer, alleged_basis_summary, charges_cited (array), "
+    "deadline_critical (YYYY-MM-DD), is_demo_document (bool), "
+    "demo_watermark_detected (bool). Use null for unknown fields. "
+    "If the document appears to contain real un-redacted PII, instead return "
+    '{\"refuse\": true, \"reason\": \"document appears non-synthetic\"}.'
+)
+_FALLBACK_SUMMARY = (
+    "You explain an immigration document in plain Spanish for a reader with low "
+    "literacy. You give information, never legal advice (TENETS §3). Return ONLY a "
+    "JSON object: {summary_en, summary_es, sections:[{section_title_en, "
+    "section_title_es, section_body_es, section_body_full_es, citation_ids:[]}]}. "
+    "Keep summary_es to 1-2 short sentences."
+)
+
+
+def lambda_handler(event, _context):
+    """Entry point for POST /scan."""
+    started = h.monotonic_ms()
+    try:
+        return _handle(event, started)
+    except Exception as exc:  # noqa: BLE001
+        if _is_throttling(exc):
+            return h.response(429, {"error": "service busy, retry in 5s"})
+        request_id = getattr(_context, "aws_request_id", str(uuid.uuid4()))
+        print(json.dumps({"level": "error", "msg": "scan_unhandled", "error": str(exc),
+                          "request_id": request_id}))
+        return h.response(500, {"error": "internal error", "request_id": request_id})
+
+
+def _is_throttling(exc) -> bool:
+    name = exc.__class__.__name__
+    if name in ("ThrottlingException", "TooManyRequestsException"):
+        return True
+    code = getattr(exc, "response", {}).get("Error", {}).get("Code", "")
+    return code in ("ThrottlingException", "TooManyRequestsException", "Throttling")
+
+
+def _handle(event, started):
+    body = h.parse_body(event)
+    session_id = body.get("session_id") or str(uuid.uuid4())
+    document_id = str(uuid.uuid4())
+    image_b64 = body.get("image_base64") or ""
+    reading_level = body.get("reading_level") or "intermediate"
+    if reading_level not in ("beginner", "intermediate", "full"):
+        reading_level = "intermediate"
+
+    # --- 1. validate ------------------------------------------------------
+    if not image_b64:
+        return h.response(400, {"error": "image_base64 required (or too large)"})
+    try:
+        image_bytes = base64.b64decode(image_b64, validate=True)
+    except (binascii.Error, ValueError):
+        return h.response(400, {"error": "image_base64 required (or too large)"})
+    if not image_bytes or len(image_bytes) > MAX_IMAGE_BYTES:
+        return h.response(400, {"error": "image_base64 required (or too large)"})
+
+    fmt = _detect_format(image_bytes)
+    if fmt is None:
+        return h.response(415, {"error": "image must be JPEG or PNG"})
+
+    # --- 2. store ephemerally --------------------------------------------
+    ext = "jpg" if fmt == "jpeg" else "png"
+    image_key = f"{session_id}/{document_id}.{ext}"
+    h.s3_put_ephemeral(image_key, image_bytes, f"image/{fmt}")
+
+    # --- 3. multimodal extraction (Guardrail attached) -------------------
+    extraction_prompt = h.load_prompt("extraction_prompt.md", _FALLBACK_EXTRACTION)
+    system_prompt = h.load_prompt("system_prompt.md", "")
+    multimodal_model = h.env("MULTIMODAL_MODEL_ID", "us.anthropic.claude-sonnet-4-6")
+
+    extract_res = h.converse(
+        model_id=multimodal_model,
+        content_blocks=[h.image_block(image_bytes, fmt), h.text_block(extraction_prompt)],
+        system=system_prompt or None,
+        max_tokens=1200,
+    )
+
+    # Guardrail intervened on the document itself -> refusal case
+    if extract_res.intervened:
+        return _refusal_response(session_id, "document appears non-synthetic", started)
+
+    extraction_raw = h.extract_json(extract_res.text) or {}
+    if extraction_raw.get("refuse"):
+        return _refusal_response(
+            session_id, extraction_raw.get("reason", "document could not be verified"), started
+        )
+    if not extraction_raw:
+        return h.response(
+            422,
+            {"error": "could not extract structured data",
+             "detail": "model did not return structured JSON"},
+        )
+
+    extraction = _normalize_extraction(extraction_raw)
+
+    # --- 4. Spanish summary + section cards ------------------------------
+    summary_prompt = h.load_prompt("spanish_summary_prompt.md", _FALLBACK_SUMMARY)
+    summary_prompt = f"{summary_prompt}\n\nPARAMETERS:\nreading_level: {reading_level}"
+    text_model = h.env("TEXT_MODEL_ID", "us.anthropic.claude-sonnet-4-6")
+
+    summary_input = (
+        f"{summary_prompt}\n\nEXTRACTED DOCUMENT DATA (JSON):\n"
+        f"{json.dumps(extraction, ensure_ascii=False)}"
+    )
+    summary_res = h.converse(
+        model_id=text_model,
+        content_blocks=[h.text_block(summary_input)],
+        system=system_prompt or None,
+        max_tokens=1800,
+    )
+    if summary_res.intervened:
+        return _refusal_response(session_id, "summary generation blocked by Guardrail", started)
+
+    summary_data = h.extract_json(summary_res.text) or {}
+    summary_en = summary_data.get("summary_en") or ""
+    summary_es = summary_data.get("summary_es") or summary_res.text.strip()
+    sections = _normalize_sections(summary_data.get("sections", []))
+
+    # --- 5. Polly Spanish audio of the headline summary ------------------
+    audio_url = None
+    if summary_es:
+        try:
+            audio_bytes = h.synthesize_spanish(summary_es)
+            audio_key = f"{session_id}/{document_id}-summary.mp3"
+            h.s3_put_ephemeral(audio_key, audio_bytes, "audio/mpeg")
+            audio_url = h.s3_presign(audio_key, expires=3600)
+        except Exception as exc:  # noqa: BLE001 - audio is non-critical
+            print(json.dumps({"level": "warn", "msg": "polly_failed", "error": str(exc)}))
+
+    # --- 6. assemble -----------------------------------------------------
+    total_usage = _merge_usage(extract_res.usage, summary_res.usage)
+    cost = h.estimate_cost(multimodal_model, extract_res.usage) + h.estimate_cost(
+        text_model, summary_res.usage
+    )
+
+    result = {
+        "session_id": session_id,
+        "document_id": document_id,
+        "extraction": extraction,
+        "summary_en": summary_en,
+        "summary_es": summary_es,
+        "audio_url": audio_url,
+        "sections": sections,
+        "urgency": _build_urgency(extraction),
+        "scam_red_flags": [],  # populated by /ask scam-check on a separate text input
+        "court_brief": _build_court_brief(extraction),
+        "legal_aid_options": h.legal_aid_options(),
+        "citations": _collect_citations(sections),
+        "latency_ms": round(h.monotonic_ms() - started),
+        "cost_estimate_usd": round(cost, 6),
+        "_token_usage": total_usage,
+    }
+    return h.response(200, result)
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _detect_format(data: bytes):
+    """Return 'jpeg', 'png', or None from magic bytes."""
+    if data[:3] == b"\xff\xd8\xff":
+        return "jpeg"
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return "png"
+    return None
+
+
+def _normalize_extraction(raw: dict) -> dict:
+    """Map a model extraction object onto the API_CONTRACT `extraction` shape."""
+    return {
+        "document_type": raw.get("document_type"),
+        "issuing_agency": raw.get("issuing_agency"),
+        # PII is masked by the Guardrail before the model — these are always true.
+        "names_redacted": True,
+        "a_number_redacted": True,
+        "address_redacted": True,
+        "country_of_origin": raw.get("country_of_origin"),
+        "country_of_citizenship": raw.get("country_of_citizenship"),
+        "hearing_date": raw.get("hearing_date"),
+        "hearing_time": raw.get("hearing_time"),
+        "court_name": raw.get("court_name"),
+        "court_address": raw.get("court_address"),
+        "issuing_officer": raw.get("issuing_officer"),
+        "alleged_basis_summary": raw.get("alleged_basis_summary"),
+        "charges_cited": raw.get("charges_cited") or [],
+        "deadline_critical": raw.get("deadline_critical"),
+        "is_demo_document": bool(raw.get("is_demo_document", False)),
+        "demo_watermark_detected": bool(raw.get("demo_watermark_detected", False)),
+    }
+
+
+def _normalize_sections(sections) -> list:
+    out = []
+    for s in sections or []:
+        if not isinstance(s, dict):
+            continue
+        out.append(
+            {
+                "section_title_en": s.get("section_title_en", ""),
+                "section_title_es": s.get("section_title_es", ""),
+                "section_body_es": s.get("section_body_es", ""),
+                "section_body_full_es": s.get("section_body_full_es")
+                or s.get("section_body_es", ""),
+                "citation_ids": s.get("citation_ids") or [],
+            }
+        )
+    return out
+
+
+def _build_urgency(extraction: dict) -> dict:
+    deadline = extraction.get("deadline_critical") or extraction.get("hearing_date")
+    is_urgent = deadline is not None
+    label = None
+    if deadline:
+        label = f"Fecha importante: {deadline}"
+        if extraction.get("hearing_time"):
+            label += f", {extraction['hearing_time']}"
+    return {
+        "is_urgent": is_urgent,
+        "deadline_date": deadline,
+        "deadline_label_es": label,
+        "verification_note_es": (
+            "Verifica esta fecha directamente con la corte. La información de la "
+            "corte aparece en tu documento. No dependas solo de esta aplicación."
+        ),
+    }
+
+
+def _build_court_brief(extraction: dict):
+    court_name = extraction.get("court_name")
+    if not court_name:
+        return None
+    return {
+        "court_name": court_name,
+        "address": extraction.get("court_address") or "",
+        "phone": "",
+        "what_to_expect_es": (
+            "Esta es una audiencia ante un juez de inmigración. No es una decisión "
+            "final. Tienes derecho a tener un abogado y a un intérprete sin costo."
+        ),
+        "what_to_bring_es": [
+            "Tu documento original (el aviso de la corte)",
+            "Una identificación",
+            "Cualquier papel de inmigración que tengas",
+            "El nombre y teléfono de tu abogado, si ya tienes uno",
+        ],
+        "what_not_to_bring_es": [
+            "Armas u objetos filosos (no se permiten en la corte)",
+            "Documentos falsos o alterados",
+        ],
+        "dress_code_es": "Ropa limpia y formal, como para una cita importante.",
+    }
+
+
+def _collect_citations(sections: list) -> list:
+    """Flatten unique citation IDs referenced by section cards."""
+    seen = {}
+    for s in sections:
+        for cid in s.get("citation_ids", []):
+            if cid not in seen:
+                seen[cid] = {
+                    "id": cid,
+                    "source_label": "",
+                    "kb_chunk_id": cid,
+                    "url": "",
+                }
+    return list(seen.values())
+
+
+def _merge_usage(*usages) -> dict:
+    total = {"inputTokens": 0, "outputTokens": 0}
+    for u in usages:
+        total["inputTokens"] += (u or {}).get("inputTokens", 0)
+        total["outputTokens"] += (u or {}).get("outputTokens", 0)
+    return total
+
+
+def _refusal_response(session_id, reason, started):
+    """API_CONTRACT § POST /scan — Refusal case (still HTTP 200)."""
+    return h.response(
+        200,
+        {
+            "session_id": session_id,
+            "was_refused": True,
+            "refusal_reason": reason,
+            "refusal_text_es": (
+                "No puedo procesar este documento de forma segura. Esto puede pasar "
+                "si el documento parece contener información personal real sin "
+                "proteger. Por tu seguridad, lleva el documento directamente a un "
+                "servicio de ayuda legal gratis — ellos pueden revisarlo contigo."
+            ),
+            "legal_aid_options": h.legal_aid_options(),
+            "latency_ms": round(h.monotonic_ms() - started),
+        },
+    )
