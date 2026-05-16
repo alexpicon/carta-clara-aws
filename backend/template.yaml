@@ -1,0 +1,279 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Carta Clara — backend infrastructure.
+  One SAM template provisions S3 (1h TTL), DynamoDB (refusal log),
+  API Gateway HTTP API, three Lambda functions, IAM role, CloudWatch log group.
+  Bedrock Knowledge Base, Agent, and Guardrails are managed via console
+  (intentional — easier to iterate during a hackathon).
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30
+    MemorySize: 512
+    Environment:
+      Variables:
+        UPLOADS_BUCKET: !Ref UploadsBucket
+        REFUSAL_TABLE: !Ref RefusalTable
+        BEDROCK_REGION: !Ref AWS::Region
+        # Filled in via console after creating these in Bedrock:
+        KNOWLEDGE_BASE_ID: !Ref KnowledgeBaseId
+        GUARDRAIL_ID: !Ref GuardrailId
+        GUARDRAIL_VERSION: !Ref GuardrailVersion
+        MULTIMODAL_MODEL_ID: !Ref MultimodalModelId
+        TEXT_MODEL_ID: !Ref TextModelId
+        FAST_MODEL_ID: !Ref FastModelId
+        POLLY_VOICE: !Ref PollyVoiceId
+
+Parameters:
+  KnowledgeBaseId:
+    Type: String
+    Default: PLACEHOLDER
+    Description: Bedrock KB ID — fill in after creating in console
+  GuardrailId:
+    Type: String
+    Default: PLACEHOLDER
+    Description: Bedrock Guardrail ID — fill in after creating in console
+  GuardrailVersion:
+    Type: String
+    Default: DRAFT
+    Description: Guardrail version (DRAFT during dev, 1 after publish)
+  MultimodalModelId:
+    Type: String
+    Default: us.anthropic.claude-sonnet-4-6
+    Description: Bedrock multimodal model / inference profile for document understanding (Claude Sonnet 4.6 via US cross-region inference profile)
+  TextModelId:
+    Type: String
+    Default: us.anthropic.claude-sonnet-4-6
+    Description: Bedrock text model / inference profile for chat and explanation
+  FastModelId:
+    Type: String
+    Default: amazon.nova-pro-v1:0
+    Description: Faster fallback model for low-latency operations (scam pattern check, follow-up chat). 3.7x faster than Claude on cold calls.
+  PollyVoiceId:
+    Type: String
+    Default: Lupe
+    Description: Polly Spanish voice (Lupe = neural, Mia = neural)
+
+Resources:
+
+  # ---------------------------------------------------------------------------
+  # Storage
+  # ---------------------------------------------------------------------------
+
+  UploadsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "carta-clara-uploads-${AWS::AccountId}-${AWS::Region}"
+      LifecycleConfiguration:
+        Rules:
+          # Ephemeral document/audio uploads (TENETS.md §7 — we do not store
+          # immigration documents). Every object the handlers write is tagged
+          # `ephemeral=true` (see helpers.s3_put_ephemeral); this rule scopes
+          # expiration to exactly those objects via a tag filter.
+          #
+          # LIMITATION — day granularity: S3 lifecycle `Expiration` is
+          # day-granular, so the earliest this rule deletes an object is the
+          # next daily expiration sweep (~24h), NOT 1 hour. The product's
+          # 1-hour guarantee is enforced two other ways:
+          #   (a) every presigned URL the API issues expires in 3600s, so the
+          #       content is unreachable after 1 hour regardless;
+          #   (b) true 1-hour *deletion* would need a separate scheduled
+          #       cleanup Lambda (EventBridge cron scanning the `ephemeral=true`
+          #       tag) — deferred, tracked in docs/worklog/koda.md.
+          # This tag-scoped rule is the backstop that guarantees eventual
+          # deletion and never touches non-ephemeral objects.
+          - Id: ExpireEphemeralUploads
+            Status: Enabled
+            TagFilters:
+              - Key: ephemeral
+                Value: "true"
+            ExpirationInDays: 1
+          - Id: AbortMultipartUploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 1
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ["*"]
+            AllowedMethods: [GET, PUT, POST]
+            AllowedOrigins: ["*"]
+            MaxAge: 3000
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+
+  RefusalTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: carta-clara-refusal-log
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: session_id
+          AttributeType: S
+        - AttributeName: ts
+          AttributeType: S
+      KeySchema:
+        - AttributeName: session_id
+          KeyType: HASH
+        - AttributeName: ts
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # ---------------------------------------------------------------------------
+  # IAM execution role for Lambdas
+  # ---------------------------------------------------------------------------
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: CartaClaraLambdaPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: BedrockInvoke
+                Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                  - bedrock:Retrieve
+                  - bedrock:RetrieveAndGenerate
+                  - bedrock:ApplyGuardrail
+                  - bedrock:GetInferenceProfile
+                  - bedrock:ListInferenceProfiles
+                Resource: "*"
+              - Sid: S3UploadsAccess
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub "${UploadsBucket.Arn}/*"
+              - Sid: DynamoDBRefusalAccess
+                Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                  - dynamodb:GetItem
+                Resource: !GetAtt RefusalTable.Arn
+              - Sid: PollyTTS
+                Effect: Allow
+                Action:
+                  - polly:SynthesizeSpeech
+                Resource: "*"
+              - Sid: TranscribeASR
+                Effect: Allow
+                Action:
+                  - transcribe:StartStreamTranscription
+                  - transcribe:StartTranscriptionJob
+                  - transcribe:GetTranscriptionJob
+                Resource: "*"
+
+  # ---------------------------------------------------------------------------
+  # Lambda functions
+  # ---------------------------------------------------------------------------
+
+  ScanFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: carta-clara-scan
+      CodeUri: src/scan/
+      Handler: handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        ScanApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref CartaClaraApi
+            Path: /scan
+            Method: POST
+
+  AskFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: carta-clara-ask
+      CodeUri: src/ask/
+      Handler: handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        AskApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref CartaClaraApi
+            Path: /ask
+            Method: POST
+
+  RefusalLogFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: carta-clara-refusal-log
+      CodeUri: src/refusal_log/
+      Handler: handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        RefusalLogApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref CartaClaraApi
+            Path: /refusal-log
+            Method: GET
+
+  ScanPacketFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: carta-clara-scan-packet
+      CodeUri: src/scan_packet/
+      Handler: handler.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        ScanPacketApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref CartaClaraApi
+            Path: /scan/packet
+            Method: POST
+
+  # ---------------------------------------------------------------------------
+  # API Gateway HTTP API
+  # ---------------------------------------------------------------------------
+
+  CartaClaraApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: carta-clara-api
+      CorsConfiguration:
+        AllowMethods: [GET, POST, OPTIONS]
+        AllowHeaders: ["*"]
+        AllowOrigins: ["*"]
+        MaxAge: 600
+
+Outputs:
+  ApiBaseUrl:
+    Description: Base URL for the Carta Clara API
+    Value: !Sub "https://${CartaClaraApi}.execute-api.${AWS::Region}.amazonaws.com"
+    Export:
+      Name: CartaClaraApiBaseUrl
+  UploadsBucketName:
+    Description: S3 bucket for ephemeral document uploads
+    Value: !Ref UploadsBucket
+  RefusalTableName:
+    Description: DynamoDB table for refusal log
+    Value: !Ref RefusalTable
