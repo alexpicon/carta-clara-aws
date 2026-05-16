@@ -10,7 +10,7 @@ Description: >
 Globals:
   Function:
     Runtime: python3.12
-    Timeout: 30
+    Timeout: 90
     MemorySize: 512
     Environment:
       Variables:
