@@ -1,0 +1,108 @@
+SOURCE_URL: https://www.justice.gov/eoir/reference-materials/ic/chapter-4
+SOURCE: U.S. Department of Justice, Executive Office for Immigration Review (EOIR) — Immigration Court Practice Manual (Chapter 4, Hearings before Immigration Judges) and related public EOIR guidance
+RETRIEVED: 2026-05-16 (curated for Carta Clara Knowledge Base; see sourcing note in docs/worklog/sage.md)
+TOPIC: eoir_nta_removal_proceedings
+
+===
+
+[CHUNK eoir-01: What a Notice to Appear (NTA) is]
+A Notice to Appear, Form I-862, is the charging document that the Department of
+Homeland Security (DHS) uses to begin removal proceedings against a person in
+immigration court. Removal proceedings are conducted under section 240 of the
+Immigration and Nationality Act (INA). The NTA tells the person — called the
+"respondent" — that the government believes they are removable from the United
+States, lists the factual allegations and the legal charges against them, and orders
+them to appear before an immigration judge. Receiving an NTA does not by itself mean a
+person will be removed; it means a case has started and a judge will hear it.
+
+[CHUNK eoir-02: What "removal proceedings" means in plain language]
+"Removal proceedings" is the court process the U.S. government uses to decide whether
+a person who is not a U.S. citizen can stay in the United States or must leave. The
+proceedings take place in immigration court before an immigration judge, who is part
+of the Executive Office for Immigration Review (EOIR) within the Department of
+Justice. The proceedings are not a criminal case and immigration court is not a
+criminal court. Being placed in removal proceedings is not a final decision — it is
+the beginning of a process in which the respondent has the right to respond, to
+present their case, and, in many situations, to ask the judge for relief that would
+let them remain.
+
+[CHUNK eoir-03: The information an NTA contains]
+A Notice to Appear generally states: the nature of the proceedings; the legal
+authority under which the proceedings are conducted; the factual allegations (often
+numbered) describing what DHS says the respondent did or what their status is; the
+charge(s) of removability, citing the specific section(s) of the INA; and the
+requirement to appear before an immigration judge at a specified time and place. Some
+NTAs list the hearing date, time, and court address; others state these will be set
+later, and the court mails a separate hearing notice. A respondent should always
+confirm the actual hearing date and location with the immigration court directly.
+
+[CHUNK eoir-04: INA section 237(a)(1)(B) — remaining longer than permitted]
+Section 237(a)(1)(B) of the Immigration and Nationality Act is a ground of
+removability. In general terms, it provides that a noncitizen who was admitted to the
+United States as a nonimmigrant (for example, on a visitor visa) and who has remained
+in the United States for a time longer than permitted — commonly called an "overstay"
+— is removable. A charge under INA 237(a)(1)(B) describes an alleged status violation;
+it is an allegation that the immigration judge must consider, not a finding or a final
+decision. What the allegation means for a particular person, and what defenses or
+forms of relief may apply, are legal questions for a qualified attorney or accredited
+representative.
+
+[CHUNK eoir-05: The master calendar hearing]
+The first hearing in removal proceedings is usually a "master calendar hearing." It is
+a short, scheduling-focused hearing where the immigration judge handles preliminary
+matters. At the master calendar hearing the judge typically confirms the respondent's
+identity and address, advises the respondent of their rights, asks whether the
+respondent has an attorney or needs time to find one, and addresses the allegations
+and charges in the Notice to Appear. The judge may also set deadlines and schedule the
+next hearing. Many respondents attend more than one master calendar hearing.
+
+[CHUNK eoir-06: Pleading to the allegations and charges]
+At a master calendar hearing, the immigration judge addresses the numbered factual
+allegations and the charge(s) of removability in the Notice to Appear. The respondent,
+usually through their attorney or accredited representative, responds to each
+allegation and charge. The respondent may also state what relief from removal, if
+any, they intend to seek. How to respond to allegations and charges is a legal
+decision with significant consequences and should be made with a qualified attorney or
+DOJ-accredited representative — it is not a decision to make alone or based on general
+information.
+
+[CHUNK eoir-07: The individual (merits) hearing]
+If the case is contested or the respondent is applying for relief from removal, the
+judge schedules an "individual hearing," also called a "merits hearing." The
+individual hearing is longer than a master calendar hearing. At it, the respondent can
+testify, present documents and witnesses, and make legal arguments, and DHS presents
+its position. After considering the evidence, the immigration judge issues a decision.
+
+[CHUNK eoir-08: The respondent's rights in immigration court]
+A person in removal proceedings has important rights, including: the right to be
+represented, at no expense to the government, by an attorney or a DOJ-accredited
+representative of their choosing; the right to receive a list of free or low-cost
+legal service providers; the right to an interpreter if they do not speak English
+well; the right to examine the evidence against them; the right to present evidence,
+documents, and witnesses on their own behalf; the right to a decision based on the
+record; and, in general, the right to appeal an unfavorable decision to the Board of
+Immigration Appeals. Exercising these rights effectively almost always requires the
+help of a qualified legal representative.
+
+[CHUNK eoir-09: Why attendance matters — failing to appear]
+Hearing dates set by the immigration court are mandatory. If a respondent fails to
+appear at a scheduled hearing, the immigration judge may proceed without them and may
+order them removed "in absentia" (in their absence). An in-absentia removal order has
+serious and lasting consequences. If a respondent has a genuine conflict, an
+emergency, or a problem receiving notices, that is a situation to raise immediately
+with a qualified legal representative and, through proper procedure, with the court.
+Whether and how to attend, or to ask the court to change a date, is a legal and
+procedural decision for a qualified attorney — not a decision to make based on general
+information.
+
+[CHUNK eoir-10: Getting a free or low-cost legal representative]
+EOIR maintains a List of Pro Bono Legal Service Providers — organizations and
+attorneys who may represent people in immigration court for free or at low cost. The
+immigration court provides this list to respondents. Respondents are strongly
+encouraged to seek a representative as early as possible, because preparing an
+immigration case takes time. Nonprofit legal-aid organizations and DOJ-recognized
+organizations are a safe place to start, and many offer a free initial consultation in
+the respondent's own language.
+
+===
+END OF DOCUMENT

@@ -1,0 +1,102 @@
+SOURCE_URL: https://www.uscis.gov/scams
+SOURCE: U.S. Citizenship and Immigration Services (USCIS) — Avoid Scams / Common Scams
+RETRIEVED: 2026-05-16 (curated for Carta Clara Knowledge Base; see sourcing note in docs/worklog/sage.md)
+TOPIC: immigration_scams_uscis
+
+===
+
+[CHUNK uscis-01: What the USCIS Avoid Scams program is]
+USCIS wants to help you avoid becoming a victim of an immigration scam. Many people
+offer help with immigration services. Unfortunately, not all are authorized to do so.
+Although some may have good intentions, others are out to defraud you. The wrong help
+can hurt your immigration case. It can cost you money, cause delays, or cause you to
+lose your eligibility for an immigration benefit. Use the right immigration help so
+your application is not delayed or denied.
+
+[CHUNK uscis-02: The "notario público" warning]
+In many Latin American countries, the term "notario público" (for "notary public")
+stands for something very different than what it means in the United States. In many
+Spanish-speaking nations, "notarios" are powerful attorneys with special legal
+credentials. In the United States, however, notary publics are NOT authorized to
+provide you with any legal services related to immigration. A notary public,
+"notario," "notario público," or "immigration consultant" is not the same as an
+attorney and cannot give you legal advice about your immigration case. Only an
+attorney or an accredited representative working for a Department of Justice (DOJ)
+recognized organization can give you legal advice about immigration matters.
+
+[CHUNK uscis-03: Who is authorized to help you]
+Two groups of people can give you legal advice and represent you before USCIS:
+(1) Attorneys who are licensed and in good standing with a U.S. state bar and are not
+under any court order restricting their practice of law; and (2) Accredited
+representatives who work for a specific organization that has been recognized by the
+Department of Justice. These accredited representatives can charge or accept only
+small fees for their services. Notarios, notary publics, immigration consultants, and
+businesses cannot give you legal advice unless they are also an authorized attorney
+or accredited representative. To find authorized legal services, use the USCIS "Find
+Legal Services" page or the list of recognized organizations and accredited
+representatives published by the Department of Justice.
+
+[CHUNK uscis-04: Common scam — people posing as USCIS officials]
+Scammers may pose as USCIS officials. USCIS may contact you by telephone or email,
+but USCIS officials will never ask you for payment over the phone or by email. If
+USCIS needs payment, it will mail a letter on official stationery requesting payment.
+Do not give payment over the phone to anyone who claims to be a USCIS official. If you
+receive a scam email or phone call, report it to the Federal Trade Commission. If you
+are not sure it is fraud, forward the suspicious email to the USCIS webmaster at
+uscis.webmaster@uscis.dhs.gov. USCIS will review the emails received and share with
+law enforcement agencies as appropriate.
+
+[CHUNK uscis-05: Common scam — email and phishing schemes]
+Scammers use email phishing schemes to obtain your personal information or money. A
+scammer may send you an email that looks like it comes from USCIS, often copying the
+USCIS logo and government-style language, and direct you to a fake website. The fake
+site may ask you to enter personal information or pay a fee. USCIS will not ask you to
+pay fees to a person on the phone or by email. You can pay some fees online through
+your USCIS online account at my.uscis.gov, but always type the address yourself
+rather than clicking a link in an email. Make sure any website address ends in ".gov".
+
+[CHUNK uscis-06: Common scam — fake or unofficial websites]
+Some websites claiming to be affiliated with USCIS offer step-by-step guidance on
+completing a USCIS application or petition, and may charge a fee for blank government
+forms or for information that USCIS provides for free. The official USCIS website is
+uscis.gov, and all USCIS forms are free to download at uscis.gov/forms. You do not
+have to pay to download or file most forms beyond the official filing fee. If a
+website asks you to pay for a blank form, it is not an official government site.
+
+[CHUNK uscis-07: Common scam — payment by unusual methods]
+Be very cautious if anyone asks you to pay for immigration help using a gift card,
+prepaid debit card, wire transfer, payment app, or cryptocurrency. The U.S. government
+does not accept these payment methods for immigration fees. A demand for payment by
+gift card or wire transfer is one of the clearest signs of a scam.
+
+[CHUNK uscis-08: Common scam — "guaranteed" results and the visa lottery]
+Be cautious of anyone who guarantees results or faster processing in exchange for a
+fee. No one can guarantee that USCIS will approve your application. Only USCIS or an
+immigration judge can decide your case. Also be aware of scams related to the
+Diversity Visa (DV) "green card lottery": the U.S. Department of State runs the DV
+program for free, the only official website to enter is the State Department site,
+and entrants are notified only through the official Entrant Status Check — not by
+email or letter demanding a fee.
+
+[CHUNK uscis-09: Tips to protect yourself]
+Protect yourself: Do not sign any blank forms or documents. Do not sign any forms or
+documents that contain false information or that you do not understand. Always ask for
+and keep copies of every document and form prepared or filed for you. Never let anyone
+keep your original personal documents, such as your passport or birth certificate.
+Get a written contract, in a language you understand, that lists all services and
+fees. Make sure your application lists your own contact information, not the
+preparer's, so USCIS notices come directly to you. If a form preparer helped you, the
+preparer must list their name and information on the form. Walk away from anyone who
+pressures you to act immediately or who tells you not to read what you are signing.
+
+[CHUNK uscis-10: How to report an immigration scam]
+If you believe you have been the victim of an immigration services scam, report it.
+You can report scams to the Federal Trade Commission (FTC) at ReportFraud.ftc.gov or
+by calling 1-877-FTC-HELP (1-877-382-4357). Many states also accept complaints about
+the unauthorized practice of immigration law through their state attorney general or
+consumer protection office. To report a website or social media account that falsely
+claims to be affiliated with USCIS, email uscis.webmaster@uscis.dhs.gov. Reporting a
+scam — even if you did not lose money — helps protect others in your community.
+
+===
+END OF DOCUMENT

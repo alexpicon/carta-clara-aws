@@ -1,0 +1,89 @@
+SOURCE_URL: https://consumer.ftc.gov/articles/how-avoid-immigration-scams-get-real-help
+SOURCE: Federal Trade Commission (FTC) — Consumer Advice: How To Avoid Immigration Scams and Get Real Help
+RETRIEVED: 2026-05-16 (curated for Carta Clara Knowledge Base; see sourcing note in docs/worklog/sage.md)
+TOPIC: immigration_scams_ftc
+
+===
+
+[CHUNK ftc-01: Why immigration scams are dangerous]
+Getting help with an immigration application can make the process easier. But some
+people and businesses that promise help are really after your money. For many people,
+their immigration status can be put at risk by filling out the wrong form, missing a
+deadline, or putting incorrect information on a form. Scammers take advantage of that
+fear. Knowing how to spot a scam — and where to get real help — protects your money
+and your case.
+
+[CHUNK ftc-02: Notarios are not lawyers in the United States]
+In many Latin American countries, a "notario público" is a highly trained, specially
+licensed lawyer. In the United States, that is not what a notary public is. In the
+U.S., notarios and notary publics are NOT lawyers. They are not authorized to give
+you legal advice or to provide immigration services, and you should not pay them a
+fee to do so. Time after time, notarios take people's money and documents, make big
+promises, and then do nothing — often hurting your chances of immigrating lawfully
+while they disappear with your papers and your cash.
+
+[CHUNK ftc-03: Who can legally give you immigration help]
+Only two kinds of people can legally give you advice about your immigration case and
+represent you: (1) an attorney licensed to practice law in the United States, and
+(2) an accredited representative who works for an organization recognized by the
+Department of Justice (DOJ). DOJ-recognized organizations often provide help for free
+or for a low cost. You can search the DOJ list of recognized organizations and
+accredited representatives, or use a nonprofit legal-aid clinic, to confirm that the
+person helping you is authorized.
+
+[CHUNK ftc-04: Red flag — guarantees and big promises]
+No one can guarantee that your immigration application will be approved. Only the U.S.
+government can decide your case. If someone promises a guaranteed result, a special
+relationship with the government, a quick green card, or that they "know someone" who
+can make your case succeed, that is a red flag for a scam. Honest, authorized help
+will explain the process and the risks — it will not promise an outcome.
+
+[CHUNK ftc-05: Red flag — blank forms and false information]
+Do not sign blank immigration forms. Do not sign forms that contain false information
+about you, and do not sign anything you do not understand. A dishonest notario,
+accountant, or consultant may ask you to do this. False information on an immigration
+form can cause your application to be denied and can put your immigration status at
+risk. Always read — or have someone you trust read to you — every form before you
+sign it, and keep a copy of everything you sign.
+
+[CHUNK ftc-06: Red flag — paying for free forms and free information]
+You should not have to pay anyone for blank immigration forms. Official U.S.
+government immigration forms are free to download from the official USCIS website,
+uscis.gov. Real, reliable immigration information is available for free from the
+government. If a person or website charges you a fee just to give you a blank form or
+basic information, that is a warning sign.
+
+[CHUNK ftc-07: Red flag — payment by gift card, wire transfer, or cryptocurrency]
+If someone says you must pay them by gift card, prepaid debit card, wire transfer,
+payment app, or cryptocurrency to help with your immigration status, that is a scam.
+The U.S. government does not demand payment that way. Scammers like these payment
+methods because the money is hard to trace and hard to get back. A demand to pay this
+way — especially urgently — means you should stop and walk away.
+
+[CHUNK ftc-08: Red flag — fake government calls, emails, and websites]
+Scammers pretend to be from the government. They may call, email, or text and claim
+to be from USCIS, ICE, or "the immigration office," and then demand money or personal
+information, sometimes threatening arrest or deportation if you do not pay
+immediately. The real U.S. government will not call to demand immediate payment or
+threaten you. To recognize a real U.S. government website, check the web address: if
+it ends in ".gov", it is an official U.S. government site. Do not click links in
+unexpected emails or texts — type the official address yourself.
+
+[CHUNK ftc-09: Red flag — pressure, urgency, and keeping your documents]
+Be cautious of anyone who pressures you to decide or pay right now, who tells you not
+to read what you are signing, or who wants to keep your original documents such as
+your passport, birth certificate, or other identity papers. A trustworthy provider
+gives you time, answers your questions, gives you a written contract in a language you
+understand, gives you receipts, and returns your original documents to you.
+
+[CHUNK ftc-10: How to get real help and how to report a scam]
+To get real help, look for a licensed attorney or a DOJ-accredited representative,
+including nonprofit legal-aid organizations that serve immigrants for free or low
+cost. Before you pay anyone, confirm they are authorized. If you or someone you know
+has seen or experienced an immigration-related scam, report it to the Federal Trade
+Commission at ReportFraud.ftc.gov. Reporting helps the FTC and law enforcement stop
+scammers and protect other families — and you can report even if you did not lose
+money and even if you are not asked for your immigration status.
+
+===
+END OF DOCUMENT

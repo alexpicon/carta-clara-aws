@@ -1,0 +1,63 @@
+SOURCE_URL: Compiled by Carta Clara from public USCIS and EOIR glossaries (uscis.gov/tools/glossary, justice.gov/eoir)
+SOURCE: Carta Clara bilingual plain-Spanish immigration glossary
+RETRIEVED: 2026-05-16 (curated for Carta Clara Knowledge Base; see sourcing note in docs/worklog/sage.md)
+TOPIC: immigration_terms_glossary_bilingual
+
+PURPOSE: Plain-Spanish definitions of common immigration terms, so Carta Clara can
+explain WHAT a word means without giving legal advice. These are definitions only.
+They never say what a user should do or whether a user qualifies for anything.
+
+FORMAT (one term per line, pipe-separated):
+term (en) | término (es) | plain-Spanish definition
+
+===
+
+Notice to Appear (NTA) | Aviso de Comparecencia | Es el documento con el que el gobierno empieza un caso en la corte de inmigración. Dice de qué te acusan y te ordena presentarte ante un juez. No es una decisión final.
+Removal proceedings | Proceso de remoción (deportación) | Es el proceso en la corte de inmigración donde un juez decide si una persona que no es ciudadana puede quedarse en Estados Unidos o debe salir. Empezar este proceso no es una decisión final.
+Respondent | Demandado / persona en el caso | Es la persona sobre quien trata el caso en la corte de inmigración; la persona que recibió el Aviso de Comparecencia.
+Immigration judge | Juez de inmigración | Es el juez que escucha los casos en la corte de inmigración y toma decisiones. Trabaja para el Departamento de Justicia, no es un juez penal.
+Immigration court | Corte de inmigración | Es el tribunal donde se ven los casos de remoción. No es una corte penal (no es por delitos).
+EOIR | EOIR (Oficina Ejecutiva de Revisión de Inmigración) | Es la oficina del Departamento de Justicia que maneja las cortes de inmigración y los jueces de inmigración.
+DHS | DHS (Departamento de Seguridad Nacional) | Es el departamento del gobierno encargado de la inmigración y la seguridad. ICE, USCIS y CBP forman parte de DHS.
+ICE | ICE (Servicio de Inmigración y Control de Aduanas) | Es la agencia dentro de DHS encargada de hacer cumplir las leyes de inmigración dentro del país, incluyendo la detención y la remoción.
+USCIS | USCIS (Servicio de Ciudadanía e Inmigración) | Es la agencia que procesa solicitudes de inmigración, como permisos, residencia y ciudadanía.
+CBP | CBP (Aduanas y Protección Fronteriza) | Es la agencia encargada de las fronteras y de las entradas a Estados Unidos.
+A-number (Alien Registration Number) | Número A (número de registro de extranjero) | Es un número de identificación que el gobierno asigna a una persona en su caso de inmigración. Empieza con la letra A. Es información personal: protégelo.
+Master calendar hearing | Audiencia preliminar (de calendario) | Es la primera audiencia, corta, donde el juez organiza el caso: confirma datos, te informa de tus derechos y pregunta si tienes abogado.
+Individual hearing | Audiencia individual (de fondo) | Es una audiencia más larga donde se presentan pruebas y testigos y el juez toma una decisión sobre el caso.
+Removability | Removibilidad | Es la idea de que, según el gobierno, una persona podría tener que salir del país por cierta razón legal. Que el gobierno lo alegue no significa que sea una decisión final.
+Charge of removability | Cargo de removibilidad | Es la razón legal específica, citando una sección de la ley, por la que el gobierno dice que una persona podría ser removida.
+Allegation | Alegato / acusación | Es algo que el gobierno afirma en el documento, por ejemplo una fecha o un hecho. Es lo que el gobierno dice; el juez todavía lo tiene que considerar.
+Overstay | Permanencia más allá del tiempo permitido | Significa quedarse en Estados Unidos más tiempo del que la visa o el permiso autorizaba.
+Nonimmigrant | No inmigrante | Es una persona admitida a Estados Unidos por un tiempo limitado y para un propósito específico, como turismo, estudio o trabajo temporal.
+Visa | Visa | Es un permiso que permite a una persona pedir entrar a Estados Unidos para cierto propósito y por cierto tiempo.
+B-2 visa | Visa B-2 (turista) | Es una visa de visitante temporal, por ejemplo para turismo o para visitar familia.
+Green card (Lawful Permanent Resident) | Tarjeta de residencia (residente permanente legal) | Es el estatus de una persona autorizada a vivir y trabajar permanentemente en Estados Unidos.
+Adjustment of status | Ajuste de estatus | Es un proceso para pedir cambiar a residente permanente sin salir del país. Si una persona puede o no usarlo es una pregunta legal para un abogado.
+Asylum | Asilo | Es una forma de protección para personas que temen daño en su país por ciertas razones. Quién califica es una decisión legal que solo un abogado puede evaluar.
+Cancellation of removal | Cancelación de remoción | Es un tipo de alivio que, en ciertos casos, permite a un juez detener una remoción. Quién califica es una pregunta legal para un abogado.
+Withholding of removal | Retención de remoción | Es otra forma de protección contra ser enviado a un país donde la persona podría sufrir daño. Quién califica lo evalúa un abogado.
+Voluntary departure | Salida voluntaria | Es una opción que, en ciertos casos, permite salir del país por cuenta propia en lugar de recibir una orden de remoción. Si conviene o no es una decisión legal.
+Relief from removal | Alivio de remoción | Es el término general para las distintas formas en que una persona puede pedir quedarse a pesar de un caso de remoción. Cuáles aplican lo decide un abogado.
+Bond | Fianza | Es una cantidad de dinero que, en ciertos casos, permite a una persona detenida salir mientras su caso continúa.
+Detention | Detención | Es cuando una persona queda bajo custodia de inmigración mientras su caso está pendiente.
+Deportation / Removal | Deportación / remoción | Es la orden o el acto de hacer que una persona salga de Estados Unidos. Una orden de remoción la da un juez al final del proceso.
+In absentia order | Orden en ausencia | Es una decisión que el juez puede tomar si la persona no se presenta a una audiencia. Tiene consecuencias graves y duraderas.
+Board of Immigration Appeals (BIA) | Junta de Apelaciones de Inmigración (BIA) | Es la oficina que revisa las apelaciones de las decisiones de los jueces de inmigración.
+Appeal | Apelación | Es pedir que una autoridad superior revise una decisión. Si conviene apelar y cómo es una decisión legal para un abogado.
+Continuance | Aplazamiento (continuance) | Es cuando el juez mueve una fecha de audiencia para más adelante. Pedir esto se hace por el proceso correcto y con ayuda legal.
+Hearing notice | Aviso de audiencia | Es el documento que la corte envía con la fecha, la hora y el lugar de una audiencia. Siempre confirma la fecha con la corte.
+INA (Immigration and Nationality Act) | Ley de Inmigración y Nacionalidad (INA) | Es la ley federal principal de inmigración de Estados Unidos. Las secciones citadas en un aviso se refieren a esta ley.
+Inadmissibility | Inadmisibilidad | Son las razones legales por las que a una persona se le puede negar la entrada o ciertos beneficios de inmigración.
+Parole | Permiso humanitario (parole) | Es un permiso temporal para entrar o quedarse en el país por razones específicas, sin ser una admisión formal.
+Employment Authorization Document (EAD) | Permiso de trabajo (EAD) | Es el documento que autoriza a ciertas personas a trabajar legalmente en Estados Unidos por un tiempo.
+Accredited representative | Representante acreditado | Es una persona, que no es abogado, autorizada por el Departamento de Justicia para dar ayuda legal de inmigración a través de una organización reconocida. Sí puede representarte.
+Attorney / Lawyer | Abogado | Es una persona con licencia para ejercer la ley. Un abogado de inmigración con licencia sí puede darte consejo legal.
+Notario público | Notario público | En Estados Unidos un notario público NO es abogado y NO puede dar consejo legal de inmigración. En muchos países latinoamericanos "notario" significa otra cosa. Ten cuidado: confía solo en un abogado con licencia o un representante acreditado.
+Pro bono | Pro bono (gratis) | Significa servicios legales ofrecidos sin costo. Existen listas de proveedores pro bono para casos de inmigración.
+Interpreter | Intérprete | Es la persona que traduce en la corte para alguien que no habla bien inglés. Tienes derecho a un intérprete en la corte de inmigración.
+Sponsor | Patrocinador | Es la persona que, en ciertos trámites, acepta cierta responsabilidad para apoyar la solicitud de un familiar.
+Affidavit | Declaración jurada (affidavit) | Es una declaración escrita que una persona firma jurando que es verdad, usada a veces como evidencia.
+
+===
+END OF DOCUMENT

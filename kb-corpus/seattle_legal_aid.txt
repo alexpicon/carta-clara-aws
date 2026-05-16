@@ -1,0 +1,120 @@
+SOURCE_URL: https://www.nwirp.org/resources/contact/ (and the individual organization websites cited per entry)
+SOURCE: Public contact directories of Seattle-area nonprofit immigration legal-aid organizations
+RETRIEVED: 2026-05-16 (curated for Carta Clara Knowledge Base; see sourcing/verification note in docs/worklog/sage.md)
+TOPIC: seattle_legal_aid_directory
+
+VERIFICATION NOTE: Phone numbers, addresses, and hours below were gathered from
+public web sources on 2026-05-16. Contact details for nonprofits change. The team
+should call each organization to confirm before the pitch and before any public
+release. Carta Clara always tells the user to confirm details directly.
+
+===
+
+[CHUNK legalaid-01: Northwest Immigrant Rights Project (NIRP/NWIRP)]
+Name: Northwest Immigrant Rights Project (NWIRP)
+Phone: 206-587-4009 (Seattle office)
+Address: 615 Second Avenue, Suite 400, Seattle, WA 98104
+Hours: Monday-Friday, 9:00 AM-12:00 PM and 1:00 PM-4:30 PM
+Languages served: Spanish and many other languages; interpretation available.
+Cost: Free or low-cost legal services for low-income immigrants.
+About: NWIRP is one of Washington State's largest nonprofit immigration legal
+organizations. It provides direct legal representation, including in removal
+(deportation) proceedings, and runs community education programs.
+How to request a free consultation: Call the Seattle office line during business
+hours and ask to be screened for legal services. Tell the intake staff what kind of
+document or notice you received and your preferred language. NWIRP will let you know
+whether they can take your case or refer you to another provider. You can also visit
+nwirp.org/get-help for current intake instructions.
+
+[CHUNK legalaid-02: Colectiva Legal del Pueblo]
+Name: Colectiva Legal del Pueblo
+Phone: 206-931-1514
+Address: 13838 First Avenue S, Burien, WA 98168
+Hours: Monday, Tuesday, Thursday, and Friday, 9:00 AM-5:00 PM (closed Wednesday,
+Saturday, and Sunday)
+Email: info@colectivalegal.org
+Languages served: Spanish (Colectiva is a Latino/a/x-led organization that works
+closely with the Spanish-speaking immigrant community).
+Cost: Community-based, low-cost or free immigration legal services and deportation
+defense support.
+About: Colectiva Legal del Pueblo is a community organization in Burien focused on
+immigration legal services, deportation defense, and community organizing for
+immigrant families in the Seattle area.
+How to request a free consultation: Call or email during business hours, explain in
+Spanish what notice or document you received, and ask about scheduling a consultation.
+Website: colectivalegal.org/contact-us.
+
+[CHUNK legalaid-03: Refugee Women's Alliance (ReWA)]
+Name: Refugee Women's Alliance (ReWA)
+Phone: 206-721-0243 (main office); Helpline: 1-888-847-7205
+Address: 4008 Martin Luther King Jr. Way S, Seattle, WA 98108
+Hours: Monday-Friday, business hours (call to confirm legal-clinic schedule)
+Languages served: Many languages including Spanish, Amharic, Cambodian, Farsi,
+Laotian, Mandarin, Romanian, Russian, Somali, Thai, Tigrigna, Ukrainian, and
+Vietnamese.
+Cost: Nonprofit services for refugee and immigrant women and families; legal clinic
+services for low-income clients.
+About: ReWA provides holistic, culturally and linguistically appropriate services to
+refugee and immigrant women and families, including a legal clinic, citizenship
+assistance, and family support services.
+How to request a free consultation: Call the main office or helpline, ask for the
+legal clinic, state your preferred language, and describe the document you received.
+Website: rewa.org/contact.
+
+[CHUNK legalaid-04: International Rescue Committee (IRC) — SeaTac]
+Name: International Rescue Committee (IRC), SeaTac office
+Phone: 206-623-2105
+Address: 1200 South 192nd Street, Suite 101, SeaTac, WA 98148
+Email: Seattle@Rescue.org
+Hours: Monday-Friday, business hours (call to confirm)
+Languages served: Multiple languages including Spanish; interpretation available.
+Cost: Nonprofit services for refugees, asylum seekers, and immigrants.
+About: The IRC SeaTac office serves as a hub for the Washington Migrant & Asylum
+Seeker Support (WA MASS) program, a statewide network providing legal and social
+support to asylum seekers and migrants.
+How to request a free consultation: Call or email the SeaTac office, describe your
+situation and the document you received, and ask to be connected to immigration legal
+services or the WA MASS network. Website: rescue.org/united-states/seattle-wa.
+
+[CHUNK legalaid-05: Lutheran Community Services Northwest — Safe Route Immigration]
+Name: Lutheran Community Services Northwest — Safe Route Immigration Program
+Phone: 206-694-5742
+Address: SeaTac area office, 4040 S 188th Street, SeaTac, WA (call to confirm exact
+suite and any Seattle intake location)
+Hours: Monday-Friday, 8:30 AM-5:00 PM (Friday closes earlier; call to confirm)
+Languages served: Multiple languages including Spanish; interpretation available.
+Cost: Nonprofit, low-cost or free immigration legal services for Greater Seattle,
+King County, and Snohomish County.
+About: Lutheran Community Services Northwest runs the Safe Route Immigration program,
+a Department of Justice recognized immigration legal services program.
+How to request a free consultation: Call during business hours, describe the document
+or notice you received and your preferred language, and ask about an immigration
+consultation. Website: saferoute.org.
+
+[CHUNK legalaid-06: Catholic Immigration Legal Services (CILS)]
+Name: Catholic Immigration Legal Services (CILS) — Catholic Community Services of
+Western Washington
+Phone: 206-328-6314 or 206-328-5714 (immigration phone intake)
+Address: 100 23rd Avenue S, Seattle, WA 98144
+Hours: Monday-Friday, business hours (call to confirm intake times)
+Languages served: Multiple languages including Spanish; interpretation available.
+Cost: Low-cost immigration legal services for low-income Washington residents.
+About: CILS is a Department of Justice (DOJ) recognized organization providing
+immigration legal services. Services are open to people of any faith or no faith.
+How to request a free consultation: Call one of the immigration intake numbers,
+complete a phone intake with staff, describe the document you received, and state
+your preferred language. Website: ccsww.org/services/catholic-immigration-legal-services.
+
+[CHUNK legalaid-07: How to use this directory safely]
+All six organizations above are nonprofit legal-aid providers — not "notarios" and not
+paid consultants. Only a licensed attorney or a Department of Justice accredited
+representative can give immigration legal advice. When you call any organization:
+have your document nearby, ask whether the consultation is free, ask whether they
+have a Spanish-speaking staff member or interpreter, and ask how soon they can see
+you. If one organization cannot take your case, ask them to refer you to another. Do
+not pay anyone who guarantees a result, demands cash or gift cards, or tells you not
+to read what you sign. If you have a court hearing date, mention it on the call so the
+organization understands the urgency.
+
+===
+END OF DOCUMENT
