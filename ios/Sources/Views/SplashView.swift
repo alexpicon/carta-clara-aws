@@ -17,15 +17,17 @@ struct SplashView: View {
     @EnvironmentObject private var appState: AppState
     @State private var showDisclaimer = false
     @State private var showDemoMissingAlert = false
+    @State private var wordmarkVisible = false
+    @State private var ctasVisible = false
 
     var body: some View {
         ZStack {
-            CCColor.background.ignoresSafeArea()
+            CCGradient.warmPaper.ignoresSafeArea()
 
             VStack(spacing: CCSpacing.lg) {
                 Spacer()
 
-                // Wordmark
+                // Wordmark + tagline with subtle entrance animation
                 VStack(spacing: CCSpacing.sm) {
                     Image(systemName: "doc.text.viewfinder")
                         .font(.system(size: 72, weight: .light))
@@ -39,6 +41,8 @@ struct SplashView: View {
                         .foregroundStyle(CCColor.inkSecondary)
                         .multilineTextAlignment(.center)
                 }
+                .opacity(wordmarkVisible ? 1 : 0)
+                .scaleEffect(wordmarkVisible ? 1 : 0.96)
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("\(UIText.appName). \(UIText.tagline)")
                 .accessibilityAddTraits(.isHeader)
@@ -51,6 +55,7 @@ struct SplashView: View {
 
                 VStack(spacing: CCSpacing.md) {
                     Button(UIText.getStarted) {
+                        CCHaptics.light()
                         appState.startNewScan()
                         appState.path.append(.camera)
                     }
@@ -65,23 +70,34 @@ struct SplashView: View {
                     .buttonStyle(CCSecondaryButtonStyle())
 
                     // Demo safety net (RIKU-17): bypasses the camera and runs
-                    // the scan pipeline on a bundled synthetic NTA. Kept small
-                    // and low-key so everyday users are not confused by it.
+                    // the scan pipeline on a bundled synthetic NTA. Promoted
+                    // from a near-invisible text link to a tertiary outlined
+                    // button so it's findable as the on-stage backup.
                     Button {
+                        CCHaptics.soft()
                         if !appState.loadDemoDocument() {
                             showDemoMissingAlert = true
                         }
                     } label: {
                         Label(UIText.tryDemoButton, systemImage: "doc.badge.ellipsis")
-                            .font(.footnote)
                     }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(CCColor.inkSecondary)
-                    .frame(minHeight: 44)
+                    .buttonStyle(CCTertiaryButtonStyle())
                     .accessibilityHint(UIText.splashDemoHint)
                 }
                 .padding(.horizontal, CCSpacing.lg)
                 .padding(.bottom, CCSpacing.xl)
+                .opacity(ctasVisible ? 1 : 0)
+                .offset(y: ctasVisible ? 0 : 12)
+            }
+        }
+        .onAppear {
+            // Wordmark eases in first; CTAs follow a beat later so the eye
+            // lands on the brand before the buttons.
+            withAnimation(.spring(response: 0.7, dampingFraction: 0.85)) {
+                wordmarkVisible = true
+            }
+            withAnimation(.spring(response: 0.7, dampingFraction: 0.85).delay(0.18)) {
+                ctasVisible = true
             }
         }
         .sheet(isPresented: $showDisclaimer) {
@@ -134,7 +150,7 @@ struct DisclaimerSheet: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(CCSpacing.lg)
             }
-            .background(CCColor.background)
+            .background(CCGradient.warmPaper)
             .safeAreaInset(edge: .bottom) {
                 Button(UIText.disclaimerClose) { dismiss() }
                     .buttonStyle(CCPrimaryButtonStyle())

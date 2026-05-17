@@ -37,6 +37,48 @@ enum CCColor {
     static let redaction = Color(red: 0.07, green: 0.08, blue: 0.10)
     /// Citation chip background.
     static let chip = Color(red: 0.89, green: 0.92, blue: 0.97)
+    /// Slightly warmer tone for the bottom of background gradients.
+    static let backgroundDeep = Color(red: 0.94, green: 0.93, blue: 0.90)
+}
+
+// MARK: - Gradients
+
+enum CCGradient {
+    /// Subtle warm-paper gradient for full-screen surfaces. Top → bottom,
+    /// barely-there shift toward a softer warm tone. Replaces flat solid bg
+    /// on hero screens (splash, language picker, redaction).
+    static let warmPaper = LinearGradient(
+        gradient: Gradient(colors: [CCColor.background, CCColor.backgroundDeep]),
+        startPoint: .top,
+        endPoint: .bottom
+    )
+}
+
+// MARK: - Haptics
+
+/// Light tactile feedback for important interactions. iOS-only no-op on macOS
+/// previews. Use for: primary scan button, language selection, refusal moment.
+enum CCHaptics {
+    static func light() {
+        #if canImport(UIKit)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        #endif
+    }
+    static func soft() {
+        #if canImport(UIKit)
+        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        #endif
+    }
+    static func success() {
+        #if canImport(UIKit)
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        #endif
+    }
+    static func warning() {
+        #if canImport(UIKit)
+        UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        #endif
+    }
 }
 
 // MARK: - Spacing & radii
@@ -155,5 +197,43 @@ struct CCSecondaryButtonStyle: ButtonStyle {
             )
             .clipShape(RoundedRectangle(cornerRadius: CCRadius.control, style: .continuous))
             .contentShape(Rectangle())
+    }
+}
+
+/// Tertiary action button — feels like a button (tappable, with chrome) but
+/// quieter than secondary. Use for low-priority paths that should still be
+/// discoverable, like the demo-document shortcut on the splash screen.
+struct CCTertiaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(CCColor.inkSecondary)
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .padding(.horizontal, CCSpacing.md)
+            .background(CCColor.inkSecondary.opacity(configuration.isPressed ? 0.10 : 0.04))
+            .overlay(
+                RoundedRectangle(cornerRadius: CCRadius.control, style: .continuous)
+                    .stroke(CCColor.inkSecondary.opacity(0.25), lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: CCRadius.control, style: .continuous))
+            .contentShape(Rectangle())
+    }
+}
+
+/// Compact inline button — used for in-card actions like "Listen to summary"
+/// where a full-width primary button visually dominates. Pill-shaped, ~44pt
+/// tall, sized to its content.
+struct CCInlineButtonStyle: ButtonStyle {
+    var tint: Color = CCColor.primary
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(CCColor.onPrimary)
+            .padding(.vertical, 10)
+            .padding(.horizontal, CCSpacing.md)
+            .background(tint.opacity(configuration.isPressed ? 0.82 : 1))
+            .clipShape(Capsule())
+            .contentShape(Capsule())
     }
 }

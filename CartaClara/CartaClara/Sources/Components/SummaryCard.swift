@@ -42,29 +42,36 @@ struct SummaryCard: View {
                 .accessibilityLabel("\(UIText.summaryA11yPrefix): \(summary)")
 
             if audioURL != nil {
-                playButton
+                HStack {
+                    Spacer()
+                    playButton
+                }
+                .padding(.top, CCSpacing.xs)
             }
         }
     }
 
+    /// Compact pill-shaped play/pause control. Trailing-aligned so it
+    /// supports the headline summary instead of visually dominating the
+    /// card the way the previous full-width primary button did.
     private var playButton: some View {
         Button {
+            CCHaptics.soft()
             playback.toggle(urlString: audioURL)
         } label: {
-            HStack(spacing: CCSpacing.sm) {
+            HStack(spacing: CCSpacing.xs) {
                 if playback.isLoading {
                     ProgressView()
                         .controlSize(.small)
                         .tint(CCColor.onPrimary)
                 } else {
                     Image(systemName: playback.isPlaying ? "pause.fill" : "play.fill")
-                        .font(.headline)
+                        .font(.subheadline.weight(.semibold))
                 }
                 Text(playback.isPlaying ? UIText.pauseSummary : UIText.playSummary)
             }
         }
-        .buttonStyle(CCPrimaryButtonStyle())
-        .padding(.top, CCSpacing.xs)
+        .buttonStyle(CCInlineButtonStyle())
         .accessibilityLabel(playback.isPlaying ? UIText.pauseSummary : UIText.playSummary)
         .accessibilityHint(playback.failed ? "El audio no se pudo reproducir." : "")
     }

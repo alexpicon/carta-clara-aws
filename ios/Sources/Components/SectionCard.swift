@@ -17,6 +17,10 @@ struct SectionCard: View {
     let readingLevel: ReadingLevel
     /// Citations already resolved for this section's `citation_ids`.
     let citations: [Citation]
+    /// SF Symbol for the card's title. Per-section icons differentiate the
+    /// 4 mandatory sections visually (calendar for dates, building for
+    /// agency, magnifying-glass for allegations, scale for rights).
+    var icon: String = "doc.text"
 
     @State private var expanded = false
 
@@ -25,10 +29,13 @@ struct SectionCard: View {
     var body: some View {
         CardContainer {
             Button {
-                withAnimation(.easeInOut(duration: 0.2)) { expanded.toggle() }
+                CCHaptics.soft()
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                    expanded.toggle()
+                }
             } label: {
                 HStack(alignment: .firstTextBaseline) {
-                    CardTitle(icon: "doc.text", text: section.sectionTitleEs)
+                    CardTitle(icon: icon, text: section.sectionTitleEs)
                     Spacer()
                     Image(systemName: expanded ? "chevron.up" : "chevron.down")
                         .font(.subheadline.weight(.semibold))

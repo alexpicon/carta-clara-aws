@@ -18,6 +18,10 @@ import SwiftUI
 struct ResultsView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var summaryAudio = AudioPlayback()
+    /// Drives the soft fade-up entrance for the whole card stack. Set on
+    /// appear so the cards don't pop in jarringly the moment scanState
+    /// flips to .loaded.
+    @State private var cardsVisible = false
 
     var body: some View {
         Group {
@@ -36,9 +40,14 @@ struct ResultsView: View {
                 )
             }
         }
-        .background(CCColor.background)
+        .background(CCGradient.warmPaper)
         .navigationTitle(UIText.resultsTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            withAnimation(.spring(response: 0.7, dampingFraction: 0.85)) {
+                cardsVisible = true
+            }
+        }
         .onDisappear { summaryAudio.stop() }
     }
 
@@ -68,7 +77,8 @@ struct ResultsView: View {
                     SectionCard(
                         section: section,
                         readingLevel: appState.readingLevel,
-                        citations: citations(for: section, in: result)
+                        citations: citations(for: section, in: result),
+                        icon: Self.iconFor(sectionTitleEn: section.sectionTitleEn)
                     )
                 }
 
@@ -88,7 +98,27 @@ struct ResultsView: View {
                 actionButtons
             }
             .padding(CCSpacing.md)
+            .opacity(cardsVisible ? 1 : 0)
+            .offset(y: cardsVisible ? 0 : 10)
         }
+    }
+
+    /// Map a section's English title to a meaningful SF Symbol. Section titles
+    /// are produced by the LLM but the prompt mandates a fixed taxonomy of 4
+    /// titles, so this lookup covers the common cases and falls back to the
+    /// generic doc icon for any new title a future prompt revision introduces.
+    private static func iconFor(sectionTitleEn: String) -> String {
+        let lower = sectionTitleEn.lowercased()
+        if lower.contains("sent") { return "building.2.fill" }
+        if lower.contains("say") || lower.contains("allegation") {
+            return "doc.text.magnifyingglass"
+        }
+        if lower.contains("date") || lower.contains("deadline") || lower.contains("hearing") {
+            return "calendar.badge.exclamationmark"
+        }
+        if lower.contains("right") { return "hand.raised.fill" }
+        if lower.contains("court") || lower.contains("where") { return "building.columns.fill" }
+        return "doc.text"
     }
 
     /// A small banner confirming the redaction the user just watched.
