@@ -169,31 +169,44 @@ def load_prompt(name: str, fallback: str = "") -> str:
 
 
 def extract_json(text: str):
-    """Pull the first JSON object out of a model response. Returns dict or None."""
+    """Pull the first JSON object out of a model response. Returns dict or None.
+
+    Handles three model output shapes:
+      1. Pure JSON (json.loads on the whole stripped text)
+      2. ```json ... ``` markdown-fenced (strip the fence, then parse)
+      3. Prose containing a `{ ... }` block (find balanced braces, then parse)
+    Each pass falls through to the next on parse failure.
+    """
     if not text:
         return None
-    # fenced ```json block
-    fence = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
-    candidates = []
-    if fence:
-        candidates.append(fence.group(1))
-    # first balanced { ... }
-    start = text.find("{")
-    if start != -1:
-        depth = 0
-        for i in range(start, len(text)):
-            if text[i] == "{":
-                depth += 1
-            elif text[i] == "}":
-                depth -= 1
-                if depth == 0:
-                    candidates.append(text[start : i + 1])
-                    break
-    for cand in candidates:
-        try:
-            return json.loads(cand)
-        except (ValueError, TypeError):
-            continue
+
+    # Strip a leading/trailing markdown fence if the whole response is fenced.
+    # Greedy match — fenced content can contain nested braces.
+    fenced = re.search(r"```(?:json)?\s*([\s\S]+?)\s*```", text)
+    body = fenced.group(1) if fenced else text
+    body = body.strip()
+
+    # Strategy 1: parse the whole body directly.
+    try:
+        return json.loads(body)
+    except (ValueError, TypeError):
+        pass
+
+    # Strategy 2: walk braces to find the first balanced { ... } block.
+    start = body.find("{")
+    if start == -1:
+        return None
+    depth = 0
+    for i in range(start, len(body)):
+        if body[i] == "{":
+            depth += 1
+        elif body[i] == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(body[start : i + 1])
+                except (ValueError, TypeError):
+                    return None
     return None
 
 

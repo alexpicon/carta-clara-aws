@@ -176,14 +176,32 @@ def _handle(event, started):
         model_id=summary_model,
         content_blocks=[h.text_block(summary_input)],
         system=system_prompt or None,
-        max_tokens=1000,
+        # 2500 tokens fits the new structured prompt (6 sections × title +
+        # body + full_body + headline + urgency). Lower caps were truncating
+        # the JSON mid-array, which then failed to parse and dumped raw text
+        # into the Summary card.
+        max_tokens=2500,
     )
     if summary_res.intervened:
         return _refusal_response(session_id, "summary generation blocked by Guardrail", started, language)
 
     summary_data = h.extract_json(summary_res.text) or {}
+    if not summary_data:
+        # Parsing failed — log enough to debug from CloudWatch, but DO NOT
+        # leak the raw model text into the user's Summary card.
+        print(json.dumps({
+            "level": "warn",
+            "msg": "summary_parse_failed",
+            "stop_reason": summary_res.stop_reason,
+            "text_head": (summary_res.text or "")[:240],
+        }))
     summary_en = summary_data.get("summary_en") or ""
-    summary_es = summary_data.get("summary_es") or summary_res.text.strip()
+    fallback_es = (
+        "We couldn't generate a clean summary for this document. Please try again."
+        if language == "en"
+        else "No pudimos generar un resumen claro de este documento. Inténtalo otra vez."
+    )
+    summary_es = summary_data.get("summary_es") or fallback_es
     sections = _normalize_sections(summary_data.get("sections", []))
 
     # --- 5. Polly audio of the headline summary --------------------------
