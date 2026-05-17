@@ -9,7 +9,12 @@
 >     EOIR Practice Manual chunks (each with `id`, `source_label`, text).
 > - OUTPUT: a single JSON object, no prose, no markdown fences. Supplies the
 >   `packet` object of the POST /scan/packet response in docs/API_CONTRACT.md.
->   String fields contain **Markdown** so iOS can render a printable PDF.
+> - **String fields are PLAIN TEXT — no Markdown syntax of any kind.** Do
+>   NOT use `**bold**`, `*italic*`, `# headings`, `> blockquotes`, `---`
+>   dividers, backticks, or bullet markers. iOS renders these as raw
+>   characters (e.g. `**Form I-246**` shows up on screen with the asterisks
+>   visible) which looks broken. Use plain Spanish prose with paragraph
+>   breaks (`\n\n`). The iOS app applies its own typography/styling.
 > - Koda parses this with `json.loads()`.
 
 ---
@@ -38,8 +43,10 @@ writes the official response.
 ## Field-by-field instructions
 
 - `title_es` — e.g. "Paquete de preparación para tu cita de ayuda legal".
-- `what_this_says_es` — one plain-Spanish paragraph (Markdown allowed) restating
-  what the document says, drawn only from `{{SUMMARY_JSON}}`/`{{EXTRACTION_JSON}}`.
+- `what_this_says_es` — one plain-Spanish paragraph (NO Markdown, no asterisks
+  for emphasis) restating what the document says, drawn only from
+  `{{SUMMARY_JSON}}`/`{{EXTRACTION_JSON}}`. Use simple sentences. If you want
+  to emphasize a term, just write it normally — the iOS app handles styling.
 - `your_deadline` — `{ "date": ISO date or null, "label_es": "..." }` from the
   extraction's critical date, e.g. "Fecha de corte: 15 de octubre de 2026, 9:00 AM,
   Seattle Immigration Court, 1000 Second Avenue, Suite 2900, Seattle, WA 98104".
@@ -47,12 +54,16 @@ writes the official response.
   Generic categories only (e.g. identity document, prior immigration paperwork,
   proof of time in the U.S., proof of family ties, relevant medical records,
   character references). Do NOT tailor the list to argue a theory of the case.
-- `extension_request_template` — a Markdown **blank template** for a procedural
-  request for more time. It is a fill-in form with `____` blanks, framed explicitly:
-  "Complete this WITH your legal-aid attorney only if you have a real scheduling
-  conflict. Carta Clara does not advise you to reschedule — your lawyer decides
-  that." Do NOT pre-decide that the user should request an extension, and do NOT
-  fill in reasons.
+- `extension_request_template` — a **plain-text blank letter template** for a
+  procedural request for more time. Fill-in blanks use `____` (four underscores).
+  Use real paragraph breaks (`\n\n`) between sections. Do NOT use Markdown
+  headings (`#`), blockquotes (`>`), dividers (`---`), or bold/italic asterisks.
+  Open with one short Spanish sentence framing it: "Importante: completa esta
+  carta solo con tu abogado y solo si tienes un conflicto real de horario.
+  Carta Clara no te aconseja pedir una extensión." Then a blank line, then the
+  letter body with fields like `Fecha: ____`, `A quien corresponda:`, the
+  request paragraph with `____` blanks, and a signature block. Do NOT pre-fill
+  reasons.
 - `legal_aid_phone_script_es` — a short Spanish script for calling a legal-aid
   intake line. Model on the NTA demo:
   "Hola, mi nombre es ____. Recibí un Notice to Appear con fecha de corte el ____.
@@ -78,19 +89,21 @@ writes the official response.
 - The packet ends pointing the user to free legal aid (the Lambda appends the
   `legal_aid_options` list from the KB; do not invent clinics here).
 
-## Output schema (return EXACTLY this)
+## Output schema (return EXACTLY this — string fields are PLAIN TEXT)
 
 ```json
 {
-  "title_es": "string",
-  "what_this_says_es": "string (Markdown)",
-  "your_deadline": { "date": "YYYY-MM-DD or null", "label_es": "string" },
-  "documents_to_gather_es": ["string"],
-  "extension_request_template": "string (Markdown, blank fill-in template)",
-  "legal_aid_phone_script_es": "string",
-  "questions_for_lawyer_es": ["string"],
-  "cover_sheet_es": "string"
+  "title_es": "string (plain text)",
+  "what_this_says_es": "string (plain text, paragraph breaks via \\n\\n)",
+  "your_deadline": { "date": "YYYY-MM-DD or null", "label_es": "string (plain text)" },
+  "documents_to_gather_es": ["string (plain text)"],
+  "extension_request_template": "string (plain text letter, \\n\\n between sections, blanks as ____)",
+  "legal_aid_phone_script_es": "string (plain text)",
+  "questions_for_lawyer_es": ["string (plain text)"],
+  "cover_sheet_es": "string (plain text)"
 }
 ```
 
-Return only the JSON object.
+Return only the JSON object. PLAIN TEXT in all string fields — no Markdown
+asterisks, headings, blockquotes, dividers, or backticks. The iOS app handles
+all visual styling.

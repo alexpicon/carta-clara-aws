@@ -91,7 +91,7 @@ struct ResponsePacketView: View {
                 }
 
                 section(UIText.packetExtension, icon: "clock.arrow.circlepath") {
-                    monospacedBlock(packet.extensionRequestTemplate)
+                    letterBlock(packet.extensionRequestTemplate)
                 }
 
                 section(UIText.packetPhoneScript, icon: "phone.bubble") {
@@ -144,15 +144,23 @@ struct ResponsePacketView: View {
         }
     }
 
-    private func monospacedBlock(_ text: String) -> some View {
-        Text(text)
-            .font(.callout.monospaced())
-            .foregroundStyle(CCColor.ink)
-            .fixedSize(horizontal: false, vertical: true)
-            .padding(CCSpacing.sm)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(CCColor.background)
-            .clipShape(RoundedRectangle(cornerRadius: CCRadius.control))
+    /// Renders the extension-request template as a clean letter, NOT a code
+    /// block. The backend produces plain text with `\n\n` paragraph breaks;
+    /// we split on those and render each paragraph with normal body type so
+    /// it reads like a letter the user would actually fill out.
+    private func letterBlock(_ text: String) -> some View {
+        let paragraphs = text
+            .split(separator: "\n\n", omittingEmptySubsequences: true)
+            .map(String.init)
+        return VStack(alignment: .leading, spacing: CCSpacing.sm) {
+            ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, paragraph in
+                Text(paragraph.trimmingCharacters(in: .whitespacesAndNewlines))
+                    .font(.body)
+                    .foregroundStyle(CCColor.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
     }
 
     /// The cover sheet — visually emphasized, it is the packet's whole point.
