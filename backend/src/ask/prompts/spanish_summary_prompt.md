@@ -8,7 +8,12 @@
 >   - `{{KB_CHUNKS}}` — KB chunks (may be empty)
 > - OUTPUT: a single MINIFIED JSON object — no newlines, no indentation, no
 >   spaces after `:` or `,`. ONE single line. No markdown fences. No prose.
-> - Hard ceiling: total response ≤ 1100 tokens. Brevity is mandatory.
+> - Hard ceiling: total response ≤ 1300 tokens. Brevity is mandatory.
+> - SENTENCE LENGTH: max 20 words per sentence. Short, punchy sentences.
+> - **NO English translations in parentheses inside Spanish content.** Do NOT
+>   write "Departamento de Seguridad Nacional (U.S. Department of Homeland
+>   Security)" — write only the Spanish form. Bilingual parentheticals burn
+>   tokens and the iOS app has a separate `summary_en` field for English.
 
 ---
 

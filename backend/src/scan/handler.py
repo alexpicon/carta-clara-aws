@@ -177,11 +177,12 @@ def _handle(event, started):
         model_id=summary_model,
         content_blocks=[h.text_block(summary_input)],
         system=system_prompt or None,
-        # Cap matches the prompt's ≤1100-token ceiling after the token-saver
-        # changes: minified JSON output, single-language fill, 4-5 sentence
-        # full-detail bodies. Estimated summary call ~14s, total /scan ~18-22s
-        # — comfortably under the 30s API Gateway hard limit.
-        max_tokens=1200,
+        # 1500 gives a 200-token buffer above the prompt's ≤1300 ceiling.
+        # Prior 1200 cap was being hit mid-output (parse failure → user saw
+        # 'No pudimos generar...' fallback). With the no-parens rule + 20-word
+        # sentence cap, actual output usually finishes around 1100-1200
+        # tokens. Estimated summary ~15-17s, total /scan ~22-26s — under 30s.
+        max_tokens=1500,
     )
     if summary_res.intervened:
         return _refusal_response(session_id, "summary generation blocked by Guardrail", started, language)
