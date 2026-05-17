@@ -187,6 +187,15 @@ final class AppState: ObservableObject {
         path.removeAll()
     }
 
+    /// Reset to a fresh scan from anywhere in the stack. Clears scan state
+    /// and replaces the entire navigation stack with the camera screen so
+    /// the user lands one tap away from a new capture. Refusal counter is
+    /// preserved (it's a session trust artifact, not per-scan state).
+    func startFresh() {
+        startNewScan()
+        path = [.camera]
+    }
+
     // MARK: Helpers
 
     /// Map an APIError to a calm, Spanish, grandma-readable message.

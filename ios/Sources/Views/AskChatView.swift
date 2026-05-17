@@ -56,6 +56,18 @@ struct AskChatView: View {
         .background(CCGradient.warmPaper)
         .navigationTitle(UIText.askTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    CCHaptics.light()
+                    appState.startFresh()
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title3)
+                }
+                .accessibilityLabel("Scan another document")
+            }
+        }
         .overlay(alignment: .topTrailing) {
             RefusalCounter(count: appState.refusalCount) {
                 appState.path.append(.refusalLog)

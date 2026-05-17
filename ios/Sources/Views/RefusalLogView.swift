@@ -46,6 +46,18 @@ struct RefusalLogView: View {
         .background(CCGradient.warmPaper)
         .navigationTitle(UIText.refusalLogTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    CCHaptics.light()
+                    appState.startFresh()
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title3)
+                }
+                .accessibilityLabel("Scan another document")
+            }
+        }
         .task {
             isLoading = true
             await appState.refreshRefusalLog()

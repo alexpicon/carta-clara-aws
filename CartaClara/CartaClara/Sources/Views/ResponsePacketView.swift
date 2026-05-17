@@ -45,6 +45,18 @@ struct ResponsePacketView: View {
         .background(CCGradient.warmPaper)
         .navigationTitle(UIText.packetTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    CCHaptics.light()
+                    appState.startFresh()
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title3)
+                }
+                .accessibilityLabel("Scan another document")
+            }
+        }
         .task {
             if case .idle = state { await load() }
         }

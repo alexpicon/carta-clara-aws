@@ -43,6 +43,20 @@ struct ResultsView: View {
         .background(CCGradient.warmPaper)
         .navigationTitle(UIText.resultsTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            // Quick-access "scan another" — global toolbar entry so the user
+            // can restart without scrolling to the bottom of the card stack.
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    CCHaptics.light()
+                    appState.startFresh()
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title3)
+                }
+                .accessibilityLabel("Scan another document")
+            }
+        }
         .onAppear {
             withAnimation(.spring(response: 0.7, dampingFraction: 0.85)) {
                 cardsVisible = true
@@ -188,6 +202,19 @@ struct ResultsView: View {
                 Label(UIText.legalHelpButton, systemImage: "person.2.fill")
             }
             .buttonStyle(CCSecondaryButtonStyle())
+
+            // Visual divider — "you're done with this document" hand-off.
+            Divider()
+                .padding(.vertical, CCSpacing.xs)
+
+            Button {
+                CCHaptics.light()
+                appState.startFresh()
+            } label: {
+                Label("Scan another document", systemImage: "plus.circle")
+            }
+            .buttonStyle(CCTertiaryButtonStyle())
+            .accessibilityHint("Clears this result and goes back to the camera.")
         }
         .padding(.top, CCSpacing.sm)
     }
