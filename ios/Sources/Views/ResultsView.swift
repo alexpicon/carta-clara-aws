@@ -83,9 +83,7 @@ struct ResultsView: View {
                     CourtBriefCard(brief: brief)
                 }
 
-                QuestionsCard {
-                    appState.path.append(.packet)
-                }
+                QuestionsCard()
 
                 actionButtons
             }

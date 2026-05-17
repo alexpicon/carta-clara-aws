@@ -161,10 +161,12 @@ def _handle(event, started):
             "English text into them. The response must contain NO Spanish at "
             "all. summary_en and summary_es should both be the same English text."
         )
-    # Summary uses the FAST model — API Gateway HTTP APIs have a hard 30s
-    # integration timeout and the previous Sonnet-only path was hitting 34-37s.
-    # Nova Pro produces equivalent-quality summary in ~1/3 the wall time.
-    summary_model = h.env("FAST_MODEL_ID", "amazon.nova-pro-v1:0")
+    # Summary uses Sonnet because the structured-section prompt requires the
+    # higher reasoning quality to follow the "quote a specific extracted fact
+    # in every sentence" rule. Nova Pro is faster but produces generic
+    # paraphrases that defeat the point. Latency stays under the API Gateway
+    # 30s ceiling via the tightened prompt + 1000 max_tokens cap.
+    summary_model = h.env("TEXT_MODEL_ID", "us.anthropic.claude-sonnet-4-6")
 
     summary_input = (
         f"{summary_prompt}\n\nEXTRACTED DOCUMENT DATA (JSON):\n"
@@ -174,7 +176,7 @@ def _handle(event, started):
         model_id=summary_model,
         content_blocks=[h.text_block(summary_input)],
         system=system_prompt or None,
-        max_tokens=1200,
+        max_tokens=1000,
     )
     if summary_res.intervened:
         return _refusal_response(session_id, "summary generation blocked by Guardrail", started, language)
