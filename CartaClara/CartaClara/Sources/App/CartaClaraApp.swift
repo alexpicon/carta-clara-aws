@@ -19,11 +19,15 @@ struct CartaClaraApp: App {
     /// One AppState for the whole app lifetime — owns navigation, session,
     /// the scan result, and the refusal counter.
     @StateObject private var appState = AppState()
+    /// Shared on-device TTS — powers the per-card speaker buttons. Lives
+    /// at the app root so only one card plays at a time across screens.
+    @StateObject private var speech = SpeechSynthesizer()
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environmentObject(appState)
+                .environmentObject(speech)
                 // Light scheme only for v1: every color in DesignSystem is
                 // tuned for WCAG-AA contrast on the light background. A dark
                 // palette is a deliberate follow-up, not a half-done feature.

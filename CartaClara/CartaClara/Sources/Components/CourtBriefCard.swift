@@ -14,12 +14,30 @@ import SwiftUI
 /// Conditional card — shown only when the scan returned a `court_brief`.
 struct CourtBriefCard: View {
     let brief: CourtBrief
+    var language: AppLanguage = .english
 
     @Environment(\.openURL) private var openURL
 
+    /// Stitched read-aloud text covering the prose blocks of the brief.
+    private var ttsText: String {
+        var parts: [String] = [brief.courtName, brief.address, brief.whatToExpectEs]
+        if !brief.whatToBringEs.isEmpty {
+            parts.append(UIText.courtWhatToBring + ": " + brief.whatToBringEs.joined(separator: ", "))
+        }
+        if !brief.whatNotToBringEs.isEmpty {
+            parts.append(UIText.courtWhatNotToBring + ": " + brief.whatNotToBringEs.joined(separator: ", "))
+        }
+        parts.append(brief.dressCodeEs)
+        return parts.filter { !$0.isEmpty }.joined(separator: ". ")
+    }
+
     var body: some View {
         CardContainer(accent: CCColor.primary) {
-            CardTitle(icon: "building.columns.fill", text: UIText.courtBriefTitle)
+            HStack(alignment: .firstTextBaseline) {
+                CardTitle(icon: "building.columns.fill", text: UIText.courtBriefTitle)
+                Spacer()
+                CardTTSButton(id: "courtBrief", text: ttsText, language: language)
+            }
 
             VStack(alignment: .leading, spacing: CCSpacing.xs) {
                 Text(brief.courtName)

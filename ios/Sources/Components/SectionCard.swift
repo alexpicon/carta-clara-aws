@@ -21,34 +21,43 @@ struct SectionCard: View {
     /// 4 mandatory sections visually (calendar for dates, building for
     /// agency, magnifying-glass for allegations, scale for rights).
     var icon: String = "doc.text"
+    /// Active content language — drives the per-card TTS voice selection.
+    var language: AppLanguage = .english
 
     @State private var expanded = false
 
     private var bodyText: String { section.body(for: readingLevel) }
+    /// Stable id for the shared SpeechSynthesizer to track which card is
+    /// currently being read aloud.
+    private var ttsId: String { "section:\(section.sectionTitleEn)" }
 
     var body: some View {
         CardContainer {
-            Button {
-                CCHaptics.soft()
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
-                    expanded.toggle()
+            HStack(alignment: .firstTextBaseline, spacing: CCSpacing.xs) {
+                Button {
+                    CCHaptics.soft()
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                        expanded.toggle()
+                    }
+                } label: {
+                    HStack(alignment: .firstTextBaseline) {
+                        CardTitle(icon: icon, text: section.sectionTitleEs)
+                        Spacer()
+                        Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(CCColor.primary)
+                            .accessibilityHidden(true)
+                    }
+                    .contentShape(Rectangle())
                 }
-            } label: {
-                HStack(alignment: .firstTextBaseline) {
-                    CardTitle(icon: icon, text: section.sectionTitleEs)
-                    Spacer()
-                    Image(systemName: expanded ? "chevron.up" : "chevron.down")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(CCColor.primary)
-                        .accessibilityHidden(true)
-                }
-                .contentShape(Rectangle())
+                .buttonStyle(.plain)
+                .accessibilityLabel(section.sectionTitleEs)
+                .accessibilityValue(expanded ? UIText.sectionExpandedA11y : UIText.sectionCollapsedA11y)
+                .accessibilityHint(expanded ? UIText.sectionCollapse : UIText.sectionExpand)
+                .accessibilityAddTraits(.isButton)
+
+                CardTTSButton(id: ttsId, text: bodyText, language: language)
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(section.sectionTitleEs)
-            .accessibilityValue(expanded ? UIText.sectionExpandedA11y : UIText.sectionCollapsedA11y)
-            .accessibilityHint(expanded ? UIText.sectionCollapse : UIText.sectionExpand)
-            .accessibilityAddTraits(.isButton)
 
             Text(bodyText)
                 .font(.body)

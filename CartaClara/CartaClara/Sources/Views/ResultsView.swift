@@ -82,7 +82,7 @@ struct ResultsView: View {
                 }
 
                 if let urgency = result.urgency, urgency.isUrgent {
-                    UrgencyCard(urgency: urgency)
+                    UrgencyCard(urgency: urgency, language: appState.selectedLanguage)
                 }
 
                 readingLevelControl
@@ -92,19 +92,21 @@ struct ResultsView: View {
                         section: section,
                         readingLevel: appState.readingLevel,
                         citations: citations(for: section, in: result),
-                        icon: Self.iconFor(sectionTitleEn: section.sectionTitleEn)
+                        icon: Self.iconFor(sectionTitleEn: section.sectionTitleEn),
+                        language: appState.selectedLanguage
                     )
                 }
 
                 if hasScamContent(result) {
                     ScamRedFlagCard(
                         summary: result.scamCheckSummaryEs,
-                        flags: result.scamRedFlags ?? []
+                        flags: result.scamRedFlags ?? [],
+                        language: appState.selectedLanguage
                     )
                 }
 
                 if let brief = result.courtBrief {
-                    CourtBriefCard(brief: brief)
+                    CourtBriefCard(brief: brief, language: appState.selectedLanguage)
                 }
 
                 QuestionsCard()

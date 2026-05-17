@@ -198,6 +198,15 @@ struct AskChatView: View {
                     .buttonStyle(CCInlineButtonStyle())
                     Spacer()
                 }
+            } else if !message.text.isEmpty {
+                HStack {
+                    CardTTSButton(
+                        id: "ask:\(message.id.uuidString)",
+                        text: message.text,
+                        language: appState.selectedLanguage
+                    )
+                    Spacer()
+                }
             }
 
             if !message.citations.isEmpty {

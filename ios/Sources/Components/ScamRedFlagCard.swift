@@ -25,17 +25,33 @@ struct ScamRedFlagCard: View {
     let summary: String?
     /// Detected red-flag patterns. May be empty.
     let flags: [ScamRedFlag]
+    /// Active content language — drives the per-card TTS voice selection.
+    var language: AppLanguage = .english
 
     private var hasFlags: Bool { !flags.isEmpty }
     private var accent: Color { hasFlags ? CCColor.caution : CCColor.success }
 
+    /// Stitched read-aloud text — summary plus each flag's pattern description.
+    private var ttsText: String {
+        var parts: [String] = []
+        if let summary, !summary.isEmpty { parts.append(summary) }
+        parts.append(contentsOf: flags.map { $0.patternDescriptionEs })
+        return parts.joined(separator: ". ")
+    }
+
     var body: some View {
         CardContainer(accent: accent) {
-            CardTitle(
-                icon: hasFlags ? "exclamationmark.shield.fill" : "checkmark.shield.fill",
-                text: hasFlags ? UIText.scamCardTitleAlert : UIText.scamCardTitleSafe,
-                tint: accent
-            )
+            HStack(alignment: .firstTextBaseline) {
+                CardTitle(
+                    icon: hasFlags ? "exclamationmark.shield.fill" : "checkmark.shield.fill",
+                    text: hasFlags ? UIText.scamCardTitleAlert : UIText.scamCardTitleSafe,
+                    tint: accent
+                )
+                Spacer()
+                if !ttsText.isEmpty {
+                    CardTTSButton(id: "scam", text: ttsText, language: language)
+                }
+            }
 
             if let summary, !summary.isEmpty {
                 Text(summary)

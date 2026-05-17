@@ -15,18 +15,33 @@ import SwiftUI
 /// Deadline banner. Renders with an urgent accent when `urgency.isUrgent`.
 struct UrgencyCard: View {
     let urgency: Urgency
+    var language: AppLanguage = .english
 
     private var accent: Color {
         urgency.isUrgent ? CCColor.urgent : CCColor.inkSecondary
     }
 
+    /// Concatenated read-aloud text — label + verification note.
+    private var ttsText: String {
+        [urgency.deadlineLabelEs, urgency.verificationNoteEs]
+            .compactMap { $0 }
+            .filter { !$0.isEmpty }
+            .joined(separator: ". ")
+    }
+
     var body: some View {
         CardContainer(accent: accent) {
-            CardTitle(
-                icon: urgency.isUrgent ? "calendar.badge.exclamationmark" : "calendar",
-                text: "Fecha importante",
-                tint: accent
-            )
+            HStack(alignment: .firstTextBaseline) {
+                CardTitle(
+                    icon: urgency.isUrgent ? "calendar.badge.exclamationmark" : "calendar",
+                    text: "Fecha importante",
+                    tint: accent
+                )
+                Spacer()
+                if !ttsText.isEmpty {
+                    CardTTSButton(id: "urgency", text: ttsText, language: language)
+                }
+            }
 
             if let label = urgency.deadlineLabelEs, !label.isEmpty {
                 Text(label)
