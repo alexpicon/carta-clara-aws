@@ -51,7 +51,7 @@ struct ResponsePacketView: View {
                     CCHaptics.light()
                     appState.startFresh()
                 } label: {
-                    Image(systemName: "plus.circle.fill")
+                    Image(systemName: "arrow.clockwise.circle.fill")
                         .font(.title3)
                 }
                 .accessibilityLabel("Scan another document")

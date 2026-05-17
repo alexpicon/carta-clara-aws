@@ -51,7 +51,7 @@ struct ResultsView: View {
                     CCHaptics.light()
                     appState.startFresh()
                 } label: {
-                    Image(systemName: "plus.circle.fill")
+                    Image(systemName: "arrow.clockwise.circle.fill")
                         .font(.title3)
                 }
                 .accessibilityLabel("Scan another document")
@@ -211,7 +211,7 @@ struct ResultsView: View {
                 CCHaptics.light()
                 appState.startFresh()
             } label: {
-                Label("Scan another document", systemImage: "plus.circle")
+                Label("Scan another document", systemImage: "arrow.clockwise")
             }
             .buttonStyle(CCTertiaryButtonStyle())
             .accessibilityHint("Clears this result and goes back to the camera.")
