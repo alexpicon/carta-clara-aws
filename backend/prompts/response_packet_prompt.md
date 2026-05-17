@@ -54,16 +54,14 @@ writes the official response.
   Generic categories only (e.g. identity document, prior immigration paperwork,
   proof of time in the U.S., proof of family ties, relevant medical records,
   character references). Do NOT tailor the list to argue a theory of the case.
-- `extension_request_template` — a **plain-text blank letter template** for a
-  procedural request for more time. Fill-in blanks use `____` (four underscores).
-  Use real paragraph breaks (`\n\n`) between sections. Do NOT use Markdown
-  headings (`#`), blockquotes (`>`), dividers (`---`), or bold/italic asterisks.
-  Open with one short Spanish sentence framing it: "Importante: completa esta
-  carta solo con tu abogado y solo si tienes un conflicto real de horario.
-  Carta Clara no te aconseja pedir una extensión." Then a blank line, then the
-  letter body with fields like `Fecha: ____`, `A quien corresponda:`, the
-  request paragraph with `____` blanks, and a signature block. Do NOT pre-fill
-  reasons.
+- `extension_request_template` — **always return an empty string `""`**. We
+  removed this field from the user-facing packet: providing an extension-letter
+  template — even with a "talk to your lawyer first" disclaimer — implies the
+  app is recommending a procedural path (asking for more time). That is too
+  close to legal strategy advice. The right next step for the user is to talk
+  to a free legal-aid attorney; the questions list and phone script handle
+  that. Leave this field as `""` for backwards compatibility; iOS no longer
+  renders it.
 - `legal_aid_phone_script_es` — a short Spanish script for calling a legal-aid
   intake line. Model on the NTA demo:
   "Hola, mi nombre es ____. Recibí un Notice to Appear con fecha de corte el ____.
@@ -97,7 +95,7 @@ writes the official response.
   "what_this_says_es": "string (plain text, paragraph breaks via \\n\\n)",
   "your_deadline": { "date": "YYYY-MM-DD or null", "label_es": "string (plain text)" },
   "documents_to_gather_es": ["string (plain text)"],
-  "extension_request_template": "string (plain text letter, \\n\\n between sections, blanks as ____)",
+  "extension_request_template": "" ,
   "legal_aid_phone_script_es": "string (plain text)",
   "questions_for_lawyer_es": ["string (plain text)"],
   "cover_sheet_es": "string (plain text)"

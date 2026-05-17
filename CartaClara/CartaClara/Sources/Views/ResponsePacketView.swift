@@ -90,9 +90,13 @@ struct ResponsePacketView: View {
                     bulletList(packet.documentsToGatherEs, symbol: "square")
                 }
 
-                section(UIText.packetExtension, icon: "clock.arrow.circlepath") {
-                    letterBlock(packet.extensionRequestTemplate)
-                }
+                // The "extension request template" section was removed:
+                // providing such a template (even with a disclaimer) implies a
+                // recommendation that the user request more time, which is too
+                // close to legal strategy advice (TENETS §3). The user gets the
+                // questions list + phone script + cover sheet instead, all of
+                // which route to a free legal-aid attorney who decides whether
+                // an extension is appropriate.
 
                 section(UIText.packetPhoneScript, icon: "phone.bubble") {
                     Text(packet.legalAidPhoneScriptEs)
@@ -256,9 +260,7 @@ struct ResponsePacketView: View {
         lines.append("— \(UIText.packetDocuments) —")
         for item in packet.documentsToGatherEs { lines.append("[ ] \(item)") }
         lines.append("")
-        lines.append("— \(UIText.packetExtension) —")
-        lines.append(packet.extensionRequestTemplate)
-        lines.append("")
+        // Extension Request template removed — implied legal-strategy advice.
         lines.append("— \(UIText.packetPhoneScript) —")
         lines.append(packet.legalAidPhoneScriptEs)
         lines.append("")

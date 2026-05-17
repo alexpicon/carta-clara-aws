@@ -45,7 +45,9 @@ struct PacketPrintDocument: View {
 
             listSection(UIText.packetDocuments, items: packet.documentsToGatherEs, marker: .checkbox)
 
-            monoSection(UIText.packetExtension, body: packet.extensionRequestTemplate)
+            // Extension Request template removed from the packet — providing
+            // it implied a recommendation to request more time, which is too
+            // close to legal strategy advice (TENETS §3).
 
             textSection(UIText.packetPhoneScript, body: packet.legalAidPhoneScriptEs, italic: true)
 
