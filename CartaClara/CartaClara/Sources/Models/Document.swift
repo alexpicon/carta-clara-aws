@@ -25,6 +25,31 @@ enum ReadingLevel: String, Codable, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+/// Output language for the results. Sent as the `language` request field on
+/// /scan. User picks this right after photo confirmation (LanguagePickerView).
+enum AppLanguage: String, Codable, CaseIterable, Identifiable {
+    case english = "en"
+    case spanish = "es"
+
+    var id: String { rawValue }
+
+    /// English display label — UI chrome is English regardless of this choice.
+    var displayName: String {
+        switch self {
+        case .english: return "English"
+        case .spanish: return "Spanish"
+        }
+    }
+
+    /// Native display name — shown on the picker buttons.
+    var nativeName: String {
+        switch self {
+        case .english: return "English"
+        case .spanish: return "Español"
+        }
+    }
+}
+
 // MARK: - POST /scan response
 
 /// Top-level response of `POST /scan`.

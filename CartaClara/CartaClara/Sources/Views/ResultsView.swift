@@ -172,11 +172,17 @@ struct ResultsView: View {
         return result.scamCheckSummaryEs?.isEmpty == false
     }
 
-    /// Pick the English summary in English-default mode, with the Spanish
-    /// field as a fallback for backends that haven't been re-prompted yet.
+    /// Pick the summary in the language the user selected on the picker.
+    /// Falls back to the other field if the preferred one is empty.
     private func pickSummary(_ result: ScanResult) -> String? {
-        if let en = result.summaryEn, !en.isEmpty { return en }
-        return result.summaryEs
+        switch appState.selectedLanguage {
+        case .english:
+            if let en = result.summaryEn, !en.isEmpty { return en }
+            return result.summaryEs
+        case .spanish:
+            if let es = result.summaryEs, !es.isEmpty { return es }
+            return result.summaryEn
+        }
     }
 
     /// Resolve the Citation objects referenced by a section's `citation_ids`.

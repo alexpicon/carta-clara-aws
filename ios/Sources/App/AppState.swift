@@ -22,6 +22,8 @@ import UIKit
 /// and is therefore not a case here.
 enum Route: Hashable {
     case camera
+    /// Language picker shown after photo confirmation, before the scan runs.
+    case languagePicker
     /// Redaction animation + scan in flight.
     case processing
     case results
@@ -66,6 +68,10 @@ final class AppState: ObservableObject {
     // Reading-level slider binding, shared across the results cards.
     @Published var readingLevel: ReadingLevel = .intermediate
 
+    // Output language for the results, set by LanguagePickerView between
+    // photo confirmation and the scan call.
+    @Published var selectedLanguage: AppLanguage = .english
+
     // Scan pipeline
     @Published var capturedImage: UIImage?
     @Published private(set) var scanResult: ScanResult?
@@ -97,7 +103,7 @@ final class AppState: ObservableObject {
         }
         startNewScan()
         capturedImage = image
-        path.append(.processing)
+        path.append(.languagePicker)
         return true
     }
 
@@ -121,6 +127,7 @@ final class AppState: ObservableObject {
             let result = try await api.scan(
                 image: image,
                 readingLevel: readingLevel,
+                language: selectedLanguage,
                 sessionId: sessionId
             )
             // Adopt the backend's session id so /ask and /refusal-log line up.

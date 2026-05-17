@@ -51,6 +51,8 @@ struct RootView: View {
         switch route {
         case .camera:
             CameraCaptureView()
+        case .languagePicker:
+            LanguagePickerView()
         case .processing:
             RedactionAnimationView()
         case .results:

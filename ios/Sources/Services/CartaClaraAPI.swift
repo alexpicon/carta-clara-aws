@@ -132,6 +132,7 @@ final class CartaClaraAPI {
     func scan(
         image: UIImage,
         readingLevel: ReadingLevel = .intermediate,
+        language: AppLanguage = .english,
         sessionId: String? = nil
     ) async throws -> ScanResult {
         guard let base64 = Self.jpegBase64(from: image) else {
@@ -141,11 +142,13 @@ final class CartaClaraAPI {
             let sessionId: String?
             let imageBase64: String
             let readingLevel: String
+            let language: String
         }
         let body = Body(
             sessionId: sessionId,
             imageBase64: base64,
-            readingLevel: readingLevel.rawValue
+            readingLevel: readingLevel.rawValue,
+            language: language.rawValue
         )
         return try await post(path: "/scan", body: body, as: ScanResult.self)
     }

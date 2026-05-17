@@ -79,6 +79,9 @@ def _handle(event, started):
     reading_level = body.get("reading_level") or "intermediate"
     if reading_level not in ("beginner", "intermediate", "full"):
         reading_level = "intermediate"
+    language = (body.get("language") or "es").lower()
+    if language not in ("en", "es"):
+        language = "es"
 
     # --- 1. validate ------------------------------------------------------
     if not image_b64:
@@ -129,12 +132,12 @@ def _handle(event, started):
 
     # Guardrail intervened on the document itself -> refusal case
     if extract_res.intervened:
-        return _refusal_response(session_id, "document appears non-synthetic", started)
+        return _refusal_response(session_id, "document appears non-synthetic", started, language)
 
     extraction_raw = h.extract_json(extract_res.text) or {}
     if extraction_raw.get("refuse"):
         return _refusal_response(
-            session_id, extraction_raw.get("reason", "document could not be verified"), started
+            session_id, extraction_raw.get("reason", "document could not be verified"), started, language
         )
     if not extraction_raw:
         return h.response(
@@ -145,9 +148,19 @@ def _handle(event, started):
 
     extraction = _normalize_extraction(extraction_raw)
 
-    # --- 4. Spanish summary + section cards ------------------------------
+    # --- 4. summary + section cards (in the requested language) ----------
     summary_prompt = h.load_prompt("spanish_summary_prompt.md", _FALLBACK_SUMMARY)
-    summary_prompt = f"{summary_prompt}\n\nPARAMETERS:\nreading_level: {reading_level}"
+    summary_prompt = (
+        f"{summary_prompt}\n\nPARAMETERS:\nreading_level: {reading_level}\n"
+        f"language: {language}"
+    )
+    if language == "en":
+        summary_prompt += (
+            "\n\nLANGUAGE OVERRIDE: Produce ALL output in ENGLISH. The field "
+            "names ending in `_es` in the output schema are historical — write "
+            "English text into them. The response must contain NO Spanish at "
+            "all. summary_en and summary_es should both be the same English text."
+        )
     text_model = h.env("TEXT_MODEL_ID", "us.anthropic.claude-sonnet-4-6")
 
     summary_input = (
@@ -161,18 +174,19 @@ def _handle(event, started):
         max_tokens=1800,
     )
     if summary_res.intervened:
-        return _refusal_response(session_id, "summary generation blocked by Guardrail", started)
+        return _refusal_response(session_id, "summary generation blocked by Guardrail", started, language)
 
     summary_data = h.extract_json(summary_res.text) or {}
     summary_en = summary_data.get("summary_en") or ""
     summary_es = summary_data.get("summary_es") or summary_res.text.strip()
     sections = _normalize_sections(summary_data.get("sections", []))
 
-    # --- 5. Polly Spanish audio of the headline summary ------------------
+    # --- 5. Polly audio of the headline summary --------------------------
     audio_url = None
-    if summary_es:
+    spoken_text = summary_es if language == "es" else (summary_en or summary_es)
+    if spoken_text:
         try:
-            audio_bytes = h.synthesize_spanish(summary_es)
+            audio_bytes = h.synthesize_speech(spoken_text, language=language)
             audio_key = f"{session_id}/{document_id}-summary.mp3"
             h.s3_put_ephemeral(audio_key, audio_bytes, "audio/mpeg")
             audio_url = h.s3_presign(audio_key, expires=3600)
@@ -181,21 +195,22 @@ def _handle(event, started):
 
     # --- 6. assemble -----------------------------------------------------
     total_usage = _merge_usage(extract_res.usage, summary_res.usage)
-    cost = h.estimate_cost(multimodal_model, extract_res.usage) + h.estimate_cost(
+    cost = h.estimate_cost(text_model, extract_res.usage) + h.estimate_cost(
         text_model, summary_res.usage
     )
 
     result = {
         "session_id": session_id,
         "document_id": document_id,
+        "language": language,
         "extraction": extraction,
         "summary_en": summary_en,
         "summary_es": summary_es,
         "audio_url": audio_url,
         "sections": sections,
-        "urgency": _build_urgency(extraction),
+        "urgency": _build_urgency(extraction, language),
         "scam_red_flags": [],  # populated by /ask scam-check on a separate text input
-        "court_brief": _build_court_brief(extraction),
+        "court_brief": _build_court_brief(extraction, language),
         "legal_aid_options": h.legal_aid_options(),
         "citations": _collect_citations(sections),
         "latency_ms": round(h.monotonic_ms() - started),
@@ -261,29 +276,56 @@ def _normalize_sections(sections) -> list:
     return out
 
 
-def _build_urgency(extraction: dict) -> dict:
+def _build_urgency(extraction: dict, language: str = "es") -> dict:
     deadline = extraction.get("deadline_critical") or extraction.get("hearing_date")
     is_urgent = deadline is not None
     label = None
     if deadline:
-        label = f"Fecha importante: {deadline}"
+        prefix = "Important date" if language == "en" else "Fecha importante"
+        label = f"{prefix}: {deadline}"
         if extraction.get("hearing_time"):
             label += f", {extraction['hearing_time']}"
+    note = (
+        "Verify this date directly with the court. The court's contact "
+        "information appears on your document. Do not rely on this app alone."
+    ) if language == "en" else (
+        "Verifica esta fecha directamente con la corte. La información de la "
+        "corte aparece en tu documento. No dependas solo de esta aplicación."
+    )
     return {
         "is_urgent": is_urgent,
         "deadline_date": deadline,
         "deadline_label_es": label,
-        "verification_note_es": (
-            "Verifica esta fecha directamente con la corte. La información de la "
-            "corte aparece en tu documento. No dependas solo de esta aplicación."
-        ),
+        "verification_note_es": note,
     }
 
 
-def _build_court_brief(extraction: dict):
+def _build_court_brief(extraction: dict, language: str = "es"):
     court_name = extraction.get("court_name")
     if not court_name:
         return None
+    if language == "en":
+        return {
+            "court_name": court_name,
+            "address": extraction.get("court_address") or "",
+            "phone": "",
+            "what_to_expect_es": (
+                "This is a hearing before an immigration judge. It is not a "
+                "final decision. You have the right to a lawyer and to a free "
+                "interpreter."
+            ),
+            "what_to_bring_es": [
+                "Your original document (the court notice)",
+                "A photo ID",
+                "Any immigration papers you have",
+                "Your lawyer's name and phone, if you already have one",
+            ],
+            "what_not_to_bring_es": [
+                "Weapons or sharp objects (not allowed in the courtroom)",
+                "Fake or altered documents",
+            ],
+            "dress_code_es": "Clean, formal clothing — like for an important appointment.",
+        }
     return {
         "court_name": court_name,
         "address": extraction.get("court_address") or "",
@@ -329,20 +371,27 @@ def _merge_usage(*usages) -> dict:
     return total
 
 
-def _refusal_response(session_id, reason, started):
+def _refusal_response(session_id, reason, started, language: str = "es"):
     """API_CONTRACT § POST /scan — Refusal case (still HTTP 200)."""
+    text = (
+        "I cannot safely process this document. This can happen when the "
+        "document appears to contain real personal information that has not "
+        "been protected. For your safety, take the document directly to a "
+        "free legal-aid service — they can review it with you."
+    ) if language == "en" else (
+        "No puedo procesar este documento de forma segura. Esto puede pasar "
+        "si el documento parece contener información personal real sin "
+        "proteger. Por tu seguridad, lleva el documento directamente a un "
+        "servicio de ayuda legal gratis — ellos pueden revisarlo contigo."
+    )
     return h.response(
         200,
         {
             "session_id": session_id,
+            "language": language,
             "was_refused": True,
             "refusal_reason": reason,
-            "refusal_text_es": (
-                "No puedo procesar este documento de forma segura. Esto puede pasar "
-                "si el documento parece contener información personal real sin "
-                "proteger. Por tu seguridad, lleva el documento directamente a un "
-                "servicio de ayuda legal gratis — ellos pueden revisarlo contigo."
-            ),
+            "refusal_text_es": text,
             "legal_aid_options": h.legal_aid_options(),
             "latency_ms": round(h.monotonic_ms() - started),
         },

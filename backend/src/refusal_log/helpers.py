@@ -391,12 +391,29 @@ def s3_presign(key: str, expires: int = 3600) -> str:
 
 def synthesize_spanish(text: str) -> bytes:
     """Synthesize Spanish speech with the configured neural Polly voice."""
+    return synthesize_speech(text, "es")
+
+
+# Per-language Polly defaults. Both are neural-engine, both are well-tested
+# en-US / es-US voices. Overridable per-language with POLLY_VOICE_EN /
+# POLLY_VOICE_ES env vars (and POLLY_VOICE still works as the es fallback).
+_POLLY_DEFAULTS = {
+    "en": ("Joanna", "en-US"),
+    "es": ("Lupe", "es-US"),
+}
+
+
+def synthesize_speech(text: str, language: str = "es") -> bytes:
+    """Synthesize speech in the requested language ('en' or 'es')."""
+    language = language if language in _POLLY_DEFAULTS else "es"
+    default_voice, language_code = _POLLY_DEFAULTS[language]
+    voice = env(f"POLLY_VOICE_{language.upper()}", env("POLLY_VOICE", default_voice))
     resp = client("polly").synthesize_speech(
         Text=text,
         OutputFormat="mp3",
-        VoiceId=env("POLLY_VOICE", "Lupe"),
+        VoiceId=voice,
         Engine="neural",
-        LanguageCode="es-US",
+        LanguageCode=language_code,
     )
     return resp["AudioStream"].read()
 

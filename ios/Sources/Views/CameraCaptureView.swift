@@ -179,7 +179,7 @@ struct CameraCaptureView: View {
                 Button(UIText.usePhoto) {
                     appState.capturedImage = image
                     camera.stopSession()
-                    appState.path.append(.processing)
+                    appState.path.append(.languagePicker)
                 }
                 .buttonStyle(CCPrimaryButtonStyle())
 
