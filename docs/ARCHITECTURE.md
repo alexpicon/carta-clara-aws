@@ -22,6 +22,7 @@ flowchart TB
         L1[Lambda: scan<br/>Python 3.12]
         L2[Lambda: ask<br/>Python 3.12]
         L3[Lambda: refusal_log<br/>Python 3.12]
+        L4[Lambda: scan_packet<br/>Python 3.12]
     end
 
     subgraph Storage["Ephemeral Storage"]
@@ -36,7 +37,8 @@ flowchart TB
         GR[Guardrails<br/>10 denied topics<br/>PII filter<br/>Contextual grounding 0.65]
     end
 
-    subgraph Voice["AWS Voice Services"]
+    subgraph DocVoice["AWS Document & Voice AI"]
+        TXT[Amazon Textract<br/>Document OCR]
         TR[Amazon Transcribe<br/>Spanish streaming ASR]
         PL[Amazon Polly<br/>Spanish neural voice 'Lupe']
     end
@@ -49,7 +51,9 @@ flowchart TB
     APIGW --> L1
     APIGW --> L2
     APIGW --> L3
+    APIGW --> L4
     L1 -- PutObject --> S3
+    L1 -- DetectDocumentText --> TXT
     L1 -- "InvokeModel + Guardrails" --> BM
     L1 -- Retrieve --> KB
     L1 -- SynthesizeSpeech --> PL
@@ -59,6 +63,8 @@ flowchart TB
     L2 -- Retrieve --> KB
     L2 -- "writes refusal events" --> DDB
     L3 -- Query --> DDB
+    L4 -- "InvokeModel + Guardrails" --> BM
+    L4 -. "fallback re-OCR" .-> TXT
     BM -. validated by .-> GR
     BFAST -. validated by .-> GR
     KB -. grounds .-> BM
@@ -67,6 +73,7 @@ flowchart TB
     SAM -. provisions .-> L1
     SAM -. provisions .-> L2
     SAM -. provisions .-> L3
+    SAM -. provisions .-> L4
     SAM -. provisions .-> S3
     SAM -. provisions .-> DDB
 
@@ -79,13 +86,13 @@ flowchart TB
 
     class BM,BFAST,KB,GR bedrock;
     class S3,DDB storage;
-    class L1,L2,L3 compute;
+    class L1,L2,L3,L4 compute;
     class APIGW edge;
-    class TR,PL voice;
+    class TXT,TR,PL voice;
     class SAM iac;
 ```
 
-**Color legend:** Orange = Bedrock (the trust stack). Pink = Compute. Green = Storage. Blue = Edge. Teal = Voice. Purple = Infrastructure as Code.
+**Color legend:** Orange = Bedrock (the trust stack). Pink = Compute. Green = Storage. Blue = Edge. Teal = Document & Voice AI. Purple = Infrastructure as Code.
 
 ---
 
@@ -93,8 +100,8 @@ flowchart TB
 
 1. Grandma photographs a USCIS Notice to Appear on her iPhone.
 2. iOS app POSTs `/scan` with base64 image.
-3. Lambda writes the image to S3 with a 1-hour TTL.
-4. Lambda calls Bedrock multimodal (Claude Sonnet 4.6) with Guardrails attached. Guardrails redact PII *before* the model sees the image content.
+3. Lambda writes the image to S3 with a 1-hour TTL, then runs Textract OCR to get clean machine-readable text.
+4. Lambda calls Bedrock multimodal (Claude Sonnet 4.6) with Guardrails attached. Guardrails redact PII *before* the model sees the document content.
 5. Model returns structured JSON (document type, deadline, court, allegations, charges).
 6. Lambda calls Bedrock again with `spanish_summary_prompt` + Knowledge Base retrieval. Output: 5th-grade Spanish summary, grounded in citations.
 7. Lambda calls Polly to synthesize Spanish audio. Audio goes to S3 with a presigned URL.
@@ -130,18 +137,21 @@ The enforcement layer for the entire responsible-AI story:
 - Contextual grounding at 0.65 — the model cannot invent facts not present in the source document or KB
 - Every Bedrock invocation in our Lambdas attaches the Guardrail. The refusal counter is the visible artifact of this layer working.
 
-### Compute (3 Lambda functions)
+### Compute (4 Lambda functions)
 
 **Lambda — `scan`** (`backend/src/scan/handler.py`)
-Orchestrates the document-understanding pipeline: S3 write → multimodal call → KB retrieve → Polly synthesis → assembled response. Cold start ~2s. Warm latency: under 3s on Bedrock-bound work.
+Orchestrates the document-understanding pipeline: S3 write → Textract OCR → multimodal call → KB retrieve → Polly synthesis → assembled response. Cold start ~2s. Warm latency: under 3s on Bedrock-bound work.
 
 **Lambda — `ask`** (`backend/src/ask/handler.py`)
 Handles voice-or-text follow-up questions. Transcribe streaming if audio. Bedrock call with KB retrieval + Guardrails. Logs refusals to DynamoDB with PII redaction.
 
+**Lambda — `scan_packet`** (`backend/src/scan_packet/handler.py`)
+Builds the Response Preparation Packet. Fast path: template substitution from the extraction JSON the iOS app already holds. Slow path: re-OCR the document from S3 when extraction is missing. Bedrock multimodal + Guardrails.
+
 **Lambda — `refusal_log`** (`backend/src/refusal_log/handler.py`)
 The iOS refusal counter polls this. Returns count + recent 20 entries for the current session. Pure DynamoDB Query.
 
-All three run Python 3.12 on 512MB memory with a 30s timeout. Pay-per-invocation. No reserved concurrency, no provisioned-throughput.
+All four run Python 3.12 on 1769 MB memory (full vCPU) with a 90s timeout. Pay-per-invocation. No reserved concurrency, no provisioned-throughput.
 
 ### Edge
 
@@ -156,7 +166,10 @@ Ephemeral document storage. 1-hour lifecycle deletion rule. Holds the user's pho
 **Amazon DynamoDB (`carta-clara-refusal-log`)**
 PII-redacted refusal log. Composite key: `session_id` (partition) + `ts` (sort). DynamoDB TTL on the `ttl` attribute auto-deletes entries after 1 hour. Each entry: question hash (not the question itself), refusal reason, timestamp. No user content stored.
 
-### Voice services
+### Document & voice services
+
+**Amazon Textract**
+Document OCR. The `scan` Lambda sends the photographed document to Textract's `DetectDocumentText` to get clean machine-readable text before the extraction call. `scan_packet` re-uses Textract as a fallback when the iOS app does not supply the extraction JSON.
 
 **Amazon Transcribe (streaming)**
 Spanish ASR for voice-input mode in Ask About This Document. Why streaming over batch: low-latency real-time captioning for the chat surface.
@@ -183,7 +196,7 @@ That ratio matters in the pitch. We are not a generic AI app that happens to run
 - Uses the cross-region inference profile (automatic resilience)
 - Has the trust-stack invariants enforced by AWS, not by our prompts
 
-The remaining two services (Lambda, API Gateway) are glue. The remaining glue (S3, DynamoDB, Transcribe, Polly, SAM) are utilities.
+The remaining two services (Lambda, API Gateway) are glue. The remaining glue (S3, DynamoDB, Textract, Transcribe, Polly, SAM) are utilities.
 
 When a judge asks "what's the architecture?" the one-sentence answer is:
 
