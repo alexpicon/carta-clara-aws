@@ -41,7 +41,7 @@ These are deliberate cuts. Each one is a "Think Big" talking point — we consid
 - **Legal advice in any form.** No "you should…" answers. No form-selection. No admit/deny guidance. No eligibility opinions. No outcome predictions. (TENETS §3, bright lines)
 - **Drafting substantive responses** to USCIS / EOIR / ICE / DHS / a court. The Response Preparation Packet *helps the user talk to a lawyer*; it does not replace the lawyer's response. (Bright line)
 - **Judge analytics** or past-case matching of any kind. (Bright line)
-- **Real immigration documents** in the product, the demo, the screenshots, the Devpost page, or anywhere else. Permanent — not a hackathon constraint. (TENETS §6)
+- **Real immigration documents** in the demo, the video, the Devpost page, or anywhere user-visible. *Exception (temporary, team-internal only, TENETS §6 amended):* team members may scan documents they own/have lawful access to for accuracy testing. S3 1h TTL still applies. Real PII flows unmasked through Bedrock/Textract during this window; Guardrail PII filter is still `PLACEHOLDER`. **The bright line does NOT move for any externally-visible artifact.**
 - **Android, web, or watch versions.** iPhone-only for MVP.
 - **Offline mode.** The product requires network to call Bedrock. We will not fake an offline experience.
 - **Document types beyond immigration** — utility notices, school letters, IRS mail, lease violations. All roadmap. The architecture is reusable; the MVP is immigration-only.

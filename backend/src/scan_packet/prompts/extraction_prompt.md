@@ -67,44 +67,21 @@ spaces), prefer marking that field uncertain over guessing the intended word.
 8. **No invention.** If a fact is not on the page, the value is `null` or `"Unknown"`.
    Never produce a plausible-sounding placeholder.
 
-## Synthetic-data safety gate (MANDATORY)
+## Document type classification (informational, not a refusal)
 
-This product is tested only on synthetic documents. Before extracting, scan the
-OCR text:
+Scan the OCR text for a watermark indicating a synthetic / demo document:
 
-- If the text contains the watermark `DEMO – NOT A REAL CASE` (or
-  `*** DEMO DOCUMENT ***` / `SYNTHETIC`), set `is_demo_document` and
-  `demo_watermark_detected` to `true` and proceed normally.
-- If the text contains **real, unmasked PII** — a real full name, A-number, SSN,
-  date of birth, or address that is NOT a redaction token — and there is **no
-  demo watermark** in the text, do NOT extract. Instead return this object
-  exactly:
+- If the text contains `DEMO – NOT A REAL CASE`, `*** DEMO DOCUMENT ***`, or
+  `SYNTHETIC`, set `is_demo_document` and `demo_watermark_detected` to `true`.
+- Otherwise, set both to `false`.
 
-```json
-{
-  "document_type": "Unknown document",
-  "issuing_agency": "Unknown",
-  "names_redacted": false,
-  "a_number_redacted": false,
-  "address_redacted": false,
-  "country_of_origin": null,
-  "country_of_citizenship": null,
-  "hearing_date": null,
-  "hearing_time": null,
-  "court_name": null,
-  "court_address": null,
-  "issuing_officer": null,
-  "alleged_basis_summary": null,
-  "charges_cited": [],
-  "deadline_critical": null,
-  "is_demo_document": false,
-  "demo_watermark_detected": false,
-  "extraction_confidence": "low",
-  "fields_uncertain": ["refused_real_pii"]
-}
-```
+**Real documents are currently allowed for team testing** (TENETS §6,
+temporarily amended). Proceed with extraction regardless of whether the
+document is synthetic — do not refuse based on the presence of real PII.
+The booleans above are telemetry only, so the team can see which test runs
+used real vs synthetic documents.
 
-Koda's handler treats `fields_uncertain == ["refused_real_pii"]` as a refusal:
-nothing is stored, and the user is routed to in-person help.
+PII redaction is the responsibility of the Bedrock Guardrail (PII filter)
+and the S3 1-hour TTL, not this prompt.
 
 Return only the JSON object. No explanation before or after it.

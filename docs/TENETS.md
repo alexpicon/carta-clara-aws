@@ -30,6 +30,8 @@ Every design decision is judged against one specific person: a 70-year-old Spani
 
 We never use real immigration documents in the product, the demo, the screenshots, the Devpost submission, or anywhere else. Every demo doc is watermarked `DEMO – NOT A REAL CASE`. This is permanent — not a hackathon constraint.
 
+**Temporary deviation (team-internal testing, 2026-05-16 → pitch):** Alex has authorized real-document scans for the team to evaluate accuracy against documents the team owns or has lawful access to. The extraction prompt's "refuse on real PII" gate is disabled for this window. S3 1-hour TTL still applies. **Real PII flows unmasked through Bedrock and Textract** — the Guardrail PII filter is still `PLACEHOLDER` and not actually configured. Team rule: do not scan documents you would not be OK with AWS processing. Demo / video / Devpost screenshots remain synthetic-only — that bright line does NOT move.
+
 ## 7. Ephemeral by default
 
 User documents have a 1-hour TTL in S3. We do not store immigration documents. Our DynamoDB log records refusal events (PII-redacted) and session metadata only — never document content.

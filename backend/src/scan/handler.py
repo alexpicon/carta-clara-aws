@@ -320,41 +320,52 @@ def _build_court_brief(extraction: dict, language: str = "es"):
             "address": extraction.get("court_address") or "",
             "phone": "",
             "what_to_expect_es": (
-                "This is a hearing before an immigration judge. It is not a "
-                "final decision. You have the right to a lawyer and to a free "
+                "Courts expect people who receive this notice to attend. "
+                "Whether and how to attend is a decision for you and a lawyer — "
+                "call free legal aid before the date. If you do attend, the "
+                "hearing is before an immigration judge. It is not a final "
+                "decision. You have the right to a lawyer and to a free "
                 "interpreter."
             ),
             "what_to_bring_es": [
+                "If you attend, courts typically allow attendees to bring:",
                 "Your original document (the court notice)",
                 "A photo ID",
                 "Any immigration papers you have",
                 "Your lawyer's name and phone, if you already have one",
             ],
             "what_not_to_bring_es": [
-                "Weapons or sharp objects (not allowed in the courtroom)",
+                "Items courts do not allow inside the courthouse:",
+                "Weapons or sharp objects",
                 "Fake or altered documents",
             ],
-            "dress_code_es": "Clean, formal clothing — like for an important appointment.",
+            "dress_code_es": "If you attend, courts expect clean, formal clothing — like for an important appointment.",
         }
     return {
         "court_name": court_name,
         "address": extraction.get("court_address") or "",
         "phone": "",
         "what_to_expect_es": (
-            "Esta es una audiencia ante un juez de inmigración. No es una decisión "
-            "final. Tienes derecho a tener un abogado y a un intérprete sin costo."
+            "Las cortes esperan que las personas que reciben este aviso asistan. "
+            "Si vas a asistir, o cómo asistir, es una decisión que debes tomar "
+            "con un abogado — llama a ayuda legal gratis antes de la fecha. "
+            "Si decides asistir, la audiencia es ante un juez de inmigración. "
+            "No es una decisión final. Tienes derecho a tener un abogado y a "
+            "un intérprete sin costo."
         ),
         "what_to_bring_es": [
+            "Si asistes, las cortes generalmente permiten que lleves:",
             "Tu documento original (el aviso de la corte)",
             "Una identificación",
             "Cualquier papel de inmigración que tengas",
             "El nombre y teléfono de tu abogado, si ya tienes uno",
         ],
         "what_not_to_bring_es": [
-            "Armas u objetos filosos (no se permiten en la corte)",
+            "Cosas que las cortes no permiten dentro del edificio:",
+            "Armas u objetos filosos",
             "Documentos falsos o alterados",
         ],
-        "dress_code_es": "Ropa limpia y formal, como para una cita importante.",
+        "dress_code_es": "Si asistes, las cortes esperan ropa limpia y formal — como para una cita importante.",
     }
 
 
