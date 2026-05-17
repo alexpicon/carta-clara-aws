@@ -105,9 +105,7 @@ struct RedactionAnimationView: View {
             )
 
             if phase == .processing {
-                Label(UIText.processing, systemImage: "sparkles")
-                    .font(.headline)
-                    .foregroundStyle(CCColor.inkSecondary)
+                PulsingProcessingLabel()
                     .accessibilityAddTraits(.updatesFrequently)
             }
 
@@ -221,5 +219,28 @@ struct RedactionAnimationView: View {
     private var scanRetryable: Bool {
         if case let .failed(_, retryable) = appState.scanState { return retryable }
         return true
+    }
+}
+
+// MARK: - Pulsing processing label
+
+/// Animated "Reading the document…" label. The sparkle icon pulses via SF
+/// Symbol effect; the text fades in-and-out subtly so the screen visibly
+/// "breathes" while the network call is in flight. Stops automatically when
+/// the view disappears.
+private struct PulsingProcessingLabel: View {
+    @State private var pulse = false
+
+    var body: some View {
+        Label(UIText.processing, systemImage: "sparkles")
+            .font(.headline)
+            .foregroundStyle(CCColor.inkSecondary)
+            .symbolEffect(.pulse, options: .repeating)
+            .opacity(pulse ? 0.55 : 1.0)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
+                    pulse = true
+                }
+            }
     }
 }

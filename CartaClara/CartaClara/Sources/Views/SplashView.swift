@@ -28,14 +28,39 @@ struct SplashView: View {
                 Spacer()
 
                 // Wordmark + tagline with subtle entrance animation
-                VStack(spacing: CCSpacing.sm) {
-                    Image(systemName: "doc.text.viewfinder")
-                        .font(.system(size: 72, weight: .light))
-                        .foregroundStyle(CCColor.primary)
-                        .accessibilityHidden(true)
+                VStack(spacing: CCSpacing.md) {
+                    // Logo: an open envelope (the letter being read /
+                    // understood — exactly what the app does). Gradient fill
+                    // + a soft tinted halo makes it feel like a brand mark
+                    // instead of a system placeholder symbol.
+                    ZStack {
+                        Circle()
+                            .fill(
+                                RadialGradient(
+                                    colors: [CCColor.primary.opacity(0.18), .clear],
+                                    center: .center,
+                                    startRadius: 0,
+                                    endRadius: 80
+                                )
+                            )
+                            .frame(width: 160, height: 160)
+                        Image(systemName: "envelope.open.fill")
+                            .font(.system(size: 76, weight: .regular))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [CCColor.primary, CCColor.primary.opacity(0.78)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .shadow(color: CCColor.primary.opacity(0.30), radius: 14, x: 0, y: 8)
+                    }
+                    .accessibilityHidden(true)
+
                     Text(UIText.appName)
-                        .font(.system(size: 44, weight: .bold, design: .serif))
+                        .font(.system(size: 46, weight: .bold, design: .serif))
                         .foregroundStyle(CCColor.ink)
+                        .tracking(-0.5)
                     Text(UIText.tagline)
                         .font(.title3)
                         .foregroundStyle(CCColor.inkSecondary)

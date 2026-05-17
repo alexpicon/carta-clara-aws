@@ -195,7 +195,6 @@ enum UIText {
     // MARK: Reading-level display helper
     static func readingLevelName(_ level: ReadingLevel) -> String {
         switch level {
-        case .beginner: return readingLevelBeginner
         case .intermediate: return readingLevelIntermediate
         case .full: return readingLevelFull
         }
@@ -362,7 +361,7 @@ extension UITextStrings {
         appName: "Carta Clara",
         tagline: "Understand your letter. Calmly.",
 
-        getStarted: "Get started",
+        getStarted: "Start scanning",
         tryDemoButton: "Use the demo document",
         demoDocMissingTitle: "Demo document not available",
         demoDocMissingBody: "The demo document isn't bundled with the app yet. Use the camera or pick a saved photo.",
@@ -410,9 +409,9 @@ extension UITextStrings {
 
         resultsTitle: "Your document",
         readingLevelLabel: "Reading level",
-        readingLevelBeginner: "Simple",
-        readingLevelIntermediate: "Normal",
-        readingLevelFull: "Full",
+        readingLevelBeginner: "Plain",
+        readingLevelIntermediate: "Plain",
+        readingLevelFull: "Detailed",
         askButton: "Ask about this document",
         helpRespondButton: "Help me respond",
         legalHelpButton: "Find free legal help",
@@ -512,7 +511,7 @@ extension UITextStrings {
         appName: "Carta Clara",
         tagline: "Entiende tu carta. Con calma.",
 
-        getStarted: "Empezar",
+        getStarted: "Empezar a escanear",
         tryDemoButton: "Usar documento de demostración",
         demoDocMissingTitle: "Documento de demostración no disponible",
         demoDocMissingBody: "El documento de demostración todavía no está incluido en la app. Usa la cámara o elige una foto guardada.",
@@ -560,8 +559,8 @@ extension UITextStrings {
         resultsTitle: "Tu documento",
         readingLevelLabel: "Nivel de lectura",
         readingLevelBeginner: "Sencillo",
-        readingLevelIntermediate: "Normal",
-        readingLevelFull: "Completo",
+        readingLevelIntermediate: "Sencillo",
+        readingLevelFull: "Detallado",
         askButton: "Preguntar sobre este documento",
         helpRespondButton: "Ayúdame a responder",
         legalHelpButton: "Buscar ayuda legal gratis",

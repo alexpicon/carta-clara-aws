@@ -234,12 +234,14 @@ final class AppState: ObservableObject {
     }
 
     /// Reset to a fresh scan from anywhere in the stack. Clears scan state
-    /// and replaces the entire navigation stack with the camera screen so
-    /// the user lands one tap away from a new capture. Refusal counter is
-    /// preserved (it's a session trust artifact, not per-scan state).
+    /// and pops the entire navigation stack so the user lands back on the
+    /// Splash screen (the home). One extra tap to start a new scan, but the
+    /// home gives context: the wordmark, the disclaimer, and the deliberate
+    /// "Start scanning" CTA. Refusal counter is preserved (it's a session
+    /// trust artifact, not per-scan state).
     func startFresh() {
         startNewScan()
-        path = [.camera]
+        path = []
     }
 
     // MARK: Helpers

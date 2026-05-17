@@ -78,9 +78,11 @@ struct CameraCaptureView: View {
             ZStack {
                 CameraPreviewView(session: camera.session)
                     .ignoresSafeArea(edges: .horizontal)
-                // Framing guide.
-                RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(.white.opacity(0.85), lineWidth: 3)
+                // Thin corner-bracket framing guide — reads like a
+                // professional document scanner, not a heavyweight viewfinder
+                // border.
+                CornerBracketsShape(bracketLength: 28)
+                    .stroke(Color.white.opacity(0.92), style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
                     .padding(CCSpacing.lg)
                     .accessibilityHidden(true)
             }
@@ -348,5 +350,43 @@ struct CameraPreviewView: UIViewRepresentable {
         var videoPreviewLayer: AVCaptureVideoPreviewLayer {
             layer as! AVCaptureVideoPreviewLayer
         }
+    }
+}
+
+// MARK: - Corner brackets framing guide
+
+/// Four L-shaped brackets at the corners of the bounding rect, used as a
+/// clean, scanner-style document framing guide on the camera view. Far less
+/// visually heavy than a full rounded-rectangle border.
+struct CornerBracketsShape: Shape {
+    /// Length of each leg of the L. ~28pt feels right at typical framing
+    /// padding; shorter reads thin, longer starts to look like a rectangle.
+    var bracketLength: CGFloat = 28
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let L = bracketLength
+
+        // Top-left
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY + L))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.minX + L, y: rect.minY))
+
+        // Top-right
+        path.move(to: CGPoint(x: rect.maxX - L, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + L))
+
+        // Bottom-right
+        path.move(to: CGPoint(x: rect.maxX, y: rect.maxY - L))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.maxX - L, y: rect.maxY))
+
+        // Bottom-left
+        path.move(to: CGPoint(x: rect.minX + L, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - L))
+
+        return path
     }
 }

@@ -15,10 +15,14 @@ import Foundation
 
 // MARK: - Request parameters
 
-/// Controls Spanish complexity. Sent as the `reading_level` request field on
-/// /scan and bound to the reading-level slider in ResultsView.
+/// Controls section-body complexity. Sent as the `reading_level` request field
+/// on /scan and bound to the two-state reading-level toggle in ResultsView.
+///
+/// Two levels: `.intermediate` (the default, shown as "Plain" / "Sencillo")
+/// and `.full` (shown as "Detailed" / "Detallado"). The previous three-state
+/// slider had a `.beginner` first-sentence trick that often produced the same
+/// text as Normal — removed to keep the UI honest.
 enum ReadingLevel: String, Codable, CaseIterable, Identifiable {
-    case beginner
     case intermediate
     case full
 
@@ -122,36 +126,16 @@ struct DocumentSection: Codable, Identifiable {
     /// surface (the contract has no `id` field for sections).
     var id: String { sectionTitleEn }
 
-    /// Body to display for a given reading level.
-    ///
-    /// The backend produces TWO bodies per section (`sectionBodyEs` at the
-    /// requested reading level, `sectionBodyFullEs` always at full detail).
-    /// To give the 3-state slider three distinct on-screen depths without
-    /// a backend round trip, `.beginner` extracts the first sentence of
-    /// `sectionBodyEs` (the most condensed view a grandma can read at a
-    /// glance), `.intermediate` returns the full `sectionBodyEs`, and
-    /// `.full` returns `sectionBodyFullEs`.
+    /// Body to display for a given reading level. The backend produces both
+    /// bodies in one /scan call: `sectionBodyEs` (plain, 2-3 sentences) and
+    /// `sectionBodyFullEs` (detailed, 4-5 sentences with extra context).
     func body(for level: ReadingLevel) -> String {
         switch level {
-        case .beginner:
-            return Self.firstSentence(of: sectionBodyEs)
         case .intermediate:
             return sectionBodyEs
         case .full:
             return sectionBodyFullEs.isEmpty ? sectionBodyEs : sectionBodyFullEs
         }
-    }
-
-    /// Returns the first sentence of `text`. Handles `.`, `!`, `?`, `…`, `¡`,
-    /// `¿`, and Spanish-style ellipses. Falls back to the full text when no
-    /// terminator is found (e.g. a body with only one short sentence already).
-    static func firstSentence(of text: String) -> String {
-        let terminators: Set<Character> = [".", "!", "?", "…"]
-        for (index, char) in text.enumerated() where terminators.contains(char) {
-            let end = text.index(text.startIndex, offsetBy: index + 1)
-            return String(text[..<end]).trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-        return text
     }
 }
 
