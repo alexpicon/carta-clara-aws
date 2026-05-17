@@ -10,7 +10,7 @@ Everything here is consolidated from `PRESS_RELEASE.md`, `PHASE_PLAN.md`, `TENET
 
 **Carta Clara MVP** is a native iPhone app that photographs an English immigration document and returns, within 30 seconds, a plain summary, a deadline, a scam check, and a printable Response Preparation Packet for free legal aid — refusing every legal-strategy question and routing to a real lawyer instead.
 
-> **Language status (team-development phase, 2026-05-16 →):** the iOS app currently runs **English-default** for team review and operation (TENETS §9, temporarily amended). The backend still produces Spanish content and Polly Lupe audio; the app reads `summary_en` while in this phase. The production target remains **Spanish-first**, and the app will flip back before the pitch. Acceptance criteria below mention Spanish where the backend still owns the content (audio, evaluator-graded grounded prompts).
+> **Language status:** the app is **bilingual**. After confirming the photo, the user picks Spanish or English at the LanguagePickerView; everything from that point on — cards, UI chrome, errors, and Polly audio — respects the choice via `UIText.currentLanguage` flipping the active string bundle. Splash, Camera, and the Language Picker remain English by default since they are pre-selection. The backend `/scan` accepts a `language` param (`en` or `es`) and produces all content in that language; the off-language summary field is left empty to save tokens. Korean / Hindi / others remain roadmap.
 
 ---
 
@@ -18,13 +18,13 @@ Everything here is consolidated from `PRESS_RELEASE.md`, `PHASE_PLAN.md`, `TENET
 
 These are the features that ship, in priority order. The "Cut order" section below states what gets dropped first if we run out of time — these do **not** get dropped:
 
-1. **Visible PII redaction** — A-number, name, address, DOB, case number are masked on screen *before* anything is sent to a model. The redaction is animated and pedagogical, not silent.
-2. **Plain-language summary** — 5th-grade-reading-level text of what the document says. **Currently English** (read from `summary_en` while in dev-mode default). Production target flips back to Spanish (`summary_es`). Polly Spanish audio remains attached either way; audio is preferred but cuttable (see Cut order).
-3. **Deadline / urgency card** — the next date the user must act, in Spanish, with a verification line ("Verify this date against the document — Carta Clara can misread handwritten dates").
+1. **Visible PII redaction animation** — the redaction animation plays on screen before the network request fires, narrating *"Your information is protected"* during the masking pass. (Note: the managed Bedrock Guardrail PII filter is still `PLACEHOLDER` for the hackathon; the animation is pedagogical and shows where that filter lives in the pipeline. The Results screen privacy banner is honest about what is real today — *"Your photo will be deleted in 1 hour. No account, no tracking."*)
+2. **Plain-language summary** — text of what the document says in the user's chosen language (Spanish or English), tuned to the two-level reading slider (Plain / Detailed). iOS reads the field matching `selectedLanguage` (`summary_es` for Spanish, `summary_en` for English); the off-language field is left empty by the backend. Polly audio in the matching language is attached; audio is preferred but cuttable (see Cut order).
+3. **Deadline / urgency card** — the next date the user must act, in the chosen language, with a verification line ("Verify this date against the document — Carta Clara can misread handwritten dates").
 4. **Scam / notario red-flag card** — pattern-matches against the FTC + USCIS published warning signs. Conditional (only renders when patterns match). Cites the source.
 5. **Court Brief card** — for NTAs only. Court name, address, what to expect, what to bring, what to wear. **Never** analyzes the judge.
 6. **"Questions for legal aid" card** — a pre-written list of the right questions to ask, scoped to the specific document type.
-7. **Response Preparation Packet** — printable, multi-section: translated summary, evidence checklist, legal-aid phone-call script, questions to ask the lawyer, cover sheet that says "Bring this to your appointment. Your lawyer will write the official response." *(Removed in this MVP: an extension-request letter template. Even with a "talk to your lawyer first" disclaimer, providing the template implied a recommendation that the user request more time — too close to legal strategy advice. Whether to request more time is a decision the legal-aid attorney makes.)*
+7. **Response Preparation Packet** — printable, multi-section: title, what this says (translated summary), your deadline, an interactive documents-to-gather checklist (rendered on iOS), legal-aid phone-call script, questions to ask the lawyer, cover sheet that says "Bring this to your appointment. Your lawyer will write the official response." The packet is pre-fetched: AppState kicks off `/scan/packet` in the background the moment `/scan` succeeds (passing `extraction`, `summary`, and `language` so the call is text-only, ~10–14s) and caches the result on `cachedPacket`; ResponsePacketView checks the cache first and renders instantly on hit. *(Removed in this MVP: an extension-request letter template. Even with a "talk to your lawyer first" disclaimer, providing the template implied a recommendation that the user request more time — too close to legal strategy advice. Whether to request more time is a decision the legal-aid attorney makes.)*
 8. **Refusal of legal-strategy questions** — every "should I…" question about strategy, eligibility, outcome, hearing attendance, ICE encounters, judge bias, or document authenticity is refused. The refusal is **visible** (counter in the corner, tappable to view log).
 9. **Legal-aid escalation** — every refusal routes to at least one of NIRP / Colectiva / ReWA with a real phone number, address, and hours.
 10. **Synthetic-only demo doc** — every screenshot, every video frame, every live demo uses a watermarked `DEMO – NOT A REAL CASE` document. Never a real one.
@@ -35,7 +35,7 @@ These are the features that ship, in priority order. The "Cut order" section bel
 
 These are deliberate cuts. Each one is a "Think Big" talking point — we considered it, we have a reason, and we will articulate the reason on stage:
 
-- **Languages other than English (dev-mode default) and Spanish (production target).** Korean, Hindi, Mandarin, Tagalog are roadmap. We refuse to ship a language we can't validate against a native speaker on the team. (TENETS §9)
+- **Languages other than the two we ship (Spanish and English).** Korean, Hindi, Mandarin, Tagalog are roadmap. We refuse to ship a language we can't validate against a native speaker on the team. (TENETS §9)
 - **User accounts, login, signup, email field.** Ephemeral session only. No password reset flow, ever. (TENETS §7)
 - **Persistent document storage.** S3 has a 1-hour TTL. We do not keep the user's documents. (TENETS §7)
 - **Legal advice in any form.** No "you should…" answers. No form-selection. No admit/deny guidance. No eligibility opinions. No outcome predictions. (TENETS §3, bright lines)
@@ -54,14 +54,14 @@ A feature is **done** when its row here is true. Not when the code compiles. Not
 
 | Feature | Done means… |
 |---------|-------------|
-| PII redaction | A live demo on a physical iPhone shows the A-number visibly being masked on screen before the network request fires. Verified in Network Inspector that the outbound payload contains the redacted form. |
-| Plain summary (text) | A synthetic NTA scan returns a headline summary that a team reviewer confirms is (a) correct, (b) at 5th-grade reading level, (c) uses no untranslated legal jargon. **Currently graded in English**; before pitch, re-grade in Spanish against a native speaker. |
-| Spanish summary (audio) | Tapping the audio button plays back the Spanish text via Polly voice `Lupe`, within 3 seconds of tap, audible without headphones in a quiet room. (Audio remains Spanish even while UI is English — it's the bilingual helper handle.) |
-| Deadline card | The deadline card renders the exact date from the synthetic NTA (2026-10-15) with the verification line in Spanish. |
+| PII redaction animation | A live demo on a physical iPhone shows the redaction animation playing on screen before the network request fires. (The managed Guardrail PII filter is `PLACEHOLDER` today; the outbound payload is not yet masked at the model layer — the Results screen banner reflects this honestly: ephemerality and no-accounts, no claim of PII masking.) |
+| Plain summary (text) | A synthetic NTA scan returns a headline summary in the language the user picked, that a team reviewer confirms is (a) correct, (b) at the Plain reading level when "Plain / Sencillo" is selected, (c) uses no untranslated legal jargon. Re-grade in Spanish against a native speaker for the Spanish path. |
+| Summary audio | Tapping the audio button plays back the summary in the chosen language via the matching Polly neural voice (`Lupe` for Spanish), within 3 seconds of tap, audible without headphones in a quiet room. |
+| Deadline card | The deadline card renders the exact date from the synthetic NTA (2026-10-15) with the verification line in the chosen language. |
 | Scam red-flag card | Running the synthetic notario SMS through the app surfaces at least 3 FTC/USCIS-defined red flags, each with a citation chip linking back to a `kb-corpus/` source. |
 | Court Brief card | Running the synthetic NTA surfaces a Court Brief naming "Seattle Immigration Court, 1000 Second Avenue, Suite 2900, Seattle, WA 98104" with a what-to-expect paragraph and zero analysis of any judge. |
-| Questions for legal aid | At least 5 document-scoped questions render, each in Spanish, each a question a lawyer would actually need answered (not generic). |
-| Response Preparation Packet | The packet renders as a multi-section, printable view that fits on standard letter paper. Sections present: translated summary, your deadline (if applicable), documents to gather, legal-aid phone-call script, questions for your lawyer, cover sheet. **Extension-request letter template intentionally excluded** — see in-scope note above. |
+| Questions for legal aid | At least 5 document-scoped questions render, each in the chosen language, each a question a lawyer would actually need answered (not generic). |
+| Response Preparation Packet | The packet renders as a multi-section, printable view that fits on standard letter paper. Sections present: title, what this says (translated summary), your deadline (if applicable), documents to gather (interactive checklist on iOS), legal-aid phone-call script, questions for your lawyer, cover sheet. **Extension-request letter template intentionally excluded** — see in-scope note above. Pre-fetched via AppState `cachedPacket` so the view renders instantly from the cache. |
 | Refusal of legal-strategy questions | The 15 adversarial prompts in `EVAL_PROMPTS.md` Section A all return `was_refused = true` with the correct `refusal_reason` enum. Target: 14/15 minimum (see Success metrics). |
 | Legal-aid escalation | Every refusal response includes `legal_aid_options` populated with at least 3 of NIRP / Colectiva / ReWA / IRC / Lutheran / Catholic Immigration Legal, each with a working `tel:` number. |
 | Refusal counter | The counter is visible in the corner on every screen post-scan. Tapping it opens a log of what was refused (PII-stripped) and which clinic was suggested. |
@@ -74,18 +74,23 @@ A feature is **done** when its row here is true. Not when the code compiles. Not
 
 This is the happy-path the live demo follows, beat-by-beat. Every other code path is "nice to have" relative to this one:
 
-1. **Splash + disclaimer** — Carta Clara wordmark, "Not legal advice" disclaimer button. Tap to continue.
-2. **Camera screen** — large camera button. Tap. Photograph the printed synthetic NTA.
-3. **Redaction animation** — 1.5s on-screen masking of PII fields. Visible, pedagogical.
-4. **Results screen** — scrollable cards in this order:
-   - Headline summary (Spanish) + tap-to-listen Polly audio
+1. **Splash + disclaimer** — Carta Clara wordmark with the open-envelope logo (SF Symbol `envelope.open.fill` with gradient + radial halo + drop shadow), "Not legal advice" disclaimer, and a single CTA: **Start scanning** (Spanish: **Empezar a escanear**). Tap to continue. (The "Use the demo document" button has been removed from splash.)
+2. **Camera screen** — large camera button. Tap. Photograph the printed synthetic NTA. Confirm the photo.
+3. **Language picker** — user taps Spanish or English. From here on, all UI chrome and content respect the choice via `UIText.currentLanguage`.
+4. **Redaction animation** — 1.5s on-screen masking pass with the line *"Your information is protected."* Visible, pedagogical. (The animation copy stays; the Results banner is the more candid statement of what's real today.)
+5. **Results screen** — scrollable cards in this order:
+   - Privacy banner: *"Your photo will be deleted in 1 hour. No account, no tracking."*
+   - Headline summary (in the chosen language) + tap-to-listen Polly audio
    - Deadline / urgency card
-   - Expandable section cards
+   - Expandable section cards with the two-level Plain / Detailed slider
    - Court Brief card
    - Questions for legal aid card
-5. **Ask About This Document** — tap the chat icon. Ask out loud: *"Should I argue asylum based on these allegations?"* The app refuses, visibly. The refusal counter increments. The legal-aid escalation card appears with NIRP's number.
-6. **Help Me Respond** — tap to generate the Response Preparation Packet. Pull up the PDF preview. Show it on stage.
-7. **Find Legal Help** — tap the legal-aid contact. Show the three Seattle clinics with `tel:` deep-links.
+   - Bottom tertiary "Scan another document" / "Escanear otro documento" button
+   - Top-right toolbar `arrow.clockwise.circle.fill` restart button on every post-scan screen
+6. **Ask About This Document** — tap the chat icon. Ask out loud: *"Should I argue asylum based on these allegations?"* The app refuses, visibly. The refusal counter increments. The legal-aid escalation card appears with NIRP's number.
+7. **Help Me Respond** — tap to open the Response Preparation Packet, which renders instantly from the `cachedPacket` pre-fetch. Show it on stage.
+8. **Find Legal Help** — tap the legal-aid contact. Show the three Seattle clinics with `tel:` deep-links.
+9. **Restart** — tap the top-right restart icon or the bottom "Scan another document" button. AppState.startFresh() pops the entire nav stack back to Splash.
 
 The curveball moment (judges asked for one): scan a different synthetic doc — the RFE or the notario SMS — and show that the same architecture produces the correct cards (scam red-flag for the SMS; different deadline + Questions list for the RFE).
 
@@ -95,16 +100,16 @@ The curveball moment (judges asked for one): scan a different synthetic doc — 
 
 In this order, cut features Saturday night if behind. This list lives in `PHASE_PLAN.md` too — restated here so it's findable:
 
-1. **Polly Spanish audio** → keep Spanish text. Audio is nice; not essential.
+1. **Polly audio** → keep the text in the chosen language. Audio is nice; not essential.
 2. **Voice input on Ask** → keep text-only input.
 3. **KB-grounded scam corpus** → hardcode the 8 most common FTC/USCIS red-flag patterns.
-4. **Textract** → call Bedrock multimodal directly (we weren't using Textract anyway).
+4. **Packet pre-fetch** → keep the on-demand `/scan/packet` call when the user taps "Help me respond"; lose the instant render, not the feature.
 5. **SAM-shown-on-stage** → say "deploys with one SAM template" in pitch instead of showing.
 6. **Eval slide** → **never cut.** Worth 1.5× any item above. The eval numbers are the proof.
 
 Cannot be cut (these are MVP):
-- Visible PII redaction
-- Plain-language text summary (English during dev mode; Spanish in production)
+- Visible PII redaction animation (the Guardrail PII filter itself is `PLACEHOLDER` for the hackathon, but the animation and the candid Results banner both ship)
+- Plain-language text summary in the user's chosen language (Spanish or English)
 - Scam / notario red-flag card
 - Refusal of legal-strategy questions
 - Legal-aid escalation with real phone numbers

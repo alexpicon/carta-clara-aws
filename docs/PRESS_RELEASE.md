@@ -6,7 +6,7 @@
 
 ## **The Letter on Grandma's Counter Is No Longer a Crisis**
 
-*Carta Clara is a free iPhone app that turns frightening English mail into a plain-Spanish summary, a deadline, a scam check, and a Response Preparation Packet for a free lawyer — in under 30 seconds, without ever giving legal advice.*
+*Carta Clara is a free iPhone app that turns frightening English mail into a plain summary in Spanish or English, a deadline, a scam check, and a Response Preparation Packet for a free lawyer — in under 30 seconds, without ever giving legal advice.*
 
 ---
 
@@ -20,17 +20,17 @@ Every immigrant family knows the moment: an official-looking letter arrives in E
 
 - **A headline summary** in plain Spanish, with audio playback in a human-sounding voice
 - **A deadline card** showing what's urgent and when
-- **Expandable section cards** for each part of the document, with a reading-level slider so the user can choose between 5th-grade and full-detail explanations
+- **Expandable section cards** for each part of the document, with a reading-level slider that toggles between two levels — Plain (Sencillo) and Detailed (Detallado)
 - **A scam / notario red-flag check** that scans for the warning signs the FTC and USCIS publish — guaranteed results, cash-only payment, "I know the judge," pressure to sign blank forms
 - **A Court Brief** that explains the courthouse in the document — address, what to expect, what to wear, what to bring — without ever analyzing the judge
 - **Questions for legal aid** — a list of the right questions to ask, prepared in advance
-- **A Response Preparation Packet** — a printable, multi-section document the user brings to a free legal-aid clinic. It contains a translated summary of what was asked, a plain-language evidence checklist, a pre-filled extension request to buy time, a phone-call script for the legal-aid intake line, and a cover sheet that reads: *"Bring this to your appointment. Your lawyer will write the official response."*
+- **A Response Preparation Packet** — a printable, multi-section document the user brings to a free legal-aid clinic. It contains a translated summary of what was asked, the deadline, an interactive checklist of documents to gather, a phone-call script for the legal-aid intake line, the questions to ask the lawyer, and a cover sheet that reads: *"Bring this to your appointment. Your lawyer will write the official response."*
 
 **What Carta Clara doesn't do.** It doesn't give legal advice. It doesn't draft responses to USCIS, EOIR, ICE, or a court. It doesn't tell users which form to file, whether to admit or deny allegations, or whether they qualify for any kind of relief. When asked, it refuses, visibly. The refusal counter in the corner of the screen is part of the user experience, not hidden — every refusal is logged, and the user can tap to see what the app refused to say and which qualified human can answer instead.
 
 "We did not build an AI immigration lawyer," said Picón. "We built a translator that knows when to stop. The refusal is the feature. Everything else is in service of getting grandma to her free legal-aid appointment prepared instead of scared."
 
-**Built on Amazon Bedrock.** Carta Clara uses Amazon Bedrock's multimodal foundation models to understand the document image, Amazon Bedrock Knowledge Bases to ground its explanations in public sources from USCIS, the FTC, EOIR's Practice Manual, and Seattle-area legal-aid organizations, and Amazon Bedrock Guardrails to enforce the refusal of legal-strategy questions and the redaction of personally identifiable information. The entire infrastructure deploys with a single AWS SAM template — six AWS services, four of them Bedrock, no fine-tuning required.
+**Built on Amazon Bedrock.** Carta Clara uses Amazon Textract to read the document text, Anthropic Claude Sonnet 4.6 via Amazon Bedrock to do the semantic extraction and summary from the OCR text, and Amazon Bedrock Knowledge Bases to ground its explanations in public sources from USCIS, the FTC, EOIR's Practice Manual, and Seattle-area legal-aid organizations. Refusals of legal-strategy questions are enforced at the prompt level (system prompt + denied-topics prompt). The entire infrastructure deploys with a single AWS SAM template — no fine-tuning required.
 
 "We treated this like an AWS product, not a demo," said Picón. "One CloudFormation template provisions the whole trust stack. The same architecture works tomorrow for tenant notices, utility shutoffs, school discipline letters, and IRS mail — anywhere a frightening English document lands on a kitchen counter in America."
 
@@ -52,9 +52,9 @@ A: No. Never. Carta Clara explains what a document says and helps the user prepa
 
 A: They're stored in Amazon S3 with a one-hour automatic deletion policy. We do not keep your documents. Our logs record what the system refused to answer — never the contents of your letter.
 
-**Q: Why Spanish only?**
+**Q: Which languages does the app support?**
 
-A: We launched with Spanish because that's the language our team can validate every output against a native speaker. Korean, Hindi, Mandarin, and Tagalog are on our roadmap and will launch only as native speakers can validate each one. We refuse to ship a language we cannot verify.
+A: The UI is bilingual — Spanish and English. The user picks their language at the language picker that appears between confirming the photo and the scan, and everything from that point on (cards, chrome, errors, audio) respects the choice. We launched with Spanish and English because those are the languages our team can validate every output against a native speaker. Korean, Hindi, Mandarin, and Tagalog are on our roadmap and will launch only as native speakers can validate each one. We refuse to ship a language we cannot verify.
 
 **Q: How can a 70-year-old grandmother use this?**
 

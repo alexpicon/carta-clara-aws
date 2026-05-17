@@ -21,7 +21,8 @@ Submit a photographed document for extraction, summary, and Spanish translation.
 {
   "session_id": "string (UUID v4, optional — backend generates if absent)",
   "image_base64": "string (base64-encoded JPEG or PNG, max 10MB)",
-  "reading_level": "beginner | intermediate | full (default: intermediate)"
+  "reading_level": "intermediate | full (default: intermediate; UI labels: 'Plain' / 'Sencillo' and 'Detailed' / 'Detallado')",
+  "language": "en | es (default: es) — user selection from the in-app language picker; backend produces all content in this language"
 }
 ```
 
@@ -50,8 +51,8 @@ Submit a photographed document for extraction, summary, and Spanish translation.
     "is_demo_document": true,
     "demo_watermark_detected": true
   },
-  "summary_en": "string (1–2 sentence headline summary in English)",
-  "summary_es": "string (1–2 sentence headline summary in plain Spanish)",
+  "summary_en": "string (1–2 sentence headline summary in English) — populated only when language=en; empty string when language=es (token saver)",
+  "summary_es": "string (1–2 sentence headline summary in plain Spanish) — populated only when language=es; empty string when language=en (token saver)",
   "audio_url": "string (S3 presigned URL to Polly-synthesized Spanish audio, mp3, 1h expiry) or null",
   "sections": [
     {
@@ -121,7 +122,7 @@ Submit a photographed document for extraction, summary, and Spanish translation.
 
 ### Refusal case
 
-If Guardrails intervenes on the multimodal call (e.g., document appears to contain real PII or attempts prompt injection), the response is still 200 OK but:
+If a refusal is triggered at the prompt level (e.g., document appears to contain real PII or attempts prompt injection — Bedrock Guardrails is still `PLACEHOLDER` for the hackathon, so refusals come from the system prompt and denied-topics prompt, not the managed Guardrail), the response is still 200 OK but:
 
 ```json
 {
@@ -207,7 +208,10 @@ Generate the Response Preparation Packet for a previously scanned document.
 ```json
 {
   "session_id": "string",
-  "document_id": "string"
+  "document_id": "string",
+  "extraction": "object (optional — the extraction object returned from /scan; if present, backend skips re-OCR and does a text-only Bedrock call, ~10–14s instead of timing out)",
+  "summary": "string (optional — the headline summary returned from /scan, in the chosen language)",
+  "language": "en | es (optional, default: es) — produces all packet copy in this language"
 }
 ```
 
@@ -223,8 +227,7 @@ Generate the Response Preparation Packet for a previously scanned document.
       "date": "string (ISO)",
       "label_es": "string"
     },
-    "documents_to_gather_es": ["string"],
-    "extension_request_template": "string (pre-filled Markdown for an extension request)",
+    "documents_to_gather_es": ["string (rendered as an interactive checklist on iOS)"],
     "legal_aid_phone_script_es": "string",
     "questions_for_lawyer_es": ["string"],
     "cover_sheet_es": "string (\"Bring this to your appointment. Your lawyer will write the official response.\")"
@@ -233,6 +236,10 @@ Generate the Response Preparation Packet for a previously scanned document.
   "pdf_url": "string (S3 presigned URL to a rendered PDF, 1h expiry) or null"
 }
 ```
+
+> Field names keep the `_es` suffix for backward compatibility, but when `language: "en"` is passed the strings inside are produced in English.
+
+> **Note (no `extension_request_template`).** A pre-filled extension-request template was removed: providing one implies a recommendation that the user request more time, which is legal-strategy advice. Whether to request more time is a decision the legal-aid attorney makes.
 
 If `pdf_url` is null in v1, iOS renders the Markdown locally.
 

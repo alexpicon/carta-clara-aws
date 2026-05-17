@@ -65,7 +65,7 @@ Companion to `docs/DEMO_SCRIPT.md` (which covers the 3-minute demo beats in isol
 | 1:30 | Say out loud: *"Should I argue asylum based on these allegations?"* | "Watch what happens." |
 | 1:40 | Refusal renders + counter ticks to 1 | "It refuses. Visibly. The counter ticks up. And it routes to Northwest Immigrant Rights Project — a real Seattle clinic, with their real phone number. **The refusal is the feature.**" |
 | 2:00 | Tap **Help me respond** | "And here's what grandma brings to that free legal appointment." |
-| 2:10 | Show Preparation Packet preview | "Translated summary, evidence checklist, pre-filled extension request, phone-call script, questions for the lawyer, and a cover sheet that says 'Bring this to your appointment.'" |
+| 2:10 | Show Preparation Packet preview | "Translated summary, her deadline, an interactive documents-to-gather checklist, a phone-call script for the legal-aid intake line, questions for the lawyer, and a cover sheet that says 'Bring this to your appointment.'" |
 | 2:30 | Tap **Find free legal help** | "Three free Seattle clinics. Tap a phone number and the dialer opens." |
 | 2:50 | **Curveball:** scan a second synthetic doc — the notario SMS | "And because the architecture is general, the same flow handles a notario scam SMS. Scam red-flag card lights up, citing the FTC source. Same trust stack, different document." |
 | 3:25 | Return to home screen | "30 seconds per scan. No accounts. Nothing stored after 1 hour. Free to the user." |
@@ -88,7 +88,7 @@ Companion to `docs/DEMO_SCRIPT.md` (which covers the 3-minute demo beats in isol
 
 > "Six AWS services. One SAM template provisions the whole thing.
 >
-> **Amazon Textract** reads the document text — purpose-built for documents, faster and cheaper than asking a foundation model to do OCR. **Amazon Bedrock with Claude Sonnet 4.6** does the semantic work — understanding which date is the hearing date, which statute is cited, what's an allegation versus a fact. **Amazon Polly** with the neural Lupe voice reads the Spanish summary aloud. **Amazon S3** holds documents for exactly one hour, then deletes them. **Amazon DynamoDB** stores only the refusal events — what the app refused to do, never what the user asked. And **Amazon Bedrock Guardrails** enforces the denied topics and PII masking.
+> **Amazon Textract** reads the document text — purpose-built for documents, faster and cheaper than asking a foundation model to do OCR. **Amazon Bedrock with Claude Sonnet 4.6** does the semantic work on that OCR'd text — understanding which date is the hearing date, which statute is cited, what's an allegation versus a fact — in the user's chosen language. **Amazon Polly** reads the summary aloud in the matching language (neural Lupe for Spanish). **Amazon S3** holds documents for exactly one hour, then deletes them. **Amazon DynamoDB** stores only the refusal events — what the app refused to do, never what the user asked. And **Amazon Bedrock Guardrails** is wired in for denied topics and PII masking — for the hackathon the Guardrail ID is `PLACEHOLDER` and the refusals are enforced at the prompt level; flipping the ID is the immediate post-hackathon work.
 >
 > Treating this like an AWS product, not a prompt. One CloudFormation template, six services, four of them Bedrock, no fine-tuning."
 
@@ -172,7 +172,7 @@ Companion to `docs/DEMO_SCRIPT.md` (which covers the 3-minute demo beats in isol
 | Failure | Backup |
 |---|---|
 | Scan takes >40s | Switch to pre-recorded 90-sec demo video. Don't apologize, just keep narrating. |
-| Camera fails | Use the bundled demo document path (`loadDemoDocument()` — tap the small "Use the demo document" link on splash). |
+| Camera fails | Switch to the 90-second backup video. (The "Use the demo document" splash button has been removed — there is no in-app demo path anymore.) |
 | Network drops | The 90-sec video. Same narration. |
 | Polly audio doesn't play | Skip the listen tap. The card still shows the text. Move on. |
 | Judge asks something not in FAQ | Two-second pause. Then: "Honest answer — I don't know. I'd want to test that before claiming. Here's how I'd find out: [give the method]." |

@@ -44,14 +44,16 @@ This is the beat-by-beat live demo. Memorize the **bold** sentences. The rest is
 
 **Stage direction:** Pick up the iPhone with your other hand. Tap the camera button. Center the printed NTA in the viewfinder. Snap.
 
+**Stage direction:** After confirming the photo, tap **Español** on the language picker — this is the moment grandma chooses her language; everything from here on respects the choice.
+
 **Say while the redaction animation plays:**
 
-> **"Before anything reaches the cloud, we redact. A-number, name, address, date of birth, case number. You're watching us do it now. The model never sees who she is."**
+> **"Before anything reaches the cloud, you see this — *Your information is protected* — the visible redaction pass. A-number, name, address, date of birth, case number. You're watching us do it now."**
 
-**Stage direction:** As the result cards load, swipe through the redaction confirmation. The cards appear:
+**Stage direction:** As the result cards load, the privacy banner appears at the top — *"Your photo will be deleted in 1 hour. No account, no tracking."* The cards then appear:
 1. Headline summary (Spanish)
 2. Urgency card with hearing date
-3. Section cards
+3. Section cards with the two-level Plain / Detailed slider
 
 **Tap the play button on the headline summary card.**
 
@@ -120,7 +122,7 @@ Each red flag has a citation chip: `FTC.gov: Immigration Services Scams` and `US
 
 **Say:**
 
-> **"This is what we hand the grandmother. Not a response to USCIS — we will never write that. We are not lawyers and we never will be. This is what she brings to her free legal aid appointment. Translated summary of what's being asked. Evidence checklist. Pre-filled request to reschedule if she needs time. Phone-call script in Spanish for the legal aid intake line. And the questions to ask the lawyer who WILL write the response."**
+> **"This is what we hand the grandmother. Not a response to USCIS — we will never write that. We are not lawyers and we never will be. This is what she brings to her free legal aid appointment. Translated summary of what's being asked. Her deadline. The documents to gather, as an interactive checklist. Phone-call script in Spanish for the legal aid intake line. And the questions to ask the lawyer who WILL write the response."**
 
 **Stage direction:** Show the back of the packet, where the cover sheet reads in big text: **"Bring this to your appointment. Your lawyer will write the official response."**
 
@@ -136,7 +138,7 @@ Each red flag has a citation chip: `FTC.gov: Immigration Services Scams` and `US
 
 **Say:**
 
-> **"Six AWS services. Four of them are Bedrock — Knowledge Bases, Guardrails, multimodal Claude Sonnet 4.6, Polly for Spanish voice. One CloudFormation template deploys the whole trust stack. No custom models. No fine-tuning. The same architecture, tomorrow, runs tenant notices, utility shutoffs, school discipline letters, IRS mail — anywhere a frightening English document lands on a kitchen counter in America."**
+> **"Six AWS services. Textract reads the document — purpose-built for OCR. Claude Sonnet 4.6 on Bedrock does the semantic work in the user's chosen language. Bedrock Knowledge Bases grounds every claim in USCIS, FTC, EOIR sources. Polly speaks the summary. One CloudFormation template deploys the whole trust stack. No custom models. No fine-tuning. The same architecture, tomorrow, runs tenant notices, utility shutoffs, school discipline letters, IRS mail — anywhere a frightening English document lands on a kitchen counter in America."**
 
 **LP woven:** Frugality (managed services, no fine-tuning), Think Big (the trust stack scales beyond immigration), Bias for Action (CloudFormation = real engineering discipline).
 

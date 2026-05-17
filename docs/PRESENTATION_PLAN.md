@@ -27,7 +27,7 @@ That is the through-line. Every slide plants one of those three.
 | Old plan said | Current build |
 |---|---|
 | Packet includes a "pre-filled extension request" letter | **Removed.** It implied a legal recommendation (whether to ask for more time is the lawyer's call). Packet now: translated summary, deadline, documents to gather, phone-call script, questions for the lawyer, cover sheet. |
-| Demo beat: "Language picker → tap Español" | No in-app picker. App is **Spanish-first in production**; ships English-default during team dev. **Pre-pitch checklist item:** flip the build to Spanish before the pitch. |
+| Demo beat: "Language picker → tap Español" | **Restored.** The LanguagePickerView is live between photo confirmation and the scan — user taps Spanish or English, and everything from that point on (cards, UI chrome, errors, audio) respects the choice. |
 | "Six AWS services" listed loosely | Six services, **four of them Bedrock** (multimodal model, fast model, Knowledge Base, Guardrails) + Lambda + API Gateway. Textract, Polly, Transcribe, S3, DynamoDB, SAM are utilities. |
 | 3 Lambda functions | **4 Lambdas**: `scan`, `ask`, `scan_packet`, `refusal_log`. |
 
@@ -129,13 +129,13 @@ Each slide below gives: **ON SLIDE** (what the audience sees — keep it sparse)
 **SAY (~75 sec):**
 > "This is the Bedrock track, and Bedrock is not a detail of our build — it *is* the build. Four Bedrock capabilities, each doing one job:
 >
-> **Claude Sonnet 4.6, multimodal** — reads the document and does the semantic work: which date is the hearing, which line is an allegation versus a fact.
+> **Claude Sonnet 4.6** — does the semantic work on the OCR'd text Textract returns: which date is the hearing, which line is an allegation versus a fact, all in the user's chosen language. We deliberately use Textract for OCR and Claude for understanding — each tool doing what it's best at.
 >
 > **Nova Pro** — the fast model for follow-up questions, so the chat stays quick.
 >
 > **Bedrock Knowledge Bases** — managed retrieval over a curated corpus: USCIS, the FTC, the EOIR practice manual, Seattle legal aid. Every claim the app makes is grounded in a real source, with a citation the user can tap. We wrote zero vector-database code.
 >
-> **Bedrock Guardrails** — ten denied topics, a PII filter, and contextual grounding. This is the refusal engine. Here's the part that matters: the trust is **not in our prompt**. A prompt can be jailbroken. The refusal is enforced by Bedrock, underneath the model. We're grateful for that — it means we didn't have to invent the safety layer; Amazon built it for exactly this."
+> **Bedrock Guardrails** — wired in for ten denied topics, a PII filter, and contextual grounding. To be honest with you: for this hackathon the Guardrail ID is still `PLACEHOLDER`, so the refusals you saw are enforced at the prompt level today. The plumbing is in place; flipping the ID to the live Guardrail is the immediate post-hackathon work. We picked Bedrock specifically so the safety layer we *don't* have to invent is there waiting."
 
 **PLANTED:** *Earn Trust* (enforced, not prompted) + gratitude layer 3 (grateful for the building blocks).
 
@@ -232,7 +232,7 @@ Rule: if a judge says "which Leadership Principles did you use?", *then* you nam
 
 ## Pre-pitch checklist (do these before going on stage)
 
-- [ ] **Flip the iOS build to Spanish-first** (it ships English-default for team dev — `MVP.md` §Language status).
+- [ ] Confirm the LanguagePickerView is live in the build and `Español` is the selection rehearsed on stage.
 - [ ] Slide 9: replace target numbers with the **actual measured eval + latency numbers**.
 - [ ] Print the synthetic NTA and the notario-scam SMS, both watermarked `DEMO – NOT A REAL CASE`.
 - [ ] Pre-load the 90-second backup demo video in QuickTime.
@@ -247,7 +247,7 @@ Rule: if a judge says "which Leadership Principles did you use?", *then* you nam
 | Failure | Backup |
 |---|---|
 | Scan stalls > 40s | Cut to the 90-second video. Don't apologize — keep narrating. |
-| Camera fails | Use the bundled demo-document path (the "Use the demo document" link on splash). |
+| Camera fails | Switch to the 90-second backup video. (The "Use the demo document" splash button has been removed — there is no in-app demo path anymore.) |
 | Network drops | The 90-second video. Same narration. |
 | Polly audio won't play | Skip the listen tap; the text card still shows. Move on. |
 | Judge asks something you don't know | Pause. "Honest answer — I don't know. Here's how I'd find out: [method]." |
@@ -264,8 +264,8 @@ Rule: if a judge says "which Leadership Principles did you use?", *then* you nam
 
 ## Open concerns for Alex (decide before the pitch)
 
-1. **`scan_packet` may still return an `extension_template` field.** `MVP.md` says the extension-request letter was removed, but the backend handler appears to still produce that field. If the iOS Packet view renders it, the demo contradicts our own "we don't give legal advice" line on stage. **Recommendation:** have Koda confirm the field is dead/unused, or Riku confirm iOS never renders it — before rehearsal. This is the one item that can hurt us in Q&A.
-2. **`MVP.md` cut-order still says "we weren't using Textract anyway"** — but the current `scan` handler *does* use Textract. Minor, but fix the line so nobody on the team repeats it to a judge.
+1. **Bedrock Guardrail ID is still `PLACEHOLDER`.** Refusals are prompt-enforced today, not Guardrail-enforced. The slide-7 talk track is honest about this; do not let yourself drift into "Guardrails enforces our refusals" on stage — that would overclaim. If a judge digs in, the honest answer is "the Guardrail is wired into the stack; the ID is `PLACEHOLDER` for the hackathon and the refusals are prompt-enforced today — flipping the ID is the immediate next step."
+2. **Confirm `cachedPacket` pre-fetch is healthy.** The packet view should render instantly from the cache when "Help me respond" is tapped; if you ever see a spinner there, the pre-fetch failed and you're on the slow path. Rehearse the recovery: "the packet is generating now — while it does…" and keep narrating.
 
 ---
 

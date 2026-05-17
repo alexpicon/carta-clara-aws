@@ -15,7 +15,7 @@ This doc doubles as the FAQ on your Devpost submission page. Copy/paste sections
 DeepL and Google Translate convert English text to Spanish text — the words are translated, but the meaning, the urgency, and the action are not. A grandmother reading a translated Notice to Appear still doesn't know what to do.
 
 Carta Clara does seven things translators don't:
-1. Explains what the document *means*, not just what it says, at a 5th-grade reading level
+1. Explains what the document *means*, not just what it says, with a two-level reading slider (Plain / Detailed)
 2. Extracts the deadline as a separate, urgent card
 3. Checks for scam and notario red flags using FTC and USCIS public advisories
 4. Generates a Response Preparation Packet for free legal aid appointments
@@ -43,7 +43,7 @@ Specifically, the product refuses:
 - "Is this judge biased?"
 - "How do I avoid ICE?"
 
-The denied-topic list is implemented with Amazon Bedrock Guardrails — every Bedrock invocation in our Lambda functions has Guardrails attached. We tested it Sunday morning against 15 adversarial prompts. Refused all 15.
+The denied-topic list is enforced at the prompt level — every Bedrock invocation pairs the system prompt with a denied-topics prompt that produces a refusal for any of these patterns. (A Bedrock Guardrail is wired into the stack as a `PLACEHOLDER` ID for the hackathon and is not currently enforcing — the refusals are coming from the prompts today.) We tested against 15 adversarial prompts. Refused all 15.
 
 ---
 
@@ -77,15 +77,14 @@ We chose immigration documents for the demo because of the emotional weight. The
 
 ### Q5: How do you handle PII? What happens to the documents users upload?
 
-**Documents are deleted from S3 after one hour. The model never sees the user's name.**
+**Documents are deleted from S3 after one hour. No accounts, no tracking.**
 
-Three layers of protection:
+Two layers of protection that are live today:
 
-1. **Pre-model PII redaction.** Before the photographed document reaches the Bedrock multimodal model, our Lambda runs Guardrails PII filters that mask A-numbers, names, addresses, dates of birth, and case numbers. The model receives `[REDACTED_NAME]`, not "Maria Hernandez."
-2. **Ephemeral storage.** Uploads land in S3 with a 1-hour lifecycle deletion policy. We do not retain documents past the session.
-3. **Logged only as refusal events.** Our DynamoDB log records that a refusal occurred and which topic triggered it — never the original question, and never any PII. Each log entry has a 1-hour TTL too.
+1. **Ephemeral storage.** Uploads land in S3 with a 1-hour lifecycle deletion policy. We do not retain documents past the session. The Results screen shows the banner: *"Your photo will be deleted in 1 hour. No account, no tracking."*
+2. **Logged only as refusal events.** Our DynamoDB log records that a refusal occurred and which topic triggered it — never the original question, and never any PII. Each log entry has a 1-hour TTL too.
 
-The user can see all of this — the redaction step is a visible animation in the UI before the model is invoked. That visibility is the trust signal.
+A third layer — a managed Bedrock Guardrail PII filter — is wired into the stack as a `PLACEHOLDER` for the hackathon and is not currently active. The redaction animation that plays in the UI shows where that filter belongs and is honest about the journey: ephemerality and no-accounts are real today; the model-side PII mask is in flight.
 
 ---
 
@@ -100,15 +99,15 @@ The line between legal *information* (fine) and legal *advice* (UPL) is the enti
 
 Every refused query routes to free legal aid clinics with real names, phone numbers, and addresses (Northwest Immigrant Rights Project, Colectiva Legal del Pueblo, Refugee Women's Alliance). We have outreach in progress with all three to validate the framing.
 
-We are aware of the ongoing Nippon Life Insurance case testing AI provider liability. Our scope is information-only by design, and the refusal patterns are enforced by Bedrock Guardrails — not trusted to model behavior.
+We are aware of the ongoing Nippon Life Insurance case testing AI provider liability. Our scope is information-only by design, and the refusal patterns are enforced at the prompt level today (the Bedrock Guardrail ID is still `PLACEHOLDER` for the hackathon and is on the path to live enforcement post-hackathon).
 
 ---
 
 ### Q7: What if the model hallucinates a wrong deadline or wrong court address?
 
-**Contextual grounding is enforced by Guardrails.**
+**Grounding is enforced today at the prompt level, with Bedrock Guardrails grounding as the next step.**
 
-Every model response is checked for grounding against the source document or the knowledge base. The threshold is 0.65 — if the model's claim isn't supported by the source, Guardrails intervenes and returns "I couldn't verify that — please ask a legal aid clinic." We ran 5 grounding-accuracy prompts in our eval suite. Cited correctly on all of them.
+Today, the system prompt instructs the model to refuse claims not present in the source document or the Knowledge Base — falling back to "I couldn't verify that — please ask a legal aid clinic." A Bedrock Guardrail contextual-grounding check at threshold 0.65 is wired in as `PLACEHOLDER` and will move from prompt-enforced to Guardrail-enforced after the hackathon. We ran 5 grounding-accuracy prompts in our eval suite. Cited correctly on all of them.
 
 We also display the extracted deadline alongside the original document image, so the user can visually verify the number themselves. If our extraction is wrong, they see it immediately.
 
@@ -140,7 +139,7 @@ Scaling-wise: the architecture is fully serverless. Lambda scales horizontally t
 
 **Three reasons that all matter for this product.**
 
-1. **Guardrails.** Bedrock Guardrails is the only managed service that gives us denied topics, PII redaction, and contextual grounding as a configurable layer, vendor-agnostic across foundation models. Replicating it on top of a direct Claude API call would be weeks of work — and it would be brittle code we'd have to maintain. The refusal counter you saw in the demo is enforced by AWS, not by our prompts.
+1. **Guardrails.** Bedrock Guardrails is the only managed service that gives us denied topics, PII redaction, and contextual grounding as a configurable layer, vendor-agnostic across foundation models. Replicating it on top of a direct Claude API call would be weeks of work — and it would be brittle code we'd have to maintain. For the hackathon the Guardrail ID is still `PLACEHOLDER`, so the refusals you saw in the demo are prompt-enforced today; moving them to the managed Guardrail layer is the immediate post-hackathon work.
 
 2. **Knowledge Bases.** Bedrock Knowledge Bases is managed RAG. We point it at our `kb-corpus/` (USCIS Avoid Scams, FTC notario guidance, EOIR Practice Manual, Seattle legal-aid resources) and Bedrock handles chunking, embedding, vector store, and retrieval. We didn't write a single line of vector-database code.
 
@@ -212,13 +211,13 @@ We are not building for a market analysis. We are building for the people sittin
 
 ## Roadmap questions
 
-### Q14: Why Spanish only? What about Mandarin, Korean, Vietnamese, Tagalog, Hindi?
+### Q14: Why only Spanish and English? What about Mandarin, Korean, Vietnamese, Tagalog, Hindi?
 
 **Because we will not ship a language we cannot validate.**
 
-Two of our teammates are native speakers of Korean and Hindi respectively. They are not native Spanish speakers. Spanish is the language one of us speaks fluently enough to validate every output before judging. We will not ship Korean output to a Korean-speaking grandmother that we haven't validated word-for-word with someone who would actually use it.
+The UI is bilingual today — the user picks Spanish or English at the language picker between confirming the photo and the scan, and everything from cards through chrome respects the choice. Two of our teammates are native speakers of Korean and Hindi respectively. They are not native Spanish speakers. Spanish and English are the languages we can validate every output in before judging. We will not ship Korean output to a Korean-speaking grandmother that we haven't validated word-for-word with someone who would actually use it.
 
-The architecture is language-agnostic — adding Korean is a matter of adding a Polly voice ID, a `target_language` parameter, and a native-speaker validation pass. It's a 3–4 hour task, gated entirely on whether we have the validator.
+The architecture is language-agnostic — adding Korean is a matter of adding a Polly voice ID, a value to the `language` parameter, an entry in the iOS string bundle, and a native-speaker validation pass. It's a 3–4 hour task, gated entirely on whether we have the validator.
 
 Roadmap: Korean (Q3 2026), Mandarin (Q4 2026), Vietnamese and Tagalog (2027), with each language gated on partnership with a native-speaker community organization. We will not ship a language without one.
 

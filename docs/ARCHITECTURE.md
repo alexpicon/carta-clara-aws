@@ -31,10 +31,10 @@ flowchart TB
     end
 
     subgraph Bedrock["🧠 Amazon Bedrock Trust Stack"]
-        BM[Multimodal Foundation Model<br/>Claude Sonnet 4.6<br/>via us cross-region profile]
+        BM[Foundation Model<br/>Claude Sonnet 4.6<br/>via us cross-region profile<br/>text-only — extracts from Textract OCR]
         BFAST[Fast Foundation Model<br/>Nova Pro 1.0<br/>for chat + scam check]
         KB[Knowledge Base<br/>USCIS • FTC • EOIR • Seattle legal aid]
-        GR[Guardrails<br/>10 denied topics<br/>PII filter<br/>Contextual grounding 0.65]
+        GR[Guardrails<br/>PLACEHOLDER ID — refusals are prompt-enforced today<br/>10 denied topics planned<br/>PII filter planned<br/>Contextual grounding 0.65 planned]
     end
 
     subgraph DocVoice["AWS Document & Voice AI"]
@@ -99,17 +99,18 @@ flowchart TB
 ## Data flow — the 30-second story
 
 1. Grandma photographs a USCIS Notice to Appear on her iPhone.
-2. iOS app POSTs `/scan` with base64 image.
-3. Lambda writes the image to S3 with a 1-hour TTL, then runs Textract OCR to get clean machine-readable text.
-4. Lambda calls Bedrock multimodal (Claude Sonnet 4.6) with Guardrails attached. Guardrails redact PII *before* the model sees the document content.
-5. Model returns structured JSON (document type, deadline, court, allegations, charges).
-6. Lambda calls Bedrock again with `spanish_summary_prompt` + Knowledge Base retrieval. Output: 5th-grade Spanish summary, grounded in citations.
-7. Lambda calls Polly to synthesize Spanish audio. Audio goes to S3 with a presigned URL.
-8. Lambda assembles the response (extraction + summary + audio URL + scam check + court brief + legal aid options + citations).
-9. iOS renders cards. Grandma taps the audio button. The Spanish summary plays in 8 seconds.
-10. Grandma types "Should I skip the hearing?" → `/ask` → Bedrock + Guardrails refuses → refusal logged to DynamoDB → safe-replacement text returns → iOS counter ticks 0 → 1.
-11. Grandma taps "Help me respond" → `/scan/packet` → preparation packet renders → tap "Share" → AirPrint or save PDF.
-12. Grandma calls Northwest Immigrant Rights Project at the number on the legal-help card.
+2. She confirms the photo, then picks her language (Spanish or Plain English) at the in-app language picker.
+3. iOS app POSTs `/scan` with the base64 image and `language=es` (or `en`).
+4. Lambda writes the image to S3 with a 1-hour TTL, then runs Amazon Textract (`DetectDocumentText`) to extract clean machine-readable text from the photographed page.
+5. Lambda calls Bedrock with Claude Sonnet 4.6 — text-only, no multimodal — passing the Textract OCR text plus the extraction prompt. Refusals and topic boundaries are enforced at the prompt level today (the Bedrock Guardrail ID is still `PLACEHOLDER`).
+6. Model returns structured JSON (document type, deadline, court, allegations, charges) plus the headline summary in the chosen language. The off-language summary field is left empty to save tokens.
+7. Lambda calls Bedrock again with the summary prompt + Knowledge Base retrieval. Output: a plain-language summary grounded in citations.
+8. Lambda calls Polly to synthesize audio in the chosen language. Audio goes to S3 with a presigned URL.
+9. Lambda assembles the response (extraction + summary + audio URL + scam check + court brief + legal aid options + citations). AppState immediately fires `/scan/packet` in the background and caches the result on `cachedPacket`.
+10. iOS renders cards. Grandma taps the audio button. The summary plays in 8 seconds.
+11. Grandma types "Should I skip the hearing?" → `/ask` → prompt-enforced refusal returns → refusal logged to DynamoDB → safe-replacement text returns → iOS counter ticks 0 → 1.
+12. Grandma taps "Help me respond" → ResponsePacketView hits the cache and renders the preparation packet instantly → tap "Share" → AirPrint or save PDF.
+13. Grandma calls Northwest Immigrant Rights Project at the number on the legal-help card.
 
 End-to-end latency target: under 15 seconds for the initial scan. Each subsequent question: under 5 seconds.
 
@@ -121,32 +122,33 @@ These are the talking points for the architecture slide. Each service was delibe
 
 ### Bedrock — the trust stack (4 of 6 services)
 
-**Amazon Bedrock Multimodal (Claude Sonnet 4.6 via `us.anthropic.claude-sonnet-4-6` cross-region inference profile)**
-The model that reads the document. Claude was selected over Nova Pro for the primary extraction because it produces more specific, structured output in our smoke tests (1827ms with detailed allegations vs. 494ms with generic phrasing). The US cross-region inference profile gives automatic failover if Oregon throttles.
+**Amazon Bedrock — Claude Sonnet 4.6 (text, via `us.anthropic.claude-sonnet-4-6` cross-region inference profile)**
+The model that does the semantic work — extraction and summary — on the OCR text Textract returns. Claude was selected over Nova Pro for the primary extraction because it produces more specific, structured output in our smoke tests (1827ms with detailed allegations vs. 494ms with generic phrasing). The US cross-region inference profile gives automatic failover if Oregon throttles. We deliberately stopped using Claude multimodal for OCR — Textract is the dedicated tool for that, and feeding Claude pre-OCR'd text is cheaper, faster, and more reliable.
 
-**Amazon Bedrock Multimodal — Fast Path (Nova Pro `amazon.nova-pro-v1:0`)**
+**Amazon Bedrock — Fast Path (Nova Pro `amazon.nova-pro-v1:0`)**
 The model that handles follow-up chat, scam-pattern checks, and any latency-critical path. 3.7x faster than Claude on cold calls. Routed via `FAST_MODEL_ID` env var so we can swap models without code changes.
 
 **Amazon Bedrock Knowledge Bases**
 Managed RAG. Our `kb-corpus/` directory holds the source documents (USCIS Avoid Scams, FTC immigration-scam advisory, EOIR Practice Manual NTA section, Seattle legal-aid directory, immigration-terms glossary). Bedrock chunks, embeds with Titan Embed v2, stores in OpenSearch Serverless, and retrieves on demand. We didn't write a single line of vector-database code.
 
-**Amazon Bedrock Guardrails**
-The enforcement layer for the entire responsible-AI story:
+**Amazon Bedrock Guardrails (wired in as `GUARDRAIL_ID=PLACEHOLDER` today)**
+The intended enforcement layer for the responsible-AI story. **Today the Guardrail ID is `PLACEHOLDER` and is not actually configured** — refusals are enforced at the prompt level (system prompt + denied-topics prompt). The Guardrail wiring is plumbed end-to-end so we can flip the ID once the managed Guardrail is provisioned post-hackathon. Planned configuration:
 - 10 denied topics from `docs/DENIED_TOPICS.md` (legal strategy, hearing skip, asylum eligibility, deportation prediction, judge bias, ICE scripts, etc.)
 - PII filter — A-numbers, names, addresses, SSNs masked before any model invocation
 - Contextual grounding at 0.65 — the model cannot invent facts not present in the source document or KB
-- Every Bedrock invocation in our Lambdas attaches the Guardrail. The refusal counter is the visible artifact of this layer working.
+
+The refusal counter in the UI is the visible artifact of the prompt-enforced refusals working today.
 
 ### Compute (4 Lambda functions)
 
 **Lambda — `scan`** (`backend/src/scan/handler.py`)
-Orchestrates the document-understanding pipeline: S3 write → Textract OCR → multimodal call → KB retrieve → Polly synthesis → assembled response. Cold start ~2s. Warm latency: under 3s on Bedrock-bound work.
+Orchestrates the document-understanding pipeline: S3 write → Textract OCR → Claude Sonnet 4.6 text call (extraction + summary in the requested `language`) → KB retrieve → Polly synthesis → assembled response. Cold start ~2s. Warm latency: under 3s on Bedrock-bound work. Accepts `language: "en" | "es"`; fills only the matching summary field to save tokens.
 
 **Lambda — `ask`** (`backend/src/ask/handler.py`)
 Handles voice-or-text follow-up questions. Transcribe streaming if audio. Bedrock call with KB retrieval + Guardrails. Logs refusals to DynamoDB with PII redaction.
 
 **Lambda — `scan_packet`** (`backend/src/scan_packet/handler.py`)
-Builds the Response Preparation Packet. Fast path: template substitution from the extraction JSON the iOS app already holds. Slow path: re-OCR the document from S3 when extraction is missing. Bedrock multimodal + Guardrails.
+Builds the Response Preparation Packet. The iOS app passes back `extraction`, `summary`, and `language` from the prior `/scan` response so this Lambda runs as a text-only Bedrock call (~10–14s) instead of re-OCRing the image and timing out. AppState kicks this off in the background the moment `/scan` succeeds and caches the result on `cachedPacket`; ResponsePacketView renders instantly on a cache hit. The packet shape excludes any extension-request template by design (would imply legal-strategy advice).
 
 **Lambda — `refusal_log`** (`backend/src/refusal_log/handler.py`)
 The iOS refusal counter polls this. Returns count + recent 20 entries for the current session. Pure DynamoDB Query.
@@ -169,13 +171,13 @@ PII-redacted refusal log. Composite key: `session_id` (partition) + `ts` (sort).
 ### Document & voice services
 
 **Amazon Textract**
-Document OCR. The `scan` Lambda sends the photographed document to Textract's `DetectDocumentText` to get clean machine-readable text before the extraction call. `scan_packet` re-uses Textract as a fallback when the iOS app does not supply the extraction JSON.
+Document OCR — the dedicated tool for reading the document. The `scan` Lambda sends the photographed document to Textract's `DetectDocumentText` to get clean machine-readable text, then hands that text to Claude Sonnet 4.6 for extraction and summary. `scan_packet` re-uses Textract only as a fallback for the rare case where the iOS app does not supply the cached extraction JSON — the normal path is text-only and skips OCR entirely.
 
 **Amazon Transcribe (streaming)**
 Spanish ASR for voice-input mode in Ask About This Document. Why streaming over batch: low-latency real-time captioning for the chat surface.
 
-**Amazon Polly (neural voice "Lupe")**
-Spanish text-to-speech for the headline summary playback. We chose neural over standard for natural-sounding output; generative-tier voices are an optional upgrade if available.
+**Amazon Polly (neural voices)**
+Text-to-speech for the headline summary playback in the user's chosen language — `Lupe` for Spanish, an English neural voice for English. We chose neural over standard for natural-sounding output; generative-tier voices are an optional upgrade if available.
 
 ### Infrastructure as code
 
@@ -200,9 +202,9 @@ The remaining two services (Lambda, API Gateway) are glue. The remaining glue (S
 
 When a judge asks "what's the architecture?" the one-sentence answer is:
 
-> *"Bedrock multimodal Claude reads the document, Bedrock Knowledge Bases grounds the explanation, Bedrock Guardrails enforces the refusals and PII redaction, Polly speaks Spanish, and SAM deploys the whole thing with one command."*
+> *"Amazon Textract reads the document, Claude Sonnet 4.6 on Bedrock does the semantic extraction and summary in the user's chosen language, Bedrock Knowledge Bases grounds the explanation, refusals are prompt-enforced today with a Bedrock Guardrail wired in for post-hackathon, Polly speaks the summary, and SAM deploys the whole thing with one command."*
 
-That sentence puts Bedrock in front, names the four Bedrock features, and signals SAM as the deployment discipline. Memorize it.
+That sentence puts Bedrock in front, names the Bedrock features in play, and signals SAM as the deployment discipline. Memorize it.
 
 ---
 
@@ -210,7 +212,7 @@ That sentence puts Bedrock in front, names the four Bedrock features, and signal
 
 **Why no Bedrock Agents?** We considered Bedrock Agents for orchestration but rejected it for v1 — for our flow (scan → extract → summarize → check scams → assemble response), straight Lambda + Bedrock SDK calls are simpler and easier to debug under hackathon time pressure. Agents become valuable if we add multi-step reasoning workflows in v2.
 
-**Why no Bedrock Data Automation?** Considered for the PDF → structured extraction step. Rejected: Bedrock multimodal handles the image directly with extraction prompts, and the extra service would have added another moving part for the demo.
+**Why no Bedrock Data Automation?** Considered for the PDF → structured extraction step. Rejected: Textract + a text-only Claude extraction call already cover that pipeline cleanly, and an extra service would have added another moving part for the demo.
 
 **Why us-west-2?** Bedrock model availability is broadest there. Claude Sonnet 4.6, Nova Pro, Nova Sonic, Titan Embed v2 — all GA in Oregon. Some other regions lag by weeks on newest models.
 
@@ -232,7 +234,8 @@ Per-scan cost breakdown (measured from CloudWatch X-Ray + Bedrock pricing on May
 
 | Component | Cost per scan |
 |-----------|---------------|
-| Bedrock Claude Sonnet 4.6 multimodal call | ~$0.025 |
+| Bedrock Claude Sonnet 4.6 text call (extraction + summary on Textract OCR) | ~$0.025 |
+| Amazon Textract `DetectDocumentText` | ~$0.0015 |
 | Bedrock Knowledge Base retrieval | ~$0.005 |
 | Amazon Polly Spanish neural voice | ~$0.005 |
 | Lambda + API Gateway + S3 + DynamoDB | < $0.001 |

@@ -69,19 +69,19 @@ Then a single column on the right with no X, just the word: **Carta Clara**.
 Carta Clara — snap. Listen. Act.
 
 ### Main message
-A native iPhone app that turns a frightening English document into a plain-Spanish summary, a deadline, a scam check, and a Response Preparation Packet for a free lawyer — without ever giving legal advice.
+A native iPhone app that turns a frightening English document into a plain summary in the user's chosen language (Spanish or English), a deadline, a scam check, and a Response Preparation Packet for a free lawyer — without ever giving legal advice.
 
 ### Bullets (for slide)
-- Photograph any English document with your iPhone
-- 15 seconds: Spanish summary plays as audio, deadline card renders, scam check runs
+- Photograph any English document with your iPhone, confirm, then pick Spanish or English
+- 15 seconds: summary plays as audio in the chosen language, deadline card renders, scam check runs
 - Ask follow-up questions by voice or text
 - Refusal counter is visible at all times — every legal-strategy question is refused and routed to free legal aid
-- "Help me respond" generates a printable Preparation Packet for the legal-aid appointment
+- "Help me respond" opens a printable Preparation Packet (pre-fetched in the background, renders instantly) for the legal-aid appointment
 
 ### Visual suggestion
 Three iPhone screenshots in a row, each labeled:
 1. **Snap** — camera view of the synthetic NTA
-2. **Listen** — results card with Spanish summary + play button + deadline highlighted
+2. **Listen** — results card with summary + play button + deadline highlighted
 3. **Act** — Response Preparation Packet preview with the cover sheet visible
 
 Below the row: a horizontal arrow connecting all three, labeled "15 seconds."
@@ -102,10 +102,11 @@ All in on Amazon Bedrock.
 Six AWS services. Four of them are Bedrock. One CloudFormation template deploys the whole trust stack.
 
 ### Bullets (for slide)
-- **Bedrock multimodal** (Claude Sonnet 4.6 cross-region) — reads the document
+- **Amazon Textract** — purpose-built OCR for the photographed document
+- **Bedrock — Claude Sonnet 4.6** (text, cross-region) — semantic extraction + summary from the OCR text, in the chosen language
 - **Bedrock Knowledge Bases** — grounds explanations in USCIS, FTC, EOIR public sources
-- **Bedrock Guardrails** — 10 denied topics, PII redaction, contextual grounding @ 0.65
-- **Bedrock multimodal fast path** (Nova Pro) — 3.7x faster for chat + scam check
+- **Bedrock Guardrails** — wired in for denied topics, PII filter, contextual grounding @ 0.65 (`GUARDRAIL_ID=PLACEHOLDER` for the hackathon; refusals are prompt-enforced today)
+- **Bedrock fast path** (Nova Pro) — 3.7x faster for chat + scam check
 - Glue: API Gateway, Lambda, S3 (1h TTL), DynamoDB (1h TTL), Polly, Transcribe
 - One SAM template — `sam deploy` — full reproducibility
 
@@ -115,9 +116,9 @@ The Mermaid system diagram from `docs/ARCHITECTURE.md` — simplified to ~8 boxe
 If Mermaid won't render in the deck, use a flat PNG export.
 
 ### Speaker notes (memorize)
-> *"Bedrock multimodal Claude reads the document. Bedrock Knowledge Bases grounds the explanation. Bedrock Guardrails enforces the refusals and PII redaction. Polly speaks Spanish. SAM deploys the whole thing with one command."*
+> *"Amazon Textract reads the document. Claude Sonnet 4.6 on Bedrock does the semantic extraction and summary in the user's chosen language. Bedrock Knowledge Bases grounds the explanation. Refusals are prompt-enforced today with a Bedrock Guardrail wired in for post-hackathon. Polly speaks the summary. SAM deploys the whole thing with one command."*
 
-That sentence puts Bedrock in front, names the four Bedrock features, and signals SAM as the deployment discipline. **Memorize this verbatim.**
+That sentence puts Textract and Bedrock in front, names the Bedrock features in play, is honest about Guardrails today, and signals SAM as the deployment discipline. **Memorize this verbatim.**
 
 ---
 

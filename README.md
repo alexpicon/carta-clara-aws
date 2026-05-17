@@ -24,7 +24,7 @@ carta-clara/
 │   ├── samconfig.toml           ← deployment defaults
 │   ├── README.md                ← deploy instructions
 │   └── src/
-│       ├── scan/                ← POST /scan — multimodal extract + cards
+│       ├── scan/                ← POST /scan — Textract OCR + Claude extract + cards
 │       ├── ask/                 ← POST /ask  — bounded chat about a document
 │       └── refusal_log/         ← GET  /refusal-log — visible trust counter
 ├── ios/                         ← Swift / SwiftUI app
@@ -51,7 +51,7 @@ carta-clara/
 1. **No real immigration documents.** Synthetic only, watermarked `DEMO – NOT A REAL CASE`.
 2. **No legal advice.** The product refuses legal-strategy questions and routes to legal aid.
 3. **PII redacted before any model call.** Visible in the UI.
-4. **One language, polished — never half-baked.** The iOS app currently runs **English-default** during team development (see `docs/TENETS.md` §9); Spanish remains the production target and the backend still produces Spanish content. Korean / Hindi / others are roadmap.
+4. **Bilingual UI — never half-baked.** The user picks Spanish or English at the language picker between photo confirmation and the scan; everything from that point on (cards, chrome, errors, audio) respects the choice. Splash, Camera, and the Language Picker stay English by default since they're pre-selection. Korean / Hindi / others are roadmap.
 5. **No accounts.** Ephemeral session. S3 1-hour TTL.
 6. **Sunday 8am = scope freeze.** Anything not working by then doesn't ship.
 
