@@ -11,7 +11,7 @@ capabilities = "CAPABILITY_IAM"
 resolve_s3 = true
 s3_prefix = "carta-clara-mvp"
 image_repositories = []
-parameter_overrides = "KnowledgeBaseId=\"PLACEHOLDER\" GuardrailId=\"PLACEHOLDER\" GuardrailVersion=\"DRAFT\" MultimodalModelId=\"us.anthropic.claude-sonnet-4-6\" TextModelId=\"us.anthropic.claude-sonnet-4-6\" FastModelId=\"amazon.nova-pro-v1:0\" PollyVoiceId=\"Lupe\""
+parameter_overrides = "KnowledgeBaseId=\"PLACEHOLDER\" GuardrailId=\"PLACEHOLDER\" GuardrailVersion=\"DRAFT\" MultimodalModelId=\"us.anthropic.claude-sonnet-4-6\" TextModelId=\"us.anthropic.claude-sonnet-4-6\" FastModelId=\"us.amazon.nova-pro-v1:0\" PollyVoiceId=\"Lupe\""
 
 [default.sync.parameters]
 watch = true

@@ -49,7 +49,7 @@ Parameters:
     Description: Bedrock text model / inference profile for chat and explanation
   FastModelId:
     Type: String
-    Default: amazon.nova-pro-v1:0
+    Default: us.amazon.nova-pro-v1:0
     Description: Faster fallback model for low-latency operations (scam pattern check, follow-up chat). 3.7x faster than Claude on cold calls.
   PollyVoiceId:
     Type: String
