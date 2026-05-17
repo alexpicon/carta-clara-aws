@@ -161,17 +161,20 @@ def _handle(event, started):
             "English text into them. The response must contain NO Spanish at "
             "all. summary_en and summary_es should both be the same English text."
         )
-    text_model = h.env("TEXT_MODEL_ID", "us.anthropic.claude-sonnet-4-6")
+    # Summary uses the FAST model — API Gateway HTTP APIs have a hard 30s
+    # integration timeout and the previous Sonnet-only path was hitting 34-37s.
+    # Nova Pro produces equivalent-quality summary in ~1/3 the wall time.
+    summary_model = h.env("FAST_MODEL_ID", "amazon.nova-pro-v1:0")
 
     summary_input = (
         f"{summary_prompt}\n\nEXTRACTED DOCUMENT DATA (JSON):\n"
         f"{json.dumps(extraction, ensure_ascii=False)}"
     )
     summary_res = h.converse(
-        model_id=text_model,
+        model_id=summary_model,
         content_blocks=[h.text_block(summary_input)],
         system=system_prompt or None,
-        max_tokens=1800,
+        max_tokens=1200,
     )
     if summary_res.intervened:
         return _refusal_response(session_id, "summary generation blocked by Guardrail", started, language)
@@ -182,9 +185,14 @@ def _handle(event, started):
     sections = _normalize_sections(summary_data.get("sections", []))
 
     # --- 5. Polly audio of the headline summary --------------------------
+    # Polly SynthesizeSpeech is hard-capped at 3000 chars. The summary is
+    # *supposed* to be 1-2 sentences but the model sometimes overshoots; clamp
+    # at 2800 chars so we still get audio instead of a TextLengthExceededException.
     audio_url = None
     spoken_text = summary_es if language == "es" else (summary_en or summary_es)
     if spoken_text:
+        if len(spoken_text) > 2800:
+            spoken_text = spoken_text[:2800].rsplit(" ", 1)[0] + "…"
         try:
             audio_bytes = h.synthesize_speech(spoken_text, language=language)
             audio_key = f"{session_id}/{document_id}-summary.mp3"
@@ -196,7 +204,7 @@ def _handle(event, started):
     # --- 6. assemble -----------------------------------------------------
     total_usage = _merge_usage(extract_res.usage, summary_res.usage)
     cost = h.estimate_cost(text_model, extract_res.usage) + h.estimate_cost(
-        text_model, summary_res.usage
+        summary_model, summary_res.usage
     )
 
     result = {
