@@ -32,18 +32,23 @@ That's it. No third sentence. No "this is important," no "you should call a lawy
 
 ### 2. Sections — produce EXACTLY these 4, in this order
 
-Each section's `section_body_es` is **2 short sentences max**, and **must
-quote at least one specific value** from EXTRACTION_JSON. Skip a section only
-if its trigger fields are all `null`.
+Skip a section only if its trigger fields are all `null`.
 
 | section_title_en | section_title_es | Trigger | Must include |
 |---|---|---|---|
 | **Who sent this** | Quién envió esto | `issuing_agency` set | Agency name; document type; officer title if known. |
 | **What they say about you** | Lo que dicen sobre ti | `alleged_basis_summary` OR `charges_cited` non-empty | The allegation in plain words; list EACH `charges_cited` entry verbatim with a one-line plain meaning. |
-| **Your key dates** | Tus fechas importantes | `hearing_date` OR `deadline_critical` set | Each date verbatim (YYYY-MM-DD) with what it means. If both null, omit this section entirely. |
+| **Your key dates** | Tus fechas importantes | `hearing_date` OR `deadline_critical` set | Each date verbatim (YYYY-MM-DD) with what it means. If both null, omit this section. |
 | **Your rights now** | Tus derechos ahora | Always | Right to a lawyer, right to a free interpreter in immigration court, right to remain silent in some interactions. Information only, no advice. |
 
-DO NOT produce additional sections. DO NOT produce `section_body_full_es` — the backend handles that field.
+### 2a. EACH section MUST produce two bodies
+
+Per section, write BOTH of these — they feed two different UI states:
+
+- `section_body_es` — **1–2 sentences**, at the requested `{{READING_LEVEL}}`. The Summary/Normal-slider view shows this.
+- `section_body_full_es` — **4–6 sentences**, always at FULL detail. This is what the Full-slider view expands to. It MUST contain meaningfully more information than `section_body_es`: more specific facts from EXTRACTION_JSON, what the user can typically expect at this stage of the process, and one extra piece of context a helper would find useful. Same facts, more depth — no advice.
+
+The two bodies must differ. If `section_body_full_es` is just a rephrasing of `section_body_es`, the slider has nothing to switch to — produce real additional content.
 
 ### 3. Specificity test
 
@@ -83,7 +88,8 @@ facts, different wording:
     {
       "section_title_en": "Who sent this",
       "section_title_es": "Quién envió esto",
-      "section_body_es": "2 short sentences with specific facts",
+      "section_body_es": "1-2 short sentences at requested reading level, specific facts",
+      "section_body_full_es": "4-6 sentences with meaningfully MORE detail than body_es — additional facts, what-to-expect context, helper-level depth. Same information, more depth, no advice.",
       "citation_ids": []
     }
   ],
@@ -96,4 +102,4 @@ facts, different wording:
 }
 ```
 
-Return the JSON object only. No fences. No commentary. Total output ≤ 1200 tokens.
+Return the JSON object only. No fences. No commentary. Total output ≤ 1600 tokens.
