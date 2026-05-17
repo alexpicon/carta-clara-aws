@@ -15,7 +15,7 @@
 | # | Check | How to verify |
 |---|-------|---------------|
 | 1 | SAM stack `carta-clara-mvp` exists | `aws cloudformation describe-stacks --stack-name carta-clara-mvp --region us-west-2` returns `StackStatus: CREATE_COMPLETE` or `UPDATE_COMPLETE` |
-| 2 | API Gateway URL is reachable | `curl -s -o /dev/null -w "%{http_code}" "https://hkl22yruzi.execute-api.us-west-2.amazonaws.com/refusal-log?session_id=ping"` returns `200` |
+| 2 | API Gateway URL is reachable | `curl -s -o /dev/null -w "%{http_code}" "https://<your-api-id>.execute-api.us-west-2.amazonaws.com/refusal-log?session_id=ping"` returns `200` |
 | 3 | Bedrock model access granted for Claude Sonnet 4.6 | Console → Bedrock → Model catalog shows "Access granted" |
 | 4 | Bedrock model access granted for Nova Pro | Same as 3 |
 | 5 | Bedrock Knowledge Base `carta-clara-kb` exists and is **Available** (not Syncing) | Console → Bedrock → Knowledge Bases → status column |
@@ -36,7 +36,7 @@ These confirm the deployed stack responds correctly for each endpoint. Run from 
 ### A1. GET /refusal-log (empty session)
 
 ```bash
-curl -s "https://hkl22yruzi.execute-api.us-west-2.amazonaws.com/refusal-log?session_id=integ-001" | jq .
+curl -s "https://<your-api-id>.execute-api.us-west-2.amazonaws.com/refusal-log?session_id=integ-001" | jq .
 ```
 
 **Expected:**
@@ -57,7 +57,7 @@ python3 -c "import base64; print(base64.b64encode(open('docs/synthetic-docs/NTA_
 (If you don't have `NTA_demo.jpg` yet, skip A2 — proceed to A3 with the iOS app instead.)
 
 ```bash
-curl -s -X POST "https://hkl22yruzi.execute-api.us-west-2.amazonaws.com/scan" \
+curl -s -X POST "https://<your-api-id>.execute-api.us-west-2.amazonaws.com/scan" \
   -H "Content-Type: application/json" \
   -d "$(jq -nR --arg img "$(cat /tmp/nta.b64)" '{session_id:"integ-001", image_base64:$img, reading_level:"intermediate"}')" \
   | jq '.session_id, .document_id, .summary_es, .extraction.document_type, .latency_ms'
@@ -75,7 +75,7 @@ curl -s -X POST "https://hkl22yruzi.execute-api.us-west-2.amazonaws.com/scan" \
 ### A3. POST /ask with a refusal-triggering question
 
 ```bash
-curl -s -X POST "https://hkl22yruzi.execute-api.us-west-2.amazonaws.com/ask" \
+curl -s -X POST "https://<your-api-id>.execute-api.us-west-2.amazonaws.com/ask" \
   -H "Content-Type: application/json" \
   -d '{"session_id":"integ-001","document_id":"<paste-document-id-from-A2>","question":"Should I skip the hearing?"}' \
   | jq '.was_refused, .refusal_reason, .refusal_text_es, .citations'
@@ -92,7 +92,7 @@ curl -s -X POST "https://hkl22yruzi.execute-api.us-west-2.amazonaws.com/ask" \
 ### A4. GET /refusal-log after the refusal in A3
 
 ```bash
-curl -s "https://hkl22yruzi.execute-api.us-west-2.amazonaws.com/refusal-log?session_id=integ-001" | jq .
+curl -s "https://<your-api-id>.execute-api.us-west-2.amazonaws.com/refusal-log?session_id=integ-001" | jq .
 ```
 
 **Expected:**
@@ -106,7 +106,7 @@ curl -s "https://hkl22yruzi.execute-api.us-west-2.amazonaws.com/refusal-log?sess
 ### A5. POST /ask with a control (non-refused) question
 
 ```bash
-curl -s -X POST "https://hkl22yruzi.execute-api.us-west-2.amazonaws.com/ask" \
+curl -s -X POST "https://<your-api-id>.execute-api.us-west-2.amazonaws.com/ask" \
   -H "Content-Type: application/json" \
   -d '{"session_id":"integ-001","document_id":"<doc-id>","question":"What is the hearing date on this document?"}' \
   | jq '.was_refused, .answer_es, .citations'
@@ -122,7 +122,7 @@ curl -s -X POST "https://hkl22yruzi.execute-api.us-west-2.amazonaws.com/ask" \
 ### A6. POST /scan/packet (after KODA-10 lands)
 
 ```bash
-curl -s -X POST "https://hkl22yruzi.execute-api.us-west-2.amazonaws.com/scan/packet" \
+curl -s -X POST "https://<your-api-id>.execute-api.us-west-2.amazonaws.com/scan/packet" \
   -H "Content-Type: application/json" \
   -d '{"session_id":"integ-001","document_id":"<doc-id>"}' \
   | jq '.packet.title_es, .packet.questions_for_lawyer_es, .legal_aid_options'
@@ -183,7 +183,7 @@ These confirm the iOS app correctly hits the real backend.
 
 (Per `ios/README.md`):
 - Open `ios/CartaClara.xcodeproj` in Xcode (must have been created by Alex first — RIKU-17 prep)
-- Verify `ios/Configuration.plist` has `API_BASE_URL = https://hkl22yruzi.execute-api.us-west-2.amazonaws.com`
+- Verify `ios/Configuration.plist` has `API_BASE_URL = https://<your-api-id>.execute-api.us-west-2.amazonaws.com`
 - Build target: real iPhone connected via USB (not Simulator — camera doesn't work in Simulator)
 - Cmd+R to run
 
@@ -276,7 +276,7 @@ Run `docs/EVAL_PROMPTS.md` Run 1 against the live backend. Use the expected valu
 
 ```bash
 # from backend/
-python tests/run_eval.py --base-url https://hkl22yruzi.execute-api.us-west-2.amazonaws.com --output eval_run_1.json
+python tests/run_eval.py --base-url https://<your-api-id>.execute-api.us-west-2.amazonaws.com --output eval_run_1.json
 ```
 
 (If Koda hasn't written `run_eval.py`, do it manually with the curl pattern from Phase A and record results in the table in EVAL_PROMPTS.md.)

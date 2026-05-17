@@ -17,6 +17,6 @@
 <plist version="1.0">
 <dict>
     <key>API_BASE_URL</key>
-    <string>https://hkl22yruzi.execute-api.us-west-2.amazonaws.com</string>
+    <string>REPLACE_WITH_SAM_DEPLOY_OUTPUT</string>
 </dict>
 </plist>

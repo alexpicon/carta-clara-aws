@@ -67,8 +67,8 @@ Next: CLAU-05 monitor worklogs. CLAU-06 update phase plan with names once Alex c
 
 ## 2026-05-16T17:30:00Z — INFRASTRUCTURE LIVE
 SAM stack `carta-clara-mvp` deployed to us-west-2.
-API_BASE_URL: https://hkl22yruzi.execute-api.us-west-2.amazonaws.com
-S3: carta-clara-uploads-672965015117-us-west-2
+API_BASE_URL: https://<your-api-id>.execute-api.us-west-2.amazonaws.com
+S3: carta-clara-uploads-<aws-account-id>-us-west-2
 DynamoDB: carta-clara-refusal-log
 Updated: docs/API_CONTRACT.md, ios/Configuration.plist with the real URL.
 Still placeholder in SAM parameters: KnowledgeBaseId, GuardrailId — these get filled after Alex creates the KB + Guardrail in Bedrock console.

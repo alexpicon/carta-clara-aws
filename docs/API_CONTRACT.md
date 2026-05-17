@@ -2,7 +2,7 @@
 
 **Source of truth** for the REST contract between the iOS app and the backend. Koda implements against this. Riku codes Swift models against this. If you need to change the shape, escalate to Claudio first.
 
-**Base URL:** `https://hkl22yruzi.execute-api.us-west-2.amazonaws.com`
+**Base URL:** `https://<your-api-id>.execute-api.us-west-2.amazonaws.com`
 *(Deployed 2026-05-16 via `sam deploy --guided`, stack `carta-clara-mvp` in us-west-2.)*
 
 **Auth:** None for hackathon MVP. Open API.
