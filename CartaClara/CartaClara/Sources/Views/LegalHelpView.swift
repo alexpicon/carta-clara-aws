@@ -56,7 +56,7 @@ struct LegalHelpView: View {
                     Image(systemName: "arrow.clockwise.circle.fill")
                         .font(.title3)
                 }
-                .accessibilityLabel("Scan another document")
+                .accessibilityLabel(UIText.restartScan)
             }
         }
     }

@@ -65,7 +65,7 @@ struct AskChatView: View {
                     Image(systemName: "arrow.clockwise.circle.fill")
                         .font(.title3)
                 }
-                .accessibilityLabel("Scan another document")
+                .accessibilityLabel(UIText.restartScan)
             }
         }
         .overlay(alignment: .topTrailing) {
@@ -167,7 +167,7 @@ struct AskChatView: View {
     private func assistantBubble(_ message: ChatMessage) -> some View {
         VStack(alignment: .leading, spacing: CCSpacing.sm) {
             if message.isRefusal {
-                Label("Esto necesita un abogado", systemImage: "hand.raised.fill")
+                Label(UIText.askRefusalLabel, systemImage: "hand.raised.fill")
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(CCColor.urgent)
                     .padding(.vertical, 6)

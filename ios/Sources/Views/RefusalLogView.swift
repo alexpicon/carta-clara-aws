@@ -55,7 +55,7 @@ struct RefusalLogView: View {
                     Image(systemName: "arrow.clockwise.circle.fill")
                         .font(.title3)
                 }
-                .accessibilityLabel("Scan another document")
+                .accessibilityLabel(UIText.restartScan)
             }
         }
         .task {
@@ -79,9 +79,7 @@ struct RefusalLogView: View {
                         .font(.system(size: 40, weight: .bold))
                         .monospacedDigit()
                         .foregroundStyle(CCColor.ink)
-                    Text(appState.refusalCount == 1
-                         ? "question refused this session"
-                         : "questions refused this session")
+                    Text(UIText.refusalCountCaption(appState.refusalCount))
                         .font(.caption.weight(.medium))
                         .foregroundStyle(CCColor.inkSecondary)
                 }

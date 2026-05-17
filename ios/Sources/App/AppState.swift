@@ -69,8 +69,12 @@ final class AppState: ObservableObject {
     @Published var readingLevel: ReadingLevel = .intermediate
 
     // Output language for the results, set by LanguagePickerView between
-    // photo confirmation and the scan call.
-    @Published var selectedLanguage: AppLanguage = .english
+    // photo confirmation and the scan call. Also drives UI chrome language
+    // — the didSet flips UIText.currentLanguage so every screen the user
+    // sees after the picker renders in the chosen language.
+    @Published var selectedLanguage: AppLanguage = .english {
+        didSet { UIText.currentLanguage = selectedLanguage }
+    }
 
     // Scan pipeline
     @Published var capturedImage: UIImage?
@@ -80,6 +84,13 @@ final class AppState: ObservableObject {
     // Refusal counter — the trust story compressed into one number.
     @Published private(set) var refusalCount: Int = 0
     @Published private(set) var refusalLog: RefusalLog?
+
+    // Packet pre-fetch — kicked off automatically when a scan succeeds so
+    // that tapping "Help me respond" feels instant instead of waiting 10-14s
+    // for the second model call. ResponsePacketView reads from here; on miss
+    // it falls back to a fresh /scan/packet call (resilience).
+    @Published private(set) var cachedPacket: PacketResult?
+    private var packetPrefetchTask: Task<Void, Never>?
 
     let api: CartaClaraAPI
 
@@ -137,6 +148,11 @@ final class AppState: ObservableObject {
             // A refused scan still counts as a visible refusal.
             if result.isRefusal {
                 refusalCount += 1
+            } else {
+                // Pre-fetch the preparation packet in the background. By the
+                // time the user taps "Help me respond" it's usually ready
+                // and renders instantly instead of spinning for 10-14s.
+                prefetchPacket()
             }
         } catch let error as APIError {
             scanState = .failed(
@@ -180,6 +196,36 @@ final class AppState: ObservableObject {
         capturedImage = nil
         scanResult = nil
         scanState = .idle
+        cachedPacket = nil
+        packetPrefetchTask?.cancel()
+        packetPrefetchTask = nil
+    }
+
+    /// Kick off a /scan/packet call in the background and cache the result.
+    /// Called from performScan() the moment a non-refused scan lands so the
+    /// packet is usually already loaded by the time the user taps to view it.
+    /// Silent failures — ResponsePacketView falls back to a fresh call.
+    private func prefetchPacket() {
+        guard let documentId = scanResult?.documentId else { return }
+        packetPrefetchTask?.cancel()
+        packetPrefetchTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                let packet = try await self.api.packet(
+                    sessionId: self.sessionId,
+                    documentId: documentId,
+                    extraction: self.scanResult?.extraction,
+                    summaryEs: self.scanResult?.summaryEs,
+                    summaryEn: self.scanResult?.summaryEn,
+                    language: self.selectedLanguage
+                )
+                guard !Task.isCancelled else { return }
+                self.cachedPacket = packet
+            } catch {
+                // Silent — the user will retry via the regular fetch path
+                // when they tap "Help me respond". Pre-fetch is best-effort.
+            }
+        }
     }
 
     /// Pop back to the splash root.

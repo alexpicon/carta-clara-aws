@@ -58,7 +58,7 @@ struct ResponsePacketView: View {
                     Image(systemName: "arrow.clockwise.circle.fill")
                         .font(.title3)
                 }
-                .accessibilityLabel("Scan another document")
+                .accessibilityLabel(UIText.restartScan)
             }
         }
         .task {
@@ -281,6 +281,13 @@ struct ResponsePacketView: View {
     // MARK: Loading
 
     private func load() async {
+        // Fast path: AppState.prefetchPacket already kicked off a /scan/packet
+        // call when the scan landed. If it finished, render instantly.
+        if let cached = appState.cachedPacket {
+            result = cached
+            state = .loaded
+            return
+        }
         guard let documentId = appState.documentId else {
             state = .failed(message: UIText.errorGeneric, retryable: false)
             return

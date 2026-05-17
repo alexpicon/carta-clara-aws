@@ -54,7 +54,7 @@ struct ResultsView: View {
                     Image(systemName: "arrow.clockwise.circle.fill")
                         .font(.title3)
                 }
-                .accessibilityLabel("Scan another document")
+                .accessibilityLabel(UIText.restartScan)
             }
         }
         .onAppear {
@@ -144,11 +144,11 @@ struct ResultsView: View {
         return Group {
             if anyRedacted {
                 Label {
-                    Text(UIText.redactionDone)
+                    Text(UIText.resultsPrivacyBanner)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(CCColor.success)
                 } icon: {
-                    Image(systemName: "checkmark.shield.fill")
+                    Image(systemName: "lock.shield.fill")
                         .foregroundStyle(CCColor.success)
                         .accessibilityHidden(true)
                 }
@@ -157,7 +157,7 @@ struct ResultsView: View {
                 .background(CCColor.success.opacity(0.12))
                 .clipShape(RoundedRectangle(cornerRadius: CCRadius.control))
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel(UIText.redactionDone)
+                .accessibilityLabel(UIText.resultsPrivacyBanner)
             }
         }
     }
@@ -211,7 +211,7 @@ struct ResultsView: View {
                 CCHaptics.light()
                 appState.startFresh()
             } label: {
-                Label("Scan another document", systemImage: "arrow.clockwise")
+                Label(UIText.restartScan, systemImage: "arrow.clockwise")
             }
             .buttonStyle(CCTertiaryButtonStyle())
             .accessibilityHint("Clears this result and goes back to the camera.")
