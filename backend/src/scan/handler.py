@@ -176,11 +176,12 @@ def _handle(event, started):
         model_id=summary_model,
         content_blocks=[h.text_block(summary_input)],
         system=system_prompt or None,
-        # 2500 tokens fits the new structured prompt (6 sections × title +
-        # body + full_body + headline + urgency). Lower caps were truncating
-        # the JSON mid-array, which then failed to parse and dumped raw text
-        # into the Summary card.
-        max_tokens=2500,
+        # Tight cap matches the prompt's "≤ 1200 token" ceiling. The new
+        # prompt asks for exactly 4 sections with single-body fields (no
+        # section_body_full_es duplication), so the response fits in
+        # ~800-1000 tokens at Sonnet — keeping the whole /scan path well
+        # under the 30s API Gateway hard limit.
+        max_tokens=1300,
     )
     if summary_res.intervened:
         return _refusal_response(session_id, "summary generation blocked by Guardrail", started, language)

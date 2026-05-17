@@ -2,140 +2,98 @@
 
 > Contract
 > - PREPEND: backend/prompts/system_prompt.md
-> - INPUT (substituted by the Lambda before invocation):
->   - `{{EXTRACTION_JSON}}` — the JSON object produced by extraction_prompt.md
->   - `{{READING_LEVEL}}` — one of: `beginner` | `intermediate` | `full`
->   - `{{KB_CHUNKS}}` — retrieved Knowledge Base chunks (may be empty)
-> - OUTPUT: a single JSON object, no prose, no markdown fences. Supplies the
->   `summary_en`, `summary_es`, `sections`, and `urgency` fields of the POST /scan
->   response in docs/API_CONTRACT.md.
-> - Koda parses this with `json.loads()`.
+> - INPUT (substituted before invocation):
+>   - `{{EXTRACTION_JSON}}` — JSON from extraction_prompt.md
+>   - `{{READING_LEVEL}}` — `beginner` | `intermediate` | `full`
+>   - `{{KB_CHUNKS}}` — KB chunks (may be empty)
+> - OUTPUT: a single JSON object. NO markdown fences. NO prose around it.
+> - Hard ceiling: total response ≤ 1200 tokens. Brevity is mandatory.
 
 ---
 
 ## Goal
 
-The user is reading an English government document that scares them. They may
-have low English proficiency or low literacy in any language. Our job is to
-turn the EXTRACTED FACTS into a **specific, concrete explanation of THIS
-document** — not a generic explanation of "documents like this."
+Turn extracted facts into a **specific, concrete** explanation of THIS
+document — never generic. Audience: a Spanish-speaking grandmother or her
+helper, reading a frightening English government letter.
 
-## STRICT REQUIREMENTS — read these before writing anything
+## STRICT REQUIREMENTS
 
-### 1. The headline summary is structured
+### 1. Headline (`summary_es` / `summary_en`) — exactly 2 sentences
 
-`summary_es` (and `summary_en`) is **2–3 sentences**, no more. It must answer:
+Sentence 1: WHO sent it + WHAT it is (use `issuing_agency` and `document_type` verbatim).
+Sentence 2: WHAT the user must do next + WHEN (use `deadline_critical` or `hearing_date`; if neither, say "no deadline is listed in this document").
 
-1. **WHO sent this** — name the agency from `issuing_agency`.
-2. **WHY it was sent** — paraphrase `alleged_basis_summary` if present; otherwise name the document type.
-3. **WHAT the user must do next, and by when** — use `deadline_critical` or `hearing_date`. If neither exists, say "no deadline is listed."
+That's it. No third sentence. No "this is important," no "you should call a lawyer" — those go elsewhere.
 
-**BAD (forbidden — too generic):**
+**BAD:** "This is a notice from the government about your immigration case. It is important to understand and respond appropriately."
 
-> "This is a notice from the government about your immigration case. It is important to understand and respond appropriately."
+**GOOD:** "U.S. Department of Homeland Security sent you a Notice to Appear (Form I-862). No hearing date is listed in this document — contact a free immigration attorney immediately."
 
-**GOOD (required style):**
+### 2. Sections — produce EXACTLY these 4, in this order
 
-> "USCIS sent you a Request for Evidence about your I-485 application. They want more proof of your marriage. You have until **November 15, 2026** to respond."
+Each section's `section_body_es` is **2 short sentences max**, and **must
+quote at least one specific value** from EXTRACTION_JSON. Skip a section only
+if its trigger fields are all `null`.
 
-> "ICE issued a Notice to Appear (Form I-862). The government alleges you overstayed your B-2 visa. Your immigration court hearing is **October 15, 2026 at 9:00 AM** at the Seattle Immigration Court."
+| section_title_en | section_title_es | Trigger | Must include |
+|---|---|---|---|
+| **Who sent this** | Quién envió esto | `issuing_agency` set | Agency name; document type; officer title if known. |
+| **What they say about you** | Lo que dicen sobre ti | `alleged_basis_summary` OR `charges_cited` non-empty | The allegation in plain words; list EACH `charges_cited` entry verbatim with a one-line plain meaning. |
+| **Your key dates** | Tus fechas importantes | `hearing_date` OR `deadline_critical` set | Each date verbatim (YYYY-MM-DD) with what it means. If both null, omit this section entirely. |
+| **Your rights now** | Tus derechos ahora | Always | Right to a lawyer, right to a free interpreter in immigration court, right to remain silent in some interactions. Information only, no advice. |
 
-### 2. Mandatory sections (produce all that apply)
+DO NOT produce additional sections. DO NOT produce `section_body_full_es` — the backend handles that field.
 
-For every `EXTRACTION_JSON` field with content, produce a corresponding section.
-Skip a section only if its underlying facts are all `null`.
+### 3. Specificity test
 
-| Section title (en / es)                                  | Required when…                            | Must mention (quote verbatim)                                  |
-|----------------------------------------------------------|-------------------------------------------|----------------------------------------------------------------|
-| **Who sent this and why** / Quién envió esto y por qué    | `issuing_agency` present                  | The agency name; the document type; `issuing_officer` if known. |
-| **What they specifically say** / Lo que dicen exactamente | `alleged_basis_summary` or `charges_cited`| Paraphrase `alleged_basis_summary`; list each entry from `charges_cited` and explain in plain words what the statute is about. |
-| **Your key dates** / Tus fechas importantes              | `hearing_date` OR `deadline_critical` set | Each date, its time if known, and what it means. NEVER just say "the date in the document" — name the actual date. |
-| **Where you need to go** / Adónde tienes que ir          | `court_name` set                          | The court name and full `court_address`. |
-| **What is NOT decided yet** / Lo que TODAVÍA no se decidió | Always (informational)                  | Be specific to the document type — for an NTA: "no removal order has been issued yet"; for an RFE: "no decision has been made on your case yet". |
-| **Your rights at this stage** / Tus derechos en esta etapa | Always                                  | Right to a lawyer; right to a free interpreter in immigration court; right to bring a witness. Information only. |
+Before writing any sentence, ask: does this sentence contain a specific value
+from EXTRACTION_JSON or KB_CHUNKS? If not, rewrite with a quoted date, agency
+name, statute, country, or court address. The only acceptable exception is
+"Your rights now," which is procedural and document-type-general.
 
-You may add extra sections beyond these if the document warrants them, but the
-mandatory ones above must be present whenever their trigger is met.
+### 4. Reading level — `{{READING_LEVEL}}`
 
-### 3. Specificity rule — the test for every sentence
-
-Before writing any section body, ask: **does this sentence contain a specific
-value from EXTRACTION_JSON or KB_CHUNKS?** If the answer is no, the sentence is
-too generic — rewrite it with a quoted date, agency name, statute, country, or
-court address.
-
-The acceptable exception is the "Your rights at this stage" section, which is
-informational and may be document-type-general.
-
-### 4. Reading-level slider — `{{READING_LEVEL}}`
-
-Controls `summary_es` and each `section_body_es` complexity. NEVER changes
-facts, only how they are phrased.
-
-- `beginner` — 5th-grade reading level. Very short sentences. Everyday words.
-  No legal terms unless defined in parentheses immediately. Default and safest.
-- `intermediate` — adult conversational. Short paragraphs OK. Common legal
-  terms may appear if defined once.
-- `full` — full-detail. Complete explanation, statute names used with plain
-  definitions. Still warm and clear.
-
-`section_body_full_es` is ALWAYS written at `full` detail regardless of the
-slider, so the iOS slider can expand a card to maximum detail without another
-API call.
+Controls how plain the language is in `section_body_es` and `summary_es`. Same
+facts, different wording:
+- `beginner` — 5th-grade reading level, short sentences, everyday words, legal terms always defined in parentheses.
+- `intermediate` — adult conversational, short paragraphs OK.
+- `full` — adult full-detail, legal terms used with brief definitions.
 
 ### 5. Urgency object
 
-Build from `deadline_critical` / `hearing_date`:
-
-- `is_urgent` — `true` if any future date is present in the extraction.
-- `deadline_date` — the ISO date (the soonest if there are several), or `null`.
-- `deadline_label_es` — a **specific** Spanish label naming the date:
-  - Hearing: `"Fecha de corte: 15 de octubre de 2026, 9:00 AM"`
-  - Other deadline: `"Fecha límite: 15 de noviembre de 2026"`
-- `verification_note_es` — always remind the user to confirm the date directly
-  with the agency, because a photo can be misread:
-  `"Confirma esta fecha llamando directamente a la corte. Una foto se puede leer mal."`
+- `is_urgent`: `true` if any future date in extraction, else `false`.
+- `deadline_date`: ISO date string, or `null`.
+- `deadline_label_es`: specific label naming the date, e.g. `"Fecha de corte: 15 de octubre de 2026, 9:00 AM"`. If no date, `null`.
+- `verification_note_es`: always present, reminds the user to confirm the date with the agency directly. Example: `"Confirma esta fecha llamando directamente a la corte. Una foto se puede leer mal."`
 
 ## Hard rules
 
-1. **Information, not advice.** Explain what the document says, what is
-   urgent, who is named, what categories of evidence/questions exist. Never
-   say what to argue, whether to attend, whether to admit/deny, whether the
-   user qualifies for relief, or what will happen.
-2. **Do not minimize or inflate.** A removal proceeding is serious — say so
-   calmly. But always state plainly when something is NOT a final decision.
-3. **Grounding.** Every claim comes from `EXTRACTION_JSON` or `KB_CHUNKS`.
-   Never invent dates, names, statutes, or consequences. If
-   `extraction_confidence` is `low` or a needed field is `null`, say so in
-   the relevant section ("this part could not be read clearly — verify with
-   the agency").
-4. **PII.** Redaction tokens stay redacted. Never reconstruct a name or
-   A-number.
-5. Every section explanation, and the summary, ends pointing the user toward
-   the same next step: free legal aid.
+1. **Information, not advice.** Explain what the document says. Never say what to argue, whether to attend, whether to admit/deny, whether the user qualifies, or what will happen.
+2. **Grounding.** Only use values from EXTRACTION_JSON or KB_CHUNKS. Never invent.
+3. **Brevity beats completeness.** If you're about to write a third sentence, stop.
 
-## Output schema (return EXACTLY this — no prose, no markdown)
+## Output schema (return EXACTLY this — NO markdown fences, NO prose)
 
-```json
+```
 {
-  "summary_en": "string — 2-3 sentences following the structured pattern above",
-  "summary_es": "string — same structure, in Spanish (or English if LANGUAGE OVERRIDE)",
+  "summary_en": "2 sentences",
+  "summary_es": "2 sentences (or English if LANGUAGE OVERRIDE)",
   "sections": [
     {
-      "section_title_en": "string",
-      "section_title_es": "string",
-      "section_body_es": "string — at requested reading level, MUST quote specific extracted facts",
-      "section_body_full_es": "string — same explanation at full detail",
-      "citation_ids": ["string"]
+      "section_title_en": "Who sent this",
+      "section_title_es": "Quién envió esto",
+      "section_body_es": "2 short sentences with specific facts",
+      "citation_ids": []
     }
   ],
   "urgency": {
     "is_urgent": true,
     "deadline_date": "YYYY-MM-DD or null",
-    "deadline_label_es": "string — names the actual date, not 'a date'",
+    "deadline_label_es": "string or null",
     "verification_note_es": "string"
   }
 }
 ```
 
-Return only the JSON object.
+Return the JSON object only. No fences. No commentary. Total output ≤ 1200 tokens.
