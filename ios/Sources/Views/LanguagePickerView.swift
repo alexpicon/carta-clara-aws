@@ -22,7 +22,7 @@ struct LanguagePickerView: View {
             Spacer()
 
             VStack(spacing: CCSpacing.sm) {
-                Image(systemName: "character.bubble")
+                Image(systemName: "globe.americas.fill")
                     .font(.system(size: 56))
                     .foregroundStyle(CCColor.primary)
                     .accessibilityHidden(true)
@@ -38,11 +38,12 @@ struct LanguagePickerView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, CCSpacing.lg)
             }
+            .ccAppear()
 
             Spacer()
 
             VStack(spacing: CCSpacing.md) {
-                ForEach(AppLanguage.allCases) { language in
+                ForEach(Array(AppLanguage.allCases.enumerated()), id: \.element) { offset, language in
                     Button {
                         pick(language)
                     } label: {
@@ -52,18 +53,20 @@ struct LanguagePickerView: View {
                     .buttonStyle(language == .english ? AnyButtonStyle(CCPrimaryButtonStyle())
                                                       : AnyButtonStyle(CCSecondaryButtonStyle()))
                     .accessibilityLabel("Explain in \(language.displayName)")
+                    .ccAppear(index: offset + 2)
                 }
             }
             .padding(.horizontal, CCSpacing.lg)
             .padding(.bottom, CCSpacing.xl)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(CCColor.background)
+        .background(CCGradient.warmPaper)
         .navigationTitle("Language")
         .navigationBarTitleDisplayMode(.inline)
     }
 
     private func pick(_ language: AppLanguage) {
+        CCHaptics.light()
         appState.selectedLanguage = language
         appState.path.append(.processing)
     }

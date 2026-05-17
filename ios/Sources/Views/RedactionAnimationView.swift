@@ -34,7 +34,7 @@ struct RedactionAnimationView: View {
 
     var body: some View {
         ZStack {
-            CCColor.background.ignoresSafeArea()
+            CCGradient.warmPaper.ignoresSafeArea()
 
             switch phase {
             case .redacting, .processing:
@@ -69,6 +69,7 @@ struct RedactionAnimationView: View {
                 Image(systemName: "lock.shield.fill")
                     .font(.system(size: 44))
                     .foregroundStyle(CCColor.primary)
+                    .symbolEffect(.pulse, options: .repeating, isActive: !allMasked)
                     .accessibilityHidden(true)
                 Text(allMasked ? UIText.redactionDone : UIText.redactionTitle)
                     .font(.title2.weight(.bold))
@@ -143,7 +144,7 @@ struct RedactionAnimationView: View {
                             .foregroundStyle(.white)
                         )
                         .transition(.asymmetric(
-                            insertion: .move(edge: .leading),
+                            insertion: .scale(scale: 1.0, anchor: .leading).combined(with: .opacity),
                             removal: .opacity
                         ))
                 }
@@ -175,6 +176,7 @@ struct RedactionAnimationView: View {
         try? await Task.sleep(for: .milliseconds(350))
         UIAccessibility.post(notification: .announcement,
                              argument: UIText.redactionA11yAnnouncement)
+        CCHaptics.success()
 
         withAnimation { phase = .processing }
 

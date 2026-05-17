@@ -18,7 +18,9 @@ import SwiftUI
 struct ResultsView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var summaryAudio = AudioPlayback()
-    /// Drives the soft fade-up entrance for the whole card stack.
+    /// Drives the soft fade-up entrance for the whole card stack. Set on
+    /// appear so the cards don't pop in jarringly the moment scanState
+    /// flips to .loaded.
     @State private var cardsVisible = false
 
     var body: some View {

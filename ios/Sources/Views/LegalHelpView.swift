@@ -34,14 +34,17 @@ struct LegalHelpView: View {
         ScrollView {
             VStack(spacing: CCSpacing.md) {
                 intro
-                ForEach(clinics) { clinic in
+                    .ccAppear()
+                ForEach(Array(clinics.enumerated()), id: \.element.id) { offset, clinic in
                     ClinicCard(clinic: clinic)
+                        .ccAppear(index: offset + 1)
                 }
                 verifyNote
+                    .ccAppear(index: clinics.count + 1)
             }
             .padding(CCSpacing.md)
         }
-        .background(CCColor.background)
+        .background(CCGradient.warmPaper)
         .navigationTitle(UIText.legalHelpTitle)
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -110,7 +113,10 @@ private struct ClinicCard: View {
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        CardContainer(accent: CCColor.success) {
+        // No accent stripe — the "FREE" green pill already carries the meaning.
+        // A leading green stripe on every card reads like a "resolved" state,
+        // which these invitations-to-call are not.
+        CardContainer {
             HStack(alignment: .top) {
                 Text(clinic.name)
                     .font(.headline)
@@ -129,37 +135,44 @@ private struct ClinicCard: View {
                 }
             }
 
-            infoRow(icon: "mappin.and.ellipse", text: clinic.address)
+            infoRow(icon: "mappin.circle.fill", text: clinic.address)
 
             if let hours = clinic.hours, !hours.isEmpty {
-                infoRow(icon: "clock", text: "\(UIText.legalHelpHoursLabel): \(hours)")
+                infoRow(icon: "clock.fill", text: "\(UIText.legalHelpHoursLabel): \(hours)")
             }
             if let languages = clinic.languages, !languages.isEmpty {
                 infoRow(
-                    icon: "globe",
+                    icon: "globe.americas.fill",
                     text: "\(UIText.legalHelpLanguagesLabel): \(languages.joined(separator: ", "))"
                 )
             }
 
-            HStack(spacing: CCSpacing.sm) {
-                Button {
-                    if let url = telURL(clinic.phone) { openURL(url) }
-                } label: {
-                    Label("\(UIText.callButton)  \(clinic.phone)", systemImage: "phone.fill")
-                }
-                .buttonStyle(CCPrimaryButtonStyle(fill: CCColor.success))
-                .accessibilityLabel("\(UIText.callButton) a \(clinic.name)")
-                .accessibilityHint("Marca \(spelledOut(clinic.phone))")
-            }
-            .padding(.top, CCSpacing.xs)
-
+            // Primary action — Call. Full-width green for "this is the move."
             Button {
-                if let url = mapsURL(clinic.address) { openURL(url) }
+                CCHaptics.light()
+                if let url = telURL(clinic.phone) { openURL(url) }
             } label: {
-                Label(UIText.directionsButton, systemImage: "map.fill")
+                Label("\(UIText.callButton)  \(clinic.phone)", systemImage: "phone.fill")
             }
-            .buttonStyle(CCSecondaryButtonStyle())
-            .accessibilityHint("Abre el mapa hacia \(clinic.name)")
+            .buttonStyle(CCPrimaryButtonStyle(fill: CCColor.success))
+            .padding(.top, CCSpacing.xs)
+            .accessibilityLabel("\(UIText.callButton) a \(clinic.name)")
+            .accessibilityHint("Marca \(spelledOut(clinic.phone))")
+
+            // Secondary action — Directions. Pill on the trailing edge so it
+            // doesn't compete with Call for attention; matches the
+            // "Listen to summary" pill on Results for cross-screen rhyme.
+            HStack {
+                Spacer()
+                Button {
+                    CCHaptics.light()
+                    if let url = mapsURL(clinic.address) { openURL(url) }
+                } label: {
+                    Label(UIText.directionsButton, systemImage: "map.fill")
+                }
+                .buttonStyle(CCInlineButtonStyle())
+                .accessibilityHint("Abre el mapa hacia \(clinic.name)")
+            }
         }
         .accessibilityElement(children: .contain)
     }

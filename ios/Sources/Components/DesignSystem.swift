@@ -54,6 +54,42 @@ enum CCGradient {
     )
 }
 
+// MARK: - Entrance animation
+
+/// Standard fade-up entrance for cards, hero blocks, and other content that
+/// appears when a screen mounts. Use the modifier directly on a view; the
+/// optional `index` parameter staggers groups of items (each later index
+/// delays a few hundredths of a second longer for a wave effect).
+///
+/// Usage:
+///   ```
+///   MyCard()
+///     .modifier(CCAppear(index: i))
+///   ```
+struct CCAppear: ViewModifier {
+    var index: Int = 0
+    @State private var visible = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(visible ? 1 : 0)
+            .offset(y: visible ? 0 : 12)
+            .onAppear {
+                withAnimation(.easeOut(duration: 0.45).delay(Double(index) * 0.07)) {
+                    visible = true
+                }
+            }
+    }
+}
+
+extension View {
+    /// Apply the standard CC entrance animation (fade + slight rise).
+    /// `index` staggers grouped items so they cascade in.
+    func ccAppear(index: Int = 0) -> some View {
+        modifier(CCAppear(index: index))
+    }
+}
+
 // MARK: - Haptics
 
 /// Light tactile feedback for important interactions. iOS-only no-op on macOS

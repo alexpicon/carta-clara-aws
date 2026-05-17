@@ -53,7 +53,7 @@ struct AskChatView: View {
             Divider()
             inputBar
         }
-        .background(CCColor.background)
+        .background(CCGradient.warmPaper)
         .navigationTitle(UIText.askTitle)
         .navigationBarTitleDisplayMode(.inline)
         .overlay(alignment: .topTrailing) {
@@ -158,6 +158,10 @@ struct AskChatView: View {
                 Label("Esto necesita un abogado", systemImage: "hand.raised.fill")
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(CCColor.urgent)
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, CCSpacing.sm)
+                    .background(CCColor.urgent.opacity(0.12))
+                    .clipShape(Capsule())
                     .accessibilityAddTraits(.isHeader)
             }
 
@@ -167,20 +171,21 @@ struct AskChatView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             if let audioURL = message.audioURL {
-                Button {
-                    answerAudio.toggle(urlString: audioURL)
-                } label: {
-                    Label(
-                        answerAudio.isPlaying(urlString: audioURL)
-                            ? UIText.pauseSummary : UIText.playSummary,
-                        systemImage: answerAudio.isPlaying(urlString: audioURL)
-                            ? "pause.fill" : "play.fill"
-                    )
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(CCColor.primary)
+                HStack {
+                    Button {
+                        CCHaptics.soft()
+                        answerAudio.toggle(urlString: audioURL)
+                    } label: {
+                        Label(
+                            answerAudio.isPlaying(urlString: audioURL)
+                                ? UIText.pauseSummary : UIText.playSummary,
+                            systemImage: answerAudio.isPlaying(urlString: audioURL)
+                                ? "pause.fill" : "play.fill"
+                        )
+                    }
+                    .buttonStyle(CCInlineButtonStyle())
+                    Spacer()
                 }
-                .buttonStyle(.plain)
-                .frame(minHeight: 44, alignment: .leading)
             }
 
             if !message.citations.isEmpty {
@@ -251,10 +256,10 @@ struct AskChatView: View {
                     sendText()
                 } label: {
                     Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 34))
+                        .font(.system(size: 38))
                         .foregroundStyle(canSendText ? CCColor.primary : CCColor.inkSecondary.opacity(0.4))
                 }
-                .frame(width: 44, height: 44)
+                .frame(width: 48, height: 48)
                 .disabled(!canSendText)
                 .accessibilityLabel(UIText.sendButton)
             }
@@ -276,9 +281,10 @@ struct AskChatView: View {
                     .font(.system(size: 26, weight: .semibold))
                     .foregroundStyle(.white)
                     .symbolEffect(.variableColor, isActive: recorder.isRecording)
+                    .symbolEffect(.bounce, value: recorder.isRecording)
             }
             .scaleEffect(recorder.isRecording ? 1.12 : 1)
-            .animation(.spring(response: 0.3), value: recorder.isRecording)
+            .animation(.spring(response: 0.28, dampingFraction: 0.65), value: recorder.isRecording)
 
             Text(recorder.isRecording ? UIText.micRecording : UIText.micButton)
                 .font(.footnote.weight(.medium))
@@ -311,6 +317,7 @@ struct AskChatView: View {
     private func sendText() {
         let question = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !question.isEmpty, !isSending else { return }
+        CCHaptics.light()
         inputText = ""
         inputFocused = false
         messages.append(ChatMessage(role: .user, text: question))
@@ -320,6 +327,7 @@ struct AskChatView: View {
     /// Begin recording on press-down. Handles the permission flow.
     private func beginPushToTalk() {
         guard !recorder.isRecording, !isSending else { return }
+        CCHaptics.soft()
         switch recorder.permission {
         case .granted:
             recorder.startRecording()
@@ -371,6 +379,7 @@ struct AskChatView: View {
                 }
                 if result.wasRefused {
                     // Increment the visible counter — the demo's key moment.
+                    CCHaptics.warning()
                     appState.registerRefusal()
                     messages.append(ChatMessage(
                         role: .assistant,

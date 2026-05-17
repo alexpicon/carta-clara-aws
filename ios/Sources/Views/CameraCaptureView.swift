@@ -42,7 +42,7 @@ struct CameraCaptureView: View {
                     permissionDeniedView
                 default:
                     LoadingView(message: UIText.loading)
-                        .background(CCColor.background)
+                        .background(CCGradient.warmPaper)
                 }
             }
         }
@@ -57,7 +57,10 @@ struct CameraCaptureView: View {
         // UIImage is not Equatable, so observe the publisher directly rather
         // than using onChange(of:).
         .onReceive(camera.$capturedImage) { newValue in
-            if let newValue { pendingImage = newValue }
+            if let newValue {
+                CCHaptics.success()
+                pendingImage = newValue
+            }
         }
         .onChange(of: pickedItem) { _, newValue in
             guard let newValue else { return }
@@ -131,7 +134,7 @@ struct CameraCaptureView: View {
             Spacer()
             Image(systemName: "camera.fill")
                 .font(.system(size: 48))
-                .foregroundStyle(CCColor.caution)
+                .foregroundStyle(CCColor.inkSecondary)
                 .accessibilityHidden(true)
             Text(UIText.cameraDeniedTitle)
                 .font(.title2.weight(.bold))
@@ -158,7 +161,7 @@ struct CameraCaptureView: View {
         }
         .padding(CCSpacing.lg)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(CCColor.background)
+        .background(CCGradient.warmPaper)
     }
 
     // MARK: Confirm / retake
@@ -177,6 +180,7 @@ struct CameraCaptureView: View {
 
             VStack(spacing: CCSpacing.md) {
                 Button(UIText.usePhoto) {
+                    CCHaptics.light()
                     appState.capturedImage = image
                     camera.stopSession()
                     appState.path.append(.languagePicker)
@@ -184,6 +188,7 @@ struct CameraCaptureView: View {
                 .buttonStyle(CCPrimaryButtonStyle())
 
                 Button(UIText.retake) {
+                    CCHaptics.soft()
                     pendingImage = nil
                     camera.clearCapture()
                     pickedItem = nil
@@ -191,9 +196,10 @@ struct CameraCaptureView: View {
                 .buttonStyle(CCSecondaryButtonStyle())
             }
             .padding(CCSpacing.lg)
+            .ccAppear()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(CCColor.background)
+        .background(CCGradient.warmPaper)
     }
 
     // MARK: Picker loading

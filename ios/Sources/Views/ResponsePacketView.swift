@@ -42,7 +42,7 @@ struct ResponsePacketView: View {
                 }
             }
         }
-        .background(CCColor.background)
+        .background(CCGradient.warmPaper)
         .navigationTitle(UIText.packetTitle)
         .navigationBarTitleDisplayMode(.inline)
         .task {
@@ -67,13 +67,15 @@ struct ResponsePacketView: View {
                     .foregroundStyle(CCColor.ink)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityAddTraits(.isHeader)
+                    .ccAppear()
 
-                section(UIText.packetWhatItSays, icon: "doc.text") {
+                section(UIText.packetWhatItSays, icon: "doc.text.fill") {
                     Text(packet.whatThisSaysEs)
                         .font(.body)
                         .foregroundStyle(CCColor.ink)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .ccAppear(index: 1)
 
                 if let deadline = packet.yourDeadline,
                    let label = deadline.labelEs, !label.isEmpty {
@@ -84,11 +86,13 @@ struct ResponsePacketView: View {
                             .foregroundStyle(CCColor.urgent)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    .ccAppear(index: 2)
                 }
 
-                section(UIText.packetDocuments, icon: "checklist") {
+                section(UIText.packetDocuments, icon: "checkmark.circle.fill") {
                     bulletList(packet.documentsToGatherEs, symbol: "square")
                 }
+                .ccAppear(index: 3)
 
                 // The "extension request template" section was removed:
                 // providing such a template (even with a disclaimer) implies a
@@ -98,21 +102,25 @@ struct ResponsePacketView: View {
                 // which route to a free legal-aid attorney who decides whether
                 // an extension is appropriate.
 
-                section(UIText.packetPhoneScript, icon: "phone.bubble") {
+                section(UIText.packetPhoneScript, icon: "phone.bubble.fill") {
                     Text(packet.legalAidPhoneScriptEs)
                         .font(.body)
                         .italic()
                         .foregroundStyle(CCColor.ink)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .ccAppear(index: 4)
 
-                section(UIText.packetQuestions, icon: "questionmark.circle") {
+                section(UIText.packetQuestions, icon: "questionmark.circle.fill") {
                     bulletList(packet.questionsForLawyerEs, symbol: "circle")
                 }
+                .ccAppear(index: 5)
 
                 coverSheet(packet.coverSheetEs)
+                    .ccAppear(index: 6)
 
                 shareButton
+                    .ccAppear(index: 7)
             }
             .padding(CCSpacing.md)
         }
@@ -167,7 +175,9 @@ struct ResponsePacketView: View {
         }
     }
 
-    /// The cover sheet — visually emphasized, it is the packet's whole point.
+    /// The cover sheet — the packet's hero. Subtle internal gradient and a
+    /// hairline inner stroke read like a sealed envelope, distinguishing it
+    /// from the white card chrome above.
     private func coverSheet(_ text: String) -> some View {
         VStack(alignment: .leading, spacing: CCSpacing.sm) {
             Label(UIText.packetCoverSheet, systemImage: "bookmark.fill")
@@ -180,13 +190,25 @@ struct ResponsePacketView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(CCSpacing.md)
-        .background(CCColor.primary)
-        .clipShape(RoundedRectangle(cornerRadius: CCRadius.card))
+        .background(
+            LinearGradient(
+                colors: [CCColor.primary, CCColor.primary.opacity(0.85)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: CCRadius.card, style: .continuous)
+                .stroke(Color.white.opacity(0.15), lineWidth: 2)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: CCRadius.card, style: .continuous))
+        .shadow(color: CCColor.primary.opacity(0.18), radius: 12, x: 0, y: 4)
         .accessibilityElement(children: .combine)
     }
 
     private var shareButton: some View {
         Button {
+            CCHaptics.success()
             showShareSheet = true
         } label: {
             Label(UIText.packetShare, systemImage: "square.and.arrow.up")

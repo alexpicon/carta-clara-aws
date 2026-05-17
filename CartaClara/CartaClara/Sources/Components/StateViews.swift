@@ -63,16 +63,19 @@ struct ErrorStateView: View {
     }
 }
 
-/// A quiet empty state — a symbol and a sentence.
+/// A quiet empty state — a symbol and a sentence. Pass `tint` to give the
+/// icon emotional warmth (e.g. `.success` for "nothing refused yet" — that's
+/// good news, not neutral).
 struct EmptyStateView: View {
     let icon: String
+    var tint: Color = CCColor.inkSecondary.opacity(0.6)
     let message: String
 
     var body: some View {
         VStack(spacing: CCSpacing.md) {
             Image(systemName: icon)
-                .font(.system(size: 40))
-                .foregroundStyle(CCColor.inkSecondary.opacity(0.6))
+                .font(.system(size: 52))
+                .foregroundStyle(tint)
                 .accessibilityHidden(true)
             Text(message)
                 .font(.body)

@@ -21,25 +21,29 @@ struct RefusalLogView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: CCSpacing.md) {
                 header
+                    .ccAppear()
 
                 if isLoading && log == nil {
                     LoadingView()
                         .frame(minHeight: 200)
                 } else if let log, !log.refusals.isEmpty {
-                    ForEach(log.refusals) { entry in
+                    ForEach(Array(log.refusals.enumerated()), id: \.element.id) { offset, entry in
                         refusalRow(entry)
+                            .ccAppear(index: offset + 1)
                     }
                 } else {
                     EmptyStateView(
-                        icon: "checkmark.shield",
+                        icon: "checkmark.shield.fill",
+                        tint: CCColor.success,
                         message: UIText.refusalLogEmpty
                     )
                     .frame(minHeight: 200)
+                    .ccAppear(index: 1)
                 }
             }
             .padding(CCSpacing.md)
         }
-        .background(CCColor.background)
+        .background(CCGradient.warmPaper)
         .navigationTitle(UIText.refusalLogTitle)
         .navigationBarTitleDisplayMode(.inline)
         .task {
@@ -49,24 +53,32 @@ struct RefusalLogView: View {
         }
     }
 
+    /// Anchored hero — wraps the giant count in the same card chrome as the
+    /// rows so the header feels grounded instead of floating.
     private var header: some View {
-        VStack(alignment: .leading, spacing: CCSpacing.sm) {
-            HStack(spacing: CCSpacing.sm) {
+        CardContainer(accent: CCColor.urgent) {
+            HStack(spacing: CCSpacing.md) {
                 Image(systemName: "hand.raised.fill")
                     .font(.title)
                     .foregroundStyle(CCColor.urgent)
                     .accessibilityHidden(true)
-                Text("\(appState.refusalCount)")
-                    .font(.system(size: 40, weight: .bold))
-                    .monospacedDigit()
-                    .foregroundStyle(CCColor.ink)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(appState.refusalCount)")
+                        .font(.system(size: 40, weight: .bold))
+                        .monospacedDigit()
+                        .foregroundStyle(CCColor.ink)
+                    Text(appState.refusalCount == 1
+                         ? "question refused this session"
+                         : "questions refused this session")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(CCColor.inkSecondary)
+                }
             }
             Text(UIText.refusalLogIntro)
                 .font(.body)
                 .foregroundStyle(CCColor.inkSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(appState.refusalCount) preguntas rechazadas. \(UIText.refusalLogIntro)")
     }
