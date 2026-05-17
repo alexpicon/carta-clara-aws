@@ -6,8 +6,9 @@
 >   - `{{EXTRACTION_JSON}}` — JSON from extraction_prompt.md
 >   - `{{READING_LEVEL}}` — `beginner` | `intermediate` | `full`
 >   - `{{KB_CHUNKS}}` — KB chunks (may be empty)
-> - OUTPUT: a single JSON object. NO markdown fences. NO prose around it.
-> - Hard ceiling: total response ≤ 1200 tokens. Brevity is mandatory.
+> - OUTPUT: a single MINIFIED JSON object — no newlines, no indentation, no
+>   spaces after `:` or `,`. ONE single line. No markdown fences. No prose.
+> - Hard ceiling: total response ≤ 1100 tokens. Brevity is mandatory.
 
 ---
 
@@ -46,7 +47,7 @@ Skip a section only if its trigger fields are all `null`.
 Per section, write BOTH of these — they feed two different UI states:
 
 - `section_body_es` — **1–2 sentences**, at the requested `{{READING_LEVEL}}`. The Summary/Normal-slider view shows this.
-- `section_body_full_es` — **4–6 sentences**, always at FULL detail. This is what the Full-slider view expands to. It MUST contain meaningfully more information than `section_body_es`: more specific facts from EXTRACTION_JSON, what the user can typically expect at this stage of the process, and one extra piece of context a helper would find useful. Same facts, more depth — no advice.
+- `section_body_full_es` — **4–5 sentences**, always at FULL detail. This is what the Full-slider view expands to. It MUST contain meaningfully more information than `section_body_es`: more specific facts from EXTRACTION_JSON, what the user can typically expect at this stage of the process, and one extra piece of context a helper would find useful. Same facts, more depth — no advice.
 
 The two bodies must differ. If `section_body_full_es` is just a rephrasing of `section_body_es`, the slider has nothing to switch to — produce real additional content.
 
@@ -78,28 +79,15 @@ facts, different wording:
 2. **Grounding.** Only use values from EXTRACTION_JSON or KB_CHUNKS. Never invent.
 3. **Brevity beats completeness.** If you're about to write a third sentence, stop.
 
-## Output schema (return EXACTLY this — NO markdown fences, NO prose)
+## Output schema — return a single MINIFIED JSON line, no whitespace
 
-```
-{
-  "summary_en": "2 sentences",
-  "summary_es": "2 sentences (or English if LANGUAGE OVERRIDE)",
-  "sections": [
-    {
-      "section_title_en": "Who sent this",
-      "section_title_es": "Quién envió esto",
-      "section_body_es": "1-2 short sentences at requested reading level, specific facts",
-      "section_body_full_es": "4-6 sentences with meaningfully MORE detail than body_es — additional facts, what-to-expect context, helper-level depth. Same information, more depth, no advice.",
-      "citation_ids": []
-    }
-  ],
-  "urgency": {
-    "is_urgent": true,
-    "deadline_date": "YYYY-MM-DD or null",
-    "deadline_label_es": "string or null",
-    "verification_note_es": "string"
-  }
-}
-```
+Shape (expanded ONLY for readability — your output must be one minified line):
 
-Return the JSON object only. No fences. No commentary. Total output ≤ 1600 tokens.
+`{"summary_en":"…","summary_es":"…","sections":[{"section_title_en":"…","section_title_es":"…","section_body_es":"…","section_body_full_es":"…","citation_ids":[]}],"urgency":{"is_urgent":bool,"deadline_date":"YYYY-MM-DD|null","deadline_label_es":"…|null","verification_note_es":"…"}}`
+
+**Language fill rule (token saver — mandatory):**
+- If the input is plain Spanish output (default): set `summary_en` to `""` (empty string). Fill `summary_es` with the Spanish headline. Section bodies stay in Spanish.
+- If LANGUAGE OVERRIDE = English is active: set `summary_es` to `""` (empty string). Fill `summary_en` with the English headline. Section bodies are English.
+- NEVER fill both languages. This wastes ~50 tokens per response.
+
+Return MINIFIED JSON only. No fences. No commentary. No token-count claims. Total output ≤ 1100 tokens.

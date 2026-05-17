@@ -123,8 +123,35 @@ struct DocumentSection: Codable, Identifiable {
     var id: String { sectionTitleEn }
 
     /// Body to display for a given reading level.
+    ///
+    /// The backend produces TWO bodies per section (`sectionBodyEs` at the
+    /// requested reading level, `sectionBodyFullEs` always at full detail).
+    /// To give the 3-state slider three distinct on-screen depths without
+    /// a backend round trip, `.beginner` extracts the first sentence of
+    /// `sectionBodyEs` (the most condensed view a grandma can read at a
+    /// glance), `.intermediate` returns the full `sectionBodyEs`, and
+    /// `.full` returns `sectionBodyFullEs`.
     func body(for level: ReadingLevel) -> String {
-        level == .full ? sectionBodyFullEs : sectionBodyEs
+        switch level {
+        case .beginner:
+            return Self.firstSentence(of: sectionBodyEs)
+        case .intermediate:
+            return sectionBodyEs
+        case .full:
+            return sectionBodyFullEs.isEmpty ? sectionBodyEs : sectionBodyFullEs
+        }
+    }
+
+    /// Returns the first sentence of `text`. Handles `.`, `!`, `?`, `…`, `¡`,
+    /// `¿`, and Spanish-style ellipses. Falls back to the full text when no
+    /// terminator is found (e.g. a body with only one short sentence already).
+    static func firstSentence(of text: String) -> String {
+        let terminators: Set<Character> = [".", "!", "?", "…"]
+        for (index, char) in text.enumerated() where terminators.contains(char) {
+            let end = text.index(text.startIndex, offsetBy: index + 1)
+            return String(text[..<end]).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return text
     }
 }
 

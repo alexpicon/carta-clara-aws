@@ -159,7 +159,8 @@ def _handle(event, started):
             "\n\nLANGUAGE OVERRIDE: Produce ALL output in ENGLISH. The field "
             "names ending in `_es` in the output schema are historical — write "
             "English text into them. The response must contain NO Spanish at "
-            "all. summary_en and summary_es should both be the same English text."
+            "all. Fill `summary_en` with the English headline; set `summary_es` "
+            "to empty string `\"\"` (token saver)."
         )
     # Summary uses Sonnet because the structured-section prompt requires the
     # higher reasoning quality to follow the "quote a specific extracted fact
@@ -176,11 +177,11 @@ def _handle(event, started):
         model_id=summary_model,
         content_blocks=[h.text_block(summary_input)],
         system=system_prompt or None,
-        # Fits the prompt's ≤1600-token ceiling: 4 sections × (concise
-        # body + expanded full body) + headline + urgency. Estimated total
-        # /scan time ~25s — under the 30s API Gateway hard limit. The
-        # full body powers the iOS reading-level "Full" slider position.
-        max_tokens=1700,
+        # Cap matches the prompt's ≤1100-token ceiling after the token-saver
+        # changes: minified JSON output, single-language fill, 4-5 sentence
+        # full-detail bodies. Estimated summary call ~14s, total /scan ~18-22s
+        # — comfortably under the 30s API Gateway hard limit.
+        max_tokens=1200,
     )
     if summary_res.intervened:
         return _refusal_response(session_id, "summary generation blocked by Guardrail", started, language)

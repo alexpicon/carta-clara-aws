@@ -5,10 +5,14 @@ Generates the printable preparation packet for a previously scanned document
 this response.
 
 Flow:
-  1. Validate: session_id + document_id required.
-  2. Re-fetch the scanned document image from S3 (404 if expired — 1h lifecycle).
-  3. Bedrock Converse (Guardrail attached) with response_packet_prompt -> the
-     structured `packet` JSON object.
+  1. Validate: session_id + document_id required. `extraction` (the JSON object
+     iOS already received from /scan) is strongly preferred — text-only Bedrock
+     calls finish in ~10-14s and stay under the 30s API Gateway ceiling.
+  2. If `extraction` is missing, fall back to re-fetching the image from S3
+     (slow path, kept for resilience). 404 if both the body field is missing
+     AND the S3 object expired.
+  3. Bedrock Converse (Guardrail attached) with response_packet_prompt — text
+     blocks only when extraction is provided.
   4. Assemble the API_CONTRACT response. pdf_url is null in v1 — iOS renders
      the Markdown locally (contract note).
 
@@ -71,27 +75,61 @@ def _handle(event, started):
     body = h.parse_body(event)
     session_id = body.get("session_id")
     document_id = body.get("document_id")
+    extraction = body.get("extraction") or {}
+    summary = body.get("summary") or {}
+    language = (body.get("language") or "es").lower()
+    if language not in ("en", "es"):
+        language = "es"
 
     # --- 1. validate ------------------------------------------------------
     if not session_id or not document_id:
         return h.response(400, {"error": "session_id and document_id required"})
 
-    # --- 2. fetch the scanned document -----------------------------------
-    image_bytes, image_fmt = _load_document(session_id, document_id)
-
-    # --- 3. Bedrock Converse (Guardrail attached) ------------------------
+    # --- 2. prompt assembly -----------------------------------------------
     packet_prompt = h.load_prompt("response_packet_prompt.md", _FALLBACK_PACKET)
     system_prompt = h.load_prompt("system_prompt.md", "")
     text_model = h.env("TEXT_MODEL_ID", "us.anthropic.claude-sonnet-4-6")
 
-    res = h.converse(
-        model_id=text_model,
-        content_blocks=[
+    # Fast path: iOS gave us the extraction it already received from /scan.
+    # We substitute it into the prompt template variables and skip the slow
+    # multimodal re-OCR. This is the only realistic path under API Gateway's
+    # 30s timeout.
+    if extraction:
+        extraction_json = json.dumps(extraction, ensure_ascii=False)
+        summary_json = json.dumps(summary, ensure_ascii=False) if summary else "{}"
+        substituted = (
+            packet_prompt
+            .replace("{{EXTRACTION_JSON}}", extraction_json)
+            .replace("{{SUMMARY_JSON}}", summary_json)
+            .replace("{{KB_CHUNKS}}", "[]")
+        )
+        if language == "en":
+            substituted += (
+                "\n\nLANGUAGE OVERRIDE: Produce ALL output in ENGLISH. The "
+                "field names ending in `_es` are historical — write English "
+                "into them. No Spanish anywhere in this response."
+            )
+        content_blocks = [h.text_block(substituted)]
+        # 1500 tokens fits the packet's structured output (~7 fields with
+        # Markdown bodies) and finishes in ~10-14s with Sonnet, well under
+        # the 30s API Gateway ceiling.
+        max_tokens = 1500
+    else:
+        # Slow path (legacy): no extraction provided — re-OCR the image.
+        # Kept for resilience; will likely time out at the API Gateway.
+        print(json.dumps({"level": "warn", "msg": "packet_slow_path_image_only"}))
+        image_bytes, image_fmt = _load_document(session_id, document_id)
+        content_blocks = [
             h.image_block(image_bytes, image_fmt),
             h.text_block(packet_prompt),
-        ],
+        ]
+        max_tokens = 2200
+
+    res = h.converse(
+        model_id=text_model,
+        content_blocks=content_blocks,
         system=system_prompt or None,
-        max_tokens=2200,
+        max_tokens=max_tokens,
     )
 
     # Guardrail intervened -> degrade to a safe, routing packet (TENETS §2).
@@ -113,6 +151,7 @@ def _handle(event, started):
         200,
         {
             "session_id": session_id,
+            "language": language,
             "packet": packet,
             "legal_aid_options": h.legal_aid_options(),
             # pdf_url is null in v1 — iOS renders the Markdown locally

@@ -184,12 +184,40 @@ final class CartaClaraAPI {
     // MARK: POST /scan/packet
 
     /// Generate the Response Preparation Packet for a scanned document.
-    func packet(sessionId: String, documentId: String) async throws -> PacketResult {
+    ///
+    /// Passing `extraction` (and ideally `summaryEs`/`summaryEn`) lets the
+    /// backend skip re-OCRing the image — text-only Bedrock finishes in
+    /// ~10-14s instead of the 31-37s multimodal path that times out at
+    /// API Gateway's 30s ceiling. Always pass them when you have them.
+    func packet(
+        sessionId: String,
+        documentId: String,
+        extraction: Extraction? = nil,
+        summaryEs: String? = nil,
+        summaryEn: String? = nil,
+        language: AppLanguage = .english
+    ) async throws -> PacketResult {
+        struct SummaryStub: Encodable {
+            let summaryEs: String?
+            let summaryEn: String?
+        }
         struct Body: Encodable {
             let sessionId: String
             let documentId: String
+            let language: String
+            let extraction: Extraction?
+            let summary: SummaryStub?
         }
-        let body = Body(sessionId: sessionId, documentId: documentId)
+        let summary: SummaryStub? = (summaryEs != nil || summaryEn != nil)
+            ? SummaryStub(summaryEs: summaryEs, summaryEn: summaryEn)
+            : nil
+        let body = Body(
+            sessionId: sessionId,
+            documentId: documentId,
+            language: language.rawValue,
+            extraction: extraction,
+            summary: summary
+        )
         return try await post(path: "/scan/packet", body: body, as: PacketResult.self)
     }
 

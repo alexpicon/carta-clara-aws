@@ -196,7 +196,11 @@ struct ResponsePacketView: View {
         do {
             let packet = try await appState.api.packet(
                 sessionId: appState.sessionId,
-                documentId: documentId
+                documentId: documentId,
+                extraction: appState.scanResult?.extraction,
+                summaryEs: appState.scanResult?.summaryEs,
+                summaryEn: appState.scanResult?.summaryEn,
+                language: appState.selectedLanguage
             )
             result = packet
             state = .loaded

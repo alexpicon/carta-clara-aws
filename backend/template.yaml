@@ -11,7 +11,12 @@ Globals:
   Function:
     Runtime: python3.12
     Timeout: 90
-    MemorySize: 512
+    # 1769 MB = full vCPU (vCPU scales linearly with memory). At 512 MB
+    # we got ~1/3 vCPU, which throttles boto3 signing, base64 decode of
+    # the image, JSON parsing, and Bedrock response decode. Bumping to a
+    # full vCPU saves ~1-2s per /scan and per /scan/packet on CPU-bound
+    # work without affecting Bedrock's server-side inference time.
+    MemorySize: 1769
     Environment:
       Variables:
         UPLOADS_BUCKET: !Ref UploadsBucket
