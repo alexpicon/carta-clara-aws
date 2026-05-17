@@ -547,6 +547,50 @@ def legal_aid_options() -> list:
 
 
 # ---------------------------------------------------------------------------
+# Two-layer refusal resolution (defense in depth)
+# ---------------------------------------------------------------------------
+
+# Valid API_CONTRACT refusal_reason values: the 10 denied topics + "other".
+VALID_REFUSAL_REASONS = set(REASON_LABEL_ES)
+
+
+def resolve_refusal(res):
+    """Decide whether a Converse result is a refusal — from EITHER of two layers.
+
+    Layer 1 — Bedrock Guardrail: ``res.intervened`` is True when the Guardrail
+    blocked the request. Strong, enforced, cannot be jailbroken — but only
+    active once GUARDRAIL_ID is configured (not the 'PLACEHOLDER' default).
+
+    Layer 2 — prompt-instructed fallback: the model is told to self-report a
+    refusal as JSON — ``{"refused": true, "refusal_reason": "<enum>",
+    "refusal_text_es": "..."}``. This keeps refusals — and the visible refusal
+    counter — working even while the Guardrail is not yet configured.
+
+    Layer 1 wins when both fire. Returns a 4-tuple:
+      (refused: bool,
+       reason: str | None,            # API_CONTRACT refusal_reason enum
+       refusal_text_es: str | None,   # Spanish safe-replacement text
+       source: str | None)           # "guardrail" | "prompt" — log/eval only
+    """
+    # Layer 1 — Guardrail interception.
+    if res.intervened:
+        reason = reason_from_topics(res.blocked_topics)
+        text = (res.text or "").strip() or DEFAULT_REFUSAL_ES
+        return True, reason, text, "guardrail"
+
+    # Layer 2 — model self-reported a refusal in its JSON output.
+    data = extract_json(res.text) or {}
+    if data.get("refused") is True:
+        reason = data.get("refusal_reason")
+        if reason not in VALID_REFUSAL_REASONS:
+            reason = "other"
+        text = (data.get("refusal_text_es") or "").strip() or DEFAULT_REFUSAL_ES
+        return True, reason, text, "prompt"
+
+    return False, None, None, None
+
+
+# ---------------------------------------------------------------------------
 # Misc
 # ---------------------------------------------------------------------------
 

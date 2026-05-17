@@ -6,8 +6,11 @@ Flow (API_CONTRACT.md § POST /ask):
   3. Fetch the scanned document image from S3 for grounding (404 if expired).
   4. Retrieve grounding chunks from the Bedrock Knowledge Base.
   5. Bedrock Converse (Guardrail attached) with the document + question + KB context.
-  6. If the Guardrail intervenes: log a PII-redacted refusal to DynamoDB and
-     return the safe-replacement text + escalation card (TENETS §2).
+  6. Refusal — resolved from TWO layers (defense in depth, h.resolve_refusal):
+     the Bedrock Guardrail intervening, OR the model self-reporting a refusal
+     in its JSON output. Either way: log a PII-redacted refusal to DynamoDB and
+     return the safe-replacement text + escalation card (TENETS §2). The prompt
+     layer keeps refusals working even while the Guardrail is unconfigured.
   7. Otherwise: return the Spanish answer + citations.
 
 Refusal log entry: {session_id, ts, question_hash, reason, ttl: now+3600}.
@@ -36,10 +39,24 @@ _FALLBACK_ASK = (
     "You answer a follow-up question about the user's own immigration document, "
     "in plain Spanish. You give INFORMATION, never legal advice (TENETS §3): you "
     "may explain what the document says, identify dates, and suggest questions for "
-    "a lawyer. You must not recommend legal strategy, predict outcomes, or say what "
-    "to tell any official. Ground every claim in the document or the provided "
-    "knowledge-base context. If you cannot verify an answer, say so and route the "
-    "user to free legal aid. Return ONLY a JSON object: "
+    "a lawyer. Ground every claim in the document or the provided knowledge-base "
+    "context. If you cannot verify an answer, say so and route the user to free "
+    "legal aid.\n\n"
+    "REFUSAL RULE — you MUST refuse, and must NOT answer, if the question asks "
+    "for any of: legal strategy; whether to attend or skip a hearing; whether to "
+    "admit or deny allegations; a prediction of eligibility or case outcome; an "
+    "opinion about a judge; what to say to law enforcement, ICE, or a court; how "
+    "to evade authorities; medical, tax, or financial advice; or whether a "
+    "document or person is fraudulent. When refusing, return ONLY this JSON "
+    "object:\n"
+    '{\"refused\": true, '
+    '\"refusal_reason\": \"<one of: legal_strategy, hearing_attendance, '
+    "admit_deny, eligibility, outcome, judge_bias, le_scripts, evasion, "
+    'other_professional, document_authenticity, other>\", '
+    '\"refusal_text_es\": \"<one or two short, kind Spanish sentences: that you '
+    "cannot help with that, what you CAN do instead, and to contact free legal "
+    'aid>\"}.\n\n'
+    "Otherwise, answer the question normally and return ONLY this JSON object: "
     '{\"answer_es\": \"...\", \"citation_ids\": [\"...\"]}.'
 )
 
@@ -139,11 +156,12 @@ def _handle(event, started):
         max_tokens=1200,
     )
 
-    # --- 6. refusal path -------------------------------------------------
-    if res.intervened:
-        reason = h.reason_from_topics(res.blocked_topics)
+    # --- 6. refusal path — two layers: Guardrail OR prompt-detected ------
+    refused, reason, refusal_text, refusal_source = h.resolve_refusal(res)
+    if refused:
         _log_refusal(session_id, question, reason)
-        refusal_text = res.text.strip() or h.DEFAULT_REFUSAL_ES
+        print(json.dumps({"level": "info", "msg": "refusal",
+                          "reason": reason, "source": refusal_source}))
         return h.response(
             200,
             {

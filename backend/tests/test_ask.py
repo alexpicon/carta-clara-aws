@@ -158,3 +158,84 @@ def test_ask_adversarial_guardrail_refusal(load_handler):
     assert len(item["question_hash"]) == 16
     assert "juez" not in item["question_hash"]
     assert before + 3600 <= item["ttl"] <= before + 3601 + 5
+
+
+def test_ask_prompt_layer_refusal(load_handler):
+    """Layer-2 fallback (defense in depth): with NO Guardrail interception, a
+    model-reported refusal JSON still drives the refusal path + DynamoDB log.
+
+    This is the case that matters while GUARDRAIL_ID is still 'PLACEHOLDER' —
+    the refusal counter must still tick. The fake Converse response has
+    stop_reason='end_turn' and no blocked_topic, so res.intervened is False
+    and only the prompt layer can catch the refusal.
+    """
+    handler, helpers = load_handler("ask")
+    bedrock = MagicMock()
+    bedrock.converse.return_value = converse_response(
+        json.dumps(
+            {
+                "refused": True,
+                "refusal_reason": "hearing_attendance",
+                "refusal_text_es": "No puedo aconsejarte si debes ir a la "
+                "audiencia; esa decision la toma un abogado. Si puedo "
+                "explicarte el documento y darte preguntas para ayuda legal "
+                "gratuita.",
+            }
+        )
+    )
+    dynamodb = make_dynamodb()
+    _seed(helpers, bedrock=bedrock, dynamodb=dynamodb)
+
+    resp = handler.lambda_handler(
+        _event(
+            {
+                "session_id": SESSION,
+                "document_id": DOCUMENT,
+                "question": "Debo faltar a mi audiencia?",
+            }
+        ),
+        None,
+    )
+    assert resp["statusCode"] == 200
+    body = json.loads(resp["body"])
+    assert body["was_refused"] is True
+    assert body["refusal_reason"] == "hearing_attendance"
+    assert body["refusal_text_es"]
+    assert body["answer_es"] is None
+    # the refusal was logged even though the Guardrail never intervened
+    dynamodb._table.put_item.assert_called_once()
+    assert dynamodb._table.put_item.call_args.kwargs["Item"]["reason"] == (
+        "hearing_attendance"
+    )
+
+
+def test_ask_prompt_refusal_unknown_reason_coerced(load_handler):
+    """A model-reported refusal with an unrecognized reason coerces to 'other'."""
+    handler, helpers = load_handler("ask")
+    bedrock = MagicMock()
+    bedrock.converse.return_value = converse_response(
+        json.dumps(
+            {
+                "refused": True,
+                "refusal_reason": "not_a_real_enum",
+                "refusal_text_es": "No puedo ayudarte con eso, pero un "
+                "servicio de ayuda legal gratuito si puede.",
+            }
+        )
+    )
+    _seed(helpers, bedrock=bedrock)
+
+    resp = handler.lambda_handler(
+        _event(
+            {
+                "session_id": SESSION,
+                "document_id": DOCUMENT,
+                "question": "Pregunta fuera de alcance.",
+            }
+        ),
+        None,
+    )
+    assert resp["statusCode"] == 200
+    body = json.loads(resp["body"])
+    assert body["was_refused"] is True
+    assert body["refusal_reason"] == "other"

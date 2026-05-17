@@ -51,7 +51,7 @@ Skip a section only if its trigger fields are all `null`.
 
 Per section, write BOTH of these — they feed two different UI states:
 
-- `section_body_es` — **1–2 sentences**, at the requested `{{READING_LEVEL}}`. The Summary/Normal-slider view shows this.
+- `section_body_es` — **2–3 sentences**, at the requested `{{READING_LEVEL}}`. The Normal-slider view shows this. The iOS Simple-slider view trims this down to its first sentence on the client — so the FIRST sentence must stand on its own as a complete, useful summary; sentences 2-3 add detail.
 - `section_body_full_es` — **4–5 sentences**, always at FULL detail. This is what the Full-slider view expands to. It MUST contain meaningfully more information than `section_body_es`: more specific facts from EXTRACTION_JSON, what the user can typically expect at this stage of the process, and one extra piece of context a helper would find useful. Same facts, more depth — no advice.
 
 The two bodies must differ. If `section_body_full_es` is just a rephrasing of `section_body_es`, the slider has nothing to switch to — produce real additional content.

@@ -20,6 +20,10 @@ struct ResponsePacketView: View {
     @State private var state: LoadState = .idle
     @State private var result: PacketResult?
     @State private var showShareSheet = false
+    /// Indexes of "Documents to gather" rows the user has marked off. Held
+    /// in this view (not AppState) — a checklist resets when the user
+    /// navigates away from the packet. No persistence (TENETS §7).
+    @State private var checkedDocuments: Set<Int> = []
 
     var body: some View {
         Group {
@@ -102,7 +106,7 @@ struct ResponsePacketView: View {
                 }
 
                 section(UIText.packetDocuments, icon: "checkmark.circle.fill") {
-                    bulletList(packet.documentsToGatherEs, symbol: "square")
+                    checklistRows(packet.documentsToGatherEs)
                 }
                 .ccAppear(index: 3)
 
@@ -164,6 +168,49 @@ struct ResponsePacketView: View {
                         .foregroundStyle(CCColor.primary)
                         .accessibilityHidden(true)
                 }
+            }
+        }
+    }
+
+    /// Interactive checklist for "Documents to gather". Each row toggles
+    /// between empty square and filled checkmark on tap; selection state
+    /// lives in the view and resets on navigate-away (TENETS §7 — nothing
+    /// the user touches is persisted to disk).
+    private func checklistRows(_ items: [String]) -> some View {
+        VStack(alignment: .leading, spacing: CCSpacing.sm) {
+            ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                let isChecked = checkedDocuments.contains(index)
+                Button {
+                    CCHaptics.soft()
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        if isChecked {
+                            checkedDocuments.remove(index)
+                        } else {
+                            checkedDocuments.insert(index)
+                        }
+                    }
+                } label: {
+                    Label {
+                        Text(item)
+                            .font(.body)
+                            .foregroundStyle(isChecked ? CCColor.inkSecondary : CCColor.ink)
+                            .strikethrough(isChecked, color: CCColor.inkSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } icon: {
+                        Image(systemName: isChecked ? "checkmark.square.fill" : "square")
+                            .foregroundStyle(isChecked ? CCColor.success : CCColor.primary)
+                            .font(.title3)
+                            .accessibilityHidden(true)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .frame(minHeight: 44, alignment: .leading)
+                .accessibilityLabel(item)
+                .accessibilityValue(isChecked ? "checked" : "unchecked")
+                .accessibilityAddTraits(isChecked ? [.isButton, .isSelected] : .isButton)
+                .accessibilityHint("Tap to toggle.")
             }
         }
     }

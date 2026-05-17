@@ -68,21 +68,6 @@ struct SplashView: View {
                         Label(UIText.disclaimerButton, systemImage: "info.circle")
                     }
                     .buttonStyle(CCSecondaryButtonStyle())
-
-                    // Demo safety net (RIKU-17): bypasses the camera and runs
-                    // the scan pipeline on a bundled synthetic NTA. Promoted
-                    // from a near-invisible text link to a tertiary outlined
-                    // button so it's findable as the on-stage backup.
-                    Button {
-                        CCHaptics.soft()
-                        if !appState.loadDemoDocument() {
-                            showDemoMissingAlert = true
-                        }
-                    } label: {
-                        Label(UIText.tryDemoButton, systemImage: "doc.badge.ellipsis")
-                    }
-                    .buttonStyle(CCTertiaryButtonStyle())
-                    .accessibilityHint(UIText.splashDemoHint)
                 }
                 .padding(.horizontal, CCSpacing.lg)
                 .padding(.bottom, CCSpacing.xl)
