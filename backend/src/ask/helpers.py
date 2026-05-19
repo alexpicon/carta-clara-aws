@@ -127,17 +127,17 @@ def parse_body(event: dict) -> dict:
 # ---------------------------------------------------------------------------
 # Prompt loader
 # ---------------------------------------------------------------------------
-# Prompts are authored by Sage in backend/prompts/. At deploy time they must be
-# vendored into the handler's CodeUri (same packaging constraint as helpers.py).
-# The loader searches several locations and falls back to a built-in safe
-# prompt so handlers + smoke tests work even before Sage's files land.
+# Prompts live in backend/prompts/. At deploy time they must be vendored into
+# the handler's CodeUri (same packaging constraint as helpers.py). The loader
+# searches several locations and falls back to a built-in safe prompt so
+# handlers + smoke tests work even before the prompt files exist.
 
 _PROMPT_SEARCH = [
     # 1. vendored alongside the handler (deploy artifact)
     lambda name: os.path.join(os.path.dirname(__file__), "prompts", name),
     # 2. backend/src/prompts/
     lambda name: os.path.join(os.path.dirname(__file__), "..", "prompts", name),
-    # 3. backend/prompts/ (Sage's directory — local dev / pytest)
+    # 3. backend/prompts/ (canonical prompts directory — local dev / pytest)
     lambda name: os.path.join(os.path.dirname(__file__), "..", "..", "prompts", name),
     # 4. explicit override
     lambda name: os.path.join(env("PROMPTS_DIR", "/nonexistent"), name),
@@ -148,7 +148,7 @@ def load_prompt(name: str, fallback: str = "") -> str:
     """Load a prompt file by name (e.g. 'extraction_prompt.md').
 
     Returns the file contents if found and non-empty, otherwise ``fallback``.
-    Logging the miss helps Sage/Koda see un-wired prompts during integration.
+    Logging the miss surfaces un-wired prompts during integration.
     """
     for resolver in _PROMPT_SEARCH:
         path = resolver(name)
@@ -510,7 +510,7 @@ DEFAULT_REFUSAL_ES = (
     "gratis — ellos pueden responder de manera segura y confidencial."
 )
 
-# Seattle free legal aid clinics (hard-coded for v1 — see RIKU-13 / SAGE-09).
+# Seattle free legal aid clinics (hard-coded for v1).
 # Phone numbers are public main lines; the app instructs users to call to
 # confirm hours and request a free consultation.
 LEGAL_AID_OPTIONS = [

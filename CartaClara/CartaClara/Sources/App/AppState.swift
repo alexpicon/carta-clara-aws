@@ -101,9 +101,9 @@ final class AppState: ObservableObject {
         self.api = api
     }
 
-    /// Asset name for the bundled synthetic NTA used by the demo safety net
-    /// (RIKU-17). Alex adds `NTA_demo.jpg` (or an asset-catalog image of this
-    /// name) to the app target — see ios/README.md.
+    /// Asset name for the bundled synthetic NTA used by the demo safety net.
+    /// Add `NTA_demo.jpg` (or an asset-catalog image of this name) to the app
+    /// target — see ios/README.md.
     static let demoDocumentAssetName = "NTA_demo"
 
     /// Load the bundled synthetic demo document into the scan pipeline,

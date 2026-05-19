@@ -1,4 +1,4 @@
-# `_shared` — shared Lambda helpers (KODA-08)
+# `_shared` — shared Lambda helpers
 
 `helpers.py` here is the **canonical source** for code shared across the three
 Carta Clara Lambda handlers (`scan`, `ask`, `refusal_log`):
@@ -21,9 +21,8 @@ directory such as `src/_shared/` at runtime — it is not inside the function's
 deployment artifact.
 
 Two ways to share code: a Lambda layer, or vendoring. A layer needs a
-`template.yaml` change, which is outside Koda's write scope
-(`backend/src/`, `backend/tests/` only). So `helpers.py` is **copied verbatim**
-into each handler directory, and handlers do a same-directory `import helpers`.
+`template.yaml` change. So `helpers.py` is **copied verbatim** into each
+handler directory, and handlers do a same-directory `import helpers`.
 This keeps one logical source of truth and guarantees `sam build && sam deploy`
 works against the existing template with zero changes.
 
@@ -38,8 +37,7 @@ for d in scan ask refusal_log; do cp src/_shared/helpers.py src/$d/helpers.py; d
 
 `backend/tests/test_shared_vendored.py` fails if the copies drift.
 
-## Recommendation for Claudio (post-hackathon)
+## Post-hackathon recommendation
 
-If the team is willing to touch `template.yaml`, promoting `_shared/` (and
-`backend/prompts/`) to a Lambda **layer** removes the vendoring step. Logged in
-`docs/worklog/koda.md` as a non-blocking recommendation.
+Promoting `_shared/` (and `backend/prompts/`) to a Lambda **layer** removes the
+vendoring step. Non-blocking — requires a `template.yaml` change.

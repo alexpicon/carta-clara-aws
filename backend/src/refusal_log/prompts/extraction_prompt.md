@@ -8,7 +8,7 @@
 >   `[REDACTED_CASE_NUMBER]`, `[REDACTED_RECEIPT_NUMBER]`).
 > - OUTPUT: a single JSON object, no prose, no markdown fences. Matches the
 >   `extraction` object in docs/API_CONTRACT.md (POST /scan response).
-> - Koda parses this with `json.loads()`. Any non-JSON output is a hard failure.
+> - The handler parses this with `json.loads()`. Any non-JSON output is a hard failure.
 
 ---
 

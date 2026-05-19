@@ -1,7 +1,7 @@
-"""KODA-07 — smoke tests for GET /refusal-log.
+"""Smoke tests for GET /refusal-log.
 
 Verifies the DynamoDB query returns the correct count and recent entries, and
-that each entry carries the `topic_label_es` field added in KODA-04.
+that each entry carries the required `topic_label_es` field.
 """
 
 import json
@@ -43,7 +43,7 @@ def test_refusal_log_count_and_entries(load_handler):
     first = body["refusals"][0]
     assert first["reason"] == "legal_strategy"
     assert first["ts"] == "2026-05-16T03:10:00Z"
-    # KODA-04 fix: Spanish topic label present for the iOS refusal-log UI
+    # Spanish topic label present for the iOS refusal-log UI
     assert first["topic_label_es"] == "Estrategia legal"
     # never leak the question hash to the client
     assert "question_hash" not in first

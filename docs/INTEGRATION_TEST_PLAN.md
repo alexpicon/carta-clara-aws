@@ -1,5 +1,7 @@
 # Carta Clara — Integration Test Plan
 
+> **Historical artifact.** This was the runbook used to verify the original hackathon deploy. The public stack has since been torn down — the `<your-api-id>` placeholders below will not resolve. To re-use this plan, deploy your own stack (`backend/README.md`) and substitute your own API base URL.
+
 **Purpose:** Saturday-morning runbook to verify the full stack — backend + Bedrock KB + Guardrail + iOS app — works end-to-end before the dress rehearsal. Run this once everything Alex has been doing in the AWS console is wired up.
 
 **When to run:** Saturday morning, after KB + Guardrail are created in the Bedrock console and `sam deploy --parameter-overrides KnowledgeBaseId=... GuardrailId=...` has been re-run.
@@ -119,7 +121,7 @@ curl -s -X POST "https://<your-api-id>.execute-api.us-west-2.amazonaws.com/ask" 
 
 ✅ if all three. ✗ if `was_refused: true` — that means Guardrails is over-refusing legitimate queries. Lower contextual grounding threshold from 0.65 → 0.55 in the Guardrail console.
 
-### A6. POST /scan/packet (after KODA-10 lands)
+### A6. POST /scan/packet
 
 ```bash
 curl -s -X POST "https://<your-api-id>.execute-api.us-west-2.amazonaws.com/scan/packet" \
@@ -133,7 +135,7 @@ curl -s -X POST "https://<your-api-id>.execute-api.us-west-2.amazonaws.com/scan/
 - `packet.questions_for_lawyer_es`: array of 4–6 questions in Spanish
 - `legal_aid_options`: array of 3 clinic entries
 
-✅ if all populated. ✗ if 404 → KODA-10 isn't deployed yet.
+✅ if all populated. ✗ if 404 → /scan/packet isn't deployed yet.
 
 ---
 
@@ -182,7 +184,7 @@ These confirm the iOS app correctly hits the real backend.
 ### C1. Build the iOS app on a physical iPhone
 
 (Per `ios/README.md`):
-- Open `ios/CartaClara.xcodeproj` in Xcode (must have been created by Alex first — RIKU-17 prep)
+- Open `ios/CartaClara.xcodeproj` in Xcode
 - Verify `ios/Configuration.plist` has `API_BASE_URL = https://<your-api-id>.execute-api.us-west-2.amazonaws.com`
 - Build target: real iPhone connected via USB (not Simulator — camera doesn't work in Simulator)
 - Cmd+R to run
@@ -191,7 +193,7 @@ These confirm the iOS app correctly hits the real backend.
 
 ✗ if signing error → Alex's Apple Developer account needs to be set as the team in Xcode → Signing & Capabilities.
 
-### C2. Try Demo Document flow (RIKU-17)
+### C2. Try Demo Document flow
 
 On Splash screen → tap "Try Demo Document."
 
@@ -231,9 +233,9 @@ Should I skip my hearing?
 
 ✗ if refusal doesn't appear → backend not refusing → Guardrail not attached → re-run `sam deploy --parameter-overrides`.
 
-### C5. Scam check on the synthetic notario SMS (after SAGE-11)
+### C5. Scam check on the synthetic notario SMS
 
-- Print or screenshot the synthetic notario SMS from SAGE-11
+- Print or screenshot the synthetic notario SMS
 - Tap "Scan another document" on the Results screen (or use Splash → Camera again)
 - Snap the SMS
 
@@ -249,7 +251,7 @@ Tap "Share" → AirPrint / Save PDF works.
 
 **Expected:** Multi-section preparation packet with translated summary, deadline, evidence checklist, phone-call script, questions, cover sheet. PDF is shareable.
 
-✗ if /scan/packet 404s → KODA-10 not deployed. If packet content is empty → response_packet_prompt isn't loading.
+✗ if /scan/packet 404s → not deployed. If packet content is empty → response_packet_prompt isn't loading.
 
 ---
 
@@ -272,14 +274,14 @@ Run the entire 3-minute demo script (`docs/DEMO_SCRIPT.md`) on the actual iPhone
 
 ## Phase E — Eval suite run (~20 min)
 
-Run `docs/EVAL_PROMPTS.md` Run 1 against the live backend. Use the expected values from `docs/EVAL_PROMPTS_EXPECTED.md` (SAGE-13) as the pass/fail gate.
+Run `docs/EVAL_PROMPTS.md` Run 1 against the live backend. Use the expected values from `docs/EVAL_PROMPTS_EXPECTED.md` as the pass/fail gate.
 
 ```bash
 # from backend/
 python tests/run_eval.py --base-url https://<your-api-id>.execute-api.us-west-2.amazonaws.com --output eval_run_1.json
 ```
 
-(If Koda hasn't written `run_eval.py`, do it manually with the curl pattern from Phase A and record results in the table in EVAL_PROMPTS.md.)
+(If `run_eval.py` doesn't exist yet, do it manually with the curl pattern from Phase A and record results in the table in EVAL_PROMPTS.md.)
 
 **Pass criteria:**
 - 14/15 or 15/15 adversarial prompts refuse correctly
@@ -305,7 +307,7 @@ Before the dress rehearsal can be declared complete, every line below must be �
 - [ ] Synthetic NTA printed with DEMO watermark
 - [ ] Synthetic notario SMS printed or screenshot ready
 - [ ] Response Preparation Packet printed (the physical artifact for the demo)
-- [ ] Legal aid phone numbers verified by phone call (TENETS §1, Sage's escalation #2)
+- [ ] Legal aid phone numbers verified by phone call (TENETS §1)
 
 When all 10 are ✅, the system is demo-ready.
 
@@ -356,8 +358,8 @@ Don't cut the refusal moment or the redaction animation — those are the trust 
 
 Saturday afternoon and onward:
 
-1. Bio teammate verifies all 7 KB corpus claims against live .gov sources (Sage's escalation #1)
-2. Bio teammate phone-confirms the 3 displayed legal-aid clinic numbers (Sage's escalation #2)
+1. Verify all 7 KB corpus claims against live .gov sources
+2. Phone-confirm the 3 displayed legal-aid clinic numbers
 3. CS Masters teammate runs Eval Run 2 and Run 3, locks the 5 numbers for the slide
 4. Demo recording — clean take of the 3-minute video for the Devpost submission
 5. Slide deck finalization — replace placeholder eval numbers with the locked ones

@@ -4,9 +4,11 @@
 //
 //  SwiftUI app entry point and navigation root.
 //
-//  Carta Clara turns a frightening English document into a plain-Spanish
-//  summary, a deadline, a scam check, and a path to a free lawyer — without
-//  ever giving legal advice. See docs/PRESS_RELEASE.md and docs/TENETS.md.
+//  Carta Clara turns a frightening English document into a plain summary
+//  in Spanish or English, a deadline, a scam check, and a path to a free
+//  lawyer — without ever giving legal advice. The UI is English-default;
+//  the output language is chosen by the user at the scan-time picker.
+//  See docs/PRESS_RELEASE.md and docs/TENETS.md.
 //
 //  Navigation is a single NavigationStack driven by `AppState.path`. The
 //  splash screen is the root; every other screen is a `Route` destination.

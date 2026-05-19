@@ -1,7 +1,7 @@
 """POST /scan/packet — Carta Clara Response Preparation Packet.
 
 Generates the printable preparation packet for a previously scanned document
-(API_CONTRACT.md § POST /scan/packet). Riku's `ResponsePacketView` consumes
+(API_CONTRACT.md § POST /scan/packet). The iOS `ResponsePacketView` consumes
 this response.
 
 Flow:
@@ -30,8 +30,8 @@ import uuid
 
 import helpers as h
 
-# Fallback prompt so the handler + smoke tests work before SAGE-05 lands.
-# The real backend/prompts/response_packet_prompt.md overrides this.
+# Fallback prompt so the handler + smoke tests work before the prompt file
+# exists. The real backend/prompts/response_packet_prompt.md overrides this.
 _FALLBACK_PACKET = (
     "You generate a Response Preparation Packet that helps a Spanish-speaking "
     "person PREPARE to meet a free legal aid attorney about their immigration "

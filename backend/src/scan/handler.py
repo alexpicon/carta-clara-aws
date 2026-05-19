@@ -27,8 +27,8 @@ import helpers as h
 
 MAX_IMAGE_BYTES = 10 * 1024 * 1024  # 10MB (API_CONTRACT)
 
-# Fallback prompts so the handler + smoke tests work before Sage's files land
-# (SAGE-02 / SAGE-03). The real prompts override these via the loader.
+# Fallback prompts so the handler + smoke tests work before the prompt files
+# exist. The real prompts override these via the loader.
 _FALLBACK_EXTRACTION = (
     "You are extracting structured data from a U.S. immigration document image. "
     "PII has already been redacted before you. Return ONLY a JSON object with keys: "

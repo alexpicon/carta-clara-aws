@@ -12,7 +12,7 @@
 > - OUTPUT: a single JSON object, no prose, no markdown fences. Supplies the
 >   `scam_red_flags` array of the POST /scan response in docs/API_CONTRACT.md,
 >   plus an educational summary.
-> - Koda parses this with `json.loads()`.
+> - The handler parses this with `json.loads()`.
 
 ---
 

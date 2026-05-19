@@ -123,7 +123,7 @@ When the system processes a photograph of the above document, the extraction Lam
 }
 ```
 
-**Note:** Field names follow `docs/API_CONTRACT.md` exactly. Reconciled per Sage's flag in her worklog (2026-05-16T15:21Z) — API_CONTRACT is the source of truth on field naming where this doc and the contract differ.
+**Note:** Field names follow `docs/API_CONTRACT.md` exactly — API_CONTRACT is the source of truth on field naming where this doc and the contract differ.
 
 Note: `respondent_name_redacted`, `a_number_redacted`, `address_redacted` are TRUE in the response because Guardrails PII filter masks these *before* the model sees them. The model never sees "Maria Hernandez Rivera" or "A 999 999 901" — it sees `[REDACTED_NAME]`, `[REDACTED_A_NUMBER]`, etc.
 

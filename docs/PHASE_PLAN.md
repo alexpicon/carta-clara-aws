@@ -148,7 +148,7 @@
   - **Denied topics** (10 entries): legal strategy, hearing skip, asylum eligibility, deportation prediction, judge bias claims, ICE-encounter scripts, court-statement advice, admit/deny allegations, "should I sign", "should I lie"
   - **PII filter**: NAME (anonymize), EMAIL (block), PHONE (anonymize), SSN (block), ADDRESS (anonymize)
   - **Contextual grounding**: ON, threshold 0.7
-- [ ] Run 20 adversarial prompts (provided in `docs/EVAL_PROMPTS.md` — Sage will add). Confirm 20/20 refuse.
+- [ ] Run 20 adversarial prompts (provided in `docs/EVAL_PROMPTS.md`). Confirm 20/20 refuse.
 
 **Backend engineer:**
 - [ ] Update `scan` Lambda to call KB.Retrieve for grounded explanation alongside the extraction call.

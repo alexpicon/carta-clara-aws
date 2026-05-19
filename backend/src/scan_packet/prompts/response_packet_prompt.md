@@ -15,7 +15,7 @@
 >   characters (e.g. `**Form I-246**` shows up on screen with the asterisks
 >   visible) which looks broken. Use plain Spanish prose with paragraph
 >   breaks (`\n\n`). The iOS app applies its own typography/styling.
-> - Koda parses this with `json.loads()`.
+> - The handler parses this with `json.loads()`.
 
 ---
 

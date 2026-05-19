@@ -2,7 +2,7 @@
 //  SampleResponses.swift
 //  Carta Clara
 //
-//  DEBUG-only sample API responses + a decode self-check (RIKU-18).
+//  DEBUG-only sample API responses + a decode self-check.
 //
 //  These JSON fixtures mirror docs/API_CONTRACT.md. They are NOT shipped UI
 //  copy — they are test data that simulates the backend so the Codable models

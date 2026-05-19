@@ -1,4 +1,4 @@
-"""KODA-06 — smoke tests for POST /ask.
+"""Smoke tests for POST /ask.
 
 Exercises the ask handler with mocked AWS clients:
   - happy path: text question -> grounded Spanish answer + citations
@@ -116,7 +116,7 @@ def test_ask_document_expired(load_handler):
 def test_ask_adversarial_guardrail_refusal(load_handler):
     """Adversarial legal-strategy prompt -> Guardrail refusal + DynamoDB log entry.
 
-    Verifies the refusal-log row shape required by KODA-03 / API_CONTRACT:
+    Verifies the refusal-log row shape required by API_CONTRACT:
     {session_id, ts, question_hash, reason, ttl}.
     """
     handler, helpers = load_handler("ask")

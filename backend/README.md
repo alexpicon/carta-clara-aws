@@ -2,6 +2,8 @@
 
 AWS infrastructure for Carta Clara. One SAM template provisions everything.
 
+> **No public hosted instance.** The original hackathon stack was torn down after the event for cost and liability reasons. The instructions below let you stand up your own private stack in your own AWS account.
+
 ---
 
 ## Prerequisites
@@ -92,7 +94,7 @@ sam deploy \
 
 ```
 src/
-  _shared/helpers.py   canonical shared helpers (KODA-08) — see src/_shared/README.md
+  _shared/helpers.py   canonical shared helpers — see src/_shared/README.md
   scan/handler.py      POST /scan        + vendored helpers.py
   ask/handler.py       POST /ask         + vendored helpers.py
   refusal_log/handler.py  GET /refusal-log + vendored helpers.py
@@ -114,7 +116,7 @@ for d in scan ask refusal_log; do cp src/_shared/helpers.py src/$d/helpers.py; d
 ### Prompts
 
 Handlers load prompts (`extraction_prompt.md`, `spanish_summary_prompt.md`,
-`system_prompt.md`, `ask_prompt.md`) authored by Sage in `backend/prompts/`.
+`system_prompt.md`, `ask_prompt.md`) from `backend/prompts/`.
 The loader (`helpers.load_prompt`) searches, in order: the handler directory,
 `src/prompts/`, `backend/prompts/`, then `$PROMPTS_DIR`. If a prompt is missing
 it falls back to a built-in safe prompt so handlers still run.
@@ -129,14 +131,14 @@ it falls back to a built-in safe prompt so handlers still run.
 > ```
 >
 > The script is idempotent and also re-syncs `helpers.py` from
-> `src/_shared/`. If Sage's prompts are not present yet it warns and exits 0
+> `src/_shared/`. If the prompt files are not present yet it warns and exits 0
 > (handlers fall back to built-in prompts). Recommended long-term fix: a Lambda
 > layer (needs a `template.yaml` change).
 
 ### Build shortcuts (`make`)
 
 ```
-make vendor   copy helpers.py + Sage's prompts into each handler dir
+make vendor   copy helpers.py + prompts into each handler dir
 make build    vendor, then sam build
 make deploy   vendor, sam build, sam deploy
 make test     run the pytest smoke suite

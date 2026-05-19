@@ -127,5 +127,5 @@ against the USCIS glossary as a batch.
 
 If any row is ❌ REMOVED, also remove or fix any prompt/eval reference that depended
 on it (check `docs/EVAL_PROMPTS_EXPECTED.md` citation columns). If a legal-aid contact
-changes, update `kb-corpus/seattle_legal_aid.txt` AND notify Riku — `LegalHelpView`
-(RIKU-13) hard-codes NIRP / Colectiva / ReWA contacts from that file.
+changes, update `kb-corpus/seattle_legal_aid.txt` AND the iOS `LegalHelpView`,
+which hard-codes NIRP / Colectiva / ReWA contacts from that file.

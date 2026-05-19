@@ -1,4 +1,4 @@
-"""KODA-08 guard — the vendored helpers.py copies must match the canonical source.
+"""Vendoring guard — the vendored helpers.py copies must match the canonical source.
 
 If this fails, someone edited a handler-local helpers.py without re-vendoring.
 Fix: edit backend/src/_shared/helpers.py, then run:

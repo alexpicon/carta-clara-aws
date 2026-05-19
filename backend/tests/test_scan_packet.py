@@ -1,4 +1,4 @@
-"""KODA-10 — smoke tests for POST /scan/packet.
+"""Smoke tests for POST /scan/packet.
 
 Exercises the scan_packet handler with mocked AWS clients:
   - happy path: document -> Bedrock packet -> assembled API_CONTRACT response

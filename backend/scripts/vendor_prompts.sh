@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# vendor_prompts.sh — Carta Clara pre-build vendoring step (KODA-11)
+# vendor_prompts.sh — Carta Clara pre-build vendoring step
 #
 # SAM packages each Lambda from its own CodeUri (src/scan/, src/ask/,
 # src/refusal_log/, src/scan_packet/). Files outside a function's CodeUri are
@@ -8,15 +8,14 @@
 # each handler directory before `sam build`:
 #
 #   1. helpers.py   — canonical source: src/_shared/helpers.py
-#   2. prompts/*.md — authored by Sage in backend/prompts/
+#   2. prompts/*.md — canonical source: backend/prompts/
 #
 # This script does both. It is idempotent: running it twice is safe and
 # produces the same result. Run it before EVERY `sam build` / `sam deploy`
 # (or just use `make build`, which calls it for you).
 #
-# If backend/prompts/ has no .md files yet (Sage hasn't delivered), the script
-# warns and exits 0 — handlers fall back to their built-in prompts so a build
-# still succeeds.
+# If backend/prompts/ has no .md files yet, the script warns and exits 0 —
+# handlers fall back to their built-in prompts so a build still succeeds.
 #
 # Usage:  ./scripts/vendor_prompts.sh        (from backend/, or anywhere)
 
@@ -54,7 +53,7 @@ shopt -u nullglob
 
 if [[ ${#prompt_files[@]} -eq 0 ]]; then
   echo "warn: no prompt files in $PROMPTS_DIR — handlers will use built-in" \
-       "fallback prompts. (Sage's SAGE-01..05 not delivered yet.)" >&2
+       "fallback prompts." >&2
   exit 0
 fi
 

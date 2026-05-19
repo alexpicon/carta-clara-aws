@@ -17,9 +17,9 @@ Refusal log entry: {session_id, ts, question_hash, reason, ttl: now+3600}.
 We never store the question verbatim — only a short SHA-256 hash (TENETS §7).
 
 Transcription note: AWS Transcribe *streaming* needs the async `amazon-transcribe`
-SDK. Koda's iron rule is boto3-only, so this uses Transcribe batch jobs with a
-bounded poll. Short voice clips finish well inside the Lambda timeout; if a job
-runs long the handler degrades to asking the user to type.
+SDK. The backend convention is boto3-only, so this uses Transcribe batch jobs
+with a bounded poll. Short voice clips finish well inside the Lambda timeout;
+if a job runs long the handler degrades to asking the user to type.
 """
 
 import base64

@@ -1,11 +1,11 @@
 # Carta Clara — API Contract
 
-**Source of truth** for the REST contract between the iOS app and the backend. Koda implements against this. Riku codes Swift models against this. If you need to change the shape, escalate to Claudio first.
+**Source of truth** for the REST contract between the iOS app and the backend. The Lambda handlers and the Swift models are both implemented against this. Change the contract first if you need to change the shape.
 
 **Base URL:** `https://<your-api-id>.execute-api.us-west-2.amazonaws.com`
-*(Deployed 2026-05-16 via `sam deploy --guided`, stack `carta-clara-mvp` in us-west-2.)*
+*(There is no public hosted instance — the original hackathon stack was torn down after the event. Deploy your own to obtain a base URL; see `backend/README.md`.)*
 
-**Auth:** None for hackathon MVP. Open API.
+**Auth:** None for hackathon MVP. Open API. **If you deploy this yourself, add an API key or WAF — the open endpoint is fine for a temporary demo but unsafe to leave running long-term.**
 
 **Content type:** `application/json` unless noted.
 
@@ -307,4 +307,4 @@ This is v1. No explicit version in path. If we need to break the contract post-l
 
 ## Source of truth note
 
-If the iOS app and the Lambda disagree on a field shape, **this document wins**. Both sides update their code, not this contract. Changes to this contract require Claudio's sign-off.
+If the iOS app and the Lambda disagree on a field shape, **this document wins**. Both sides update their code, not this contract.

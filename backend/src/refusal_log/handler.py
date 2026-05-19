@@ -5,12 +5,12 @@ first. The iOS floating refusal counter polls this — TENETS §1 (trust before
 features): a visible, growing refusal count is the product's strongest trust
 signal.
 
-KODA-04 review of the original stub:
-  - The DynamoDB Query was correct: KeyConditionExpression on the partition key
-    `session_id`, ScanIndexForward=False (newest first), Limit=20. Kept as-is.
-  - FIX: the response was missing `topic_label_es`, which API_CONTRACT.md
+Notes:
+  - DynamoDB Query: KeyConditionExpression on the partition key `session_id`,
+    ScanIndexForward=False (newest first), Limit=20.
+  - The response includes `topic_label_es`, which API_CONTRACT.md
     (§ GET /refusal-log) requires for each refusal so the iOS refusal-log UI can
-    show a human-readable Spanish topic label. Added via helpers.reason_label_es.
+    show a human-readable Spanish topic label (added via helpers.reason_label_es).
   - Hardened: never echo `question_hash` (kept server-side only); tolerate items
     written before `reason` existed.
 """

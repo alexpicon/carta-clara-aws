@@ -233,7 +233,7 @@ flowchart LR
 
 - **`helpers.py` is vendored, not imported.** There is *one* canonical copy at `src/_shared/helpers.py`. The build script copies it into all 4 handler folders. **Never edit the copies** — edit the canonical file, then re-run `make build`.
 - **The iOS↔backend contract is `docs/API_CONTRACT.md`.** iOS `Models/` and the Lambda response shapes must match it exactly. Change one side → change the contract → change the other side.
-- **Prompts live in `backend/prompts/`** (authored by Sage) and are vendored at build time, same as helpers.
+- **Prompts live in `backend/prompts/`** and are vendored at build time, same as helpers.
 - **`refusal_log` has no prompts** — it's a pure DynamoDB read, no model call.
 
 ---
@@ -436,4 +436,4 @@ C4Container
 
 ---
 
-*Source of truth for resource details: `backend/template.yaml`, `backend/samconfig.toml`, `docs/API_CONTRACT.md`. Owner: Claudio (PM & Lead). Last updated 2026-05-16.*
+*Source of truth for resource details: `backend/template.yaml`, `backend/samconfig.toml`, `docs/API_CONTRACT.md`. Last updated 2026-05-16.*

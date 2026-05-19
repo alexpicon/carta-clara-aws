@@ -61,7 +61,7 @@ The "AI lawyer" framing is dangerous because it teaches vulnerable users to trus
 
 **Today, we demoed an immigration Notice to Appear because that's the highest-stakes English document a family can receive.**
 
-The architecture is document-type-agnostic — it ingests any photographed English document, extracts structured fields, generates a plain-Spanish summary, and routes to appropriate human help. The roadmap includes:
+The architecture is document-type-agnostic — it ingests any photographed English document, extracts structured fields, generates a plain summary in the user's chosen language (Spanish or English), and routes to appropriate human help. The roadmap includes:
 
 - Utility shutoff notices (Seattle City Light, etc.)
 - School disciplinary letters

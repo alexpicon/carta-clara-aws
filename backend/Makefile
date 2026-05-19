@@ -1,6 +1,6 @@
-# Carta Clara — backend build shortcuts (KODA-11)
+# Carta Clara — backend build shortcuts
 #
-#   make vendor   copy helpers.py + Sage's prompts into each handler dir
+#   make vendor   copy helpers.py + prompts into each handler dir
 #   make build    vendor, then sam build
 #   make deploy   vendor, sam build, sam deploy
 #   make test     run the pytest smoke suite

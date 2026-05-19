@@ -8,7 +8,7 @@
 //  (TENETS.md §2). Every clinic card has a one-tap call button and a
 //  directions button so a 70-year-old can reach a human in one move.
 //
-//  DATA SOURCE: the three clinics are hard-coded for v1 (RIKU-13) from
+//  DATA SOURCE: the three clinics are hard-coded for v1 from
 //  kb-corpus/seattle_legal_aid.txt — NWIRP, Colectiva Legal del Pueblo, and
 //  Refugee Women's Alliance. These are public organization contact details
 //  (not legal advice, not PII). The corpus itself carries a verification

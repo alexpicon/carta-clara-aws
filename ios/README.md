@@ -114,8 +114,8 @@ Notes:
 
 ## Step 5 — Fill in the API base URL
 
-1. After Koda/Orion run `sam deploy`, copy the API Gateway base URL from the
-   deploy output (e.g. `https://abc123xyz.execute-api.us-west-2.amazonaws.com`).
+1. After `sam deploy`, copy the API Gateway base URL from the deploy output
+   (e.g. `https://abc123xyz.execute-api.us-west-2.amazonaws.com`).
 2. Open `Configuration.plist` and replace the `API_BASE_URL` value
    `REPLACE_WITH_SAM_DEPLOY_OUTPUT` with that URL. No trailing slash.
 3. Until this is set, the app runs but shows a clear "not connected" notice on
@@ -210,7 +210,6 @@ The customer is grandma (TENETS.md §5). Verify on a real device:
   explanation, refusal message, scam description, and packet field is read
   straight from an API response. The one exception — static UI chrome (button
   labels, screen titles) — is centralized in `Components/UIText.swift`, with a
-  full explanation of the scope decision at the top of that file. Flagged for
-  Claudio's review.
+  full explanation of the scope decision at the top of that file.
 - **Synthetic data only.** The `DemoBadge` component renders whenever the
   backend flags a demo document (TENETS.md §6).

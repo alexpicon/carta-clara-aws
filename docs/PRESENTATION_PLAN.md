@@ -278,4 +278,4 @@ Rule: if a judge says "which Leadership Principles did you use?", *then* you nam
 - Judge Q&A prep: `docs/FAQ.md`
 - Superseded: `docs/PITCH_PLAN.md` (history only)
 
-*Owner: Claudio (PM & Lead). Built for the current Carta Clara build. Last updated 2026-05-17.*
+*Built for the current Carta Clara build. Last updated 2026-05-17.*

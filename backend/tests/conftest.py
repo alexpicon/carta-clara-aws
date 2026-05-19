@@ -39,7 +39,7 @@ _TEST_ENV = {
 for _k, _v in _TEST_ENV.items():
     os.environ.setdefault(_k, _v)
 
-# A valid 100x100 PNG (checkerboard) — the KODA-05 placeholder test image.
+# A valid 100x100 PNG (checkerboard) — placeholder test image.
 TEST_PNG_B64 = (
     "iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAAtUlEQVR42u3SMREAMBDDsCAJ"
     "f2TBUQq/dNNiAD6l7Ta9NC7cGxfIIossssgiywWyyCKLLLLIcoEsssgiiyyyXCCLLLLIIoss"

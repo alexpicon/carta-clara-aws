@@ -1,4 +1,4 @@
-"""KODA-05 — smoke tests for POST /scan.
+"""Smoke tests for POST /scan.
 
 Exercises the scan handler end-to-end with mocked AWS clients:
   - happy path: image -> extraction -> Spanish summary -> audio -> assembled response
