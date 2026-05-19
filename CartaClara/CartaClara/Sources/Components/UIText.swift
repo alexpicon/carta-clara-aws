@@ -67,6 +67,21 @@ enum UIText {
     static var libraryHint: String { current.libraryHint }
     static var pickerFailedTitle: String { current.pickerFailedTitle }
     static var confirmPhotoA11y: String { current.confirmPhotoA11y }
+    static var confirmReadabilityHint: String { current.confirmReadabilityHint }
+
+    // MARK: Camera tips
+    static var cameraTipsTitle: String { current.cameraTipsTitle }
+    static var cameraTipsHeading: String { current.cameraTipsHeading }
+    static var cameraTipsSubheading: String { current.cameraTipsSubheading }
+    static var cameraTipsContinue: String { current.cameraTipsContinue }
+    static var cameraTipLightTitle: String { current.cameraTipLightTitle }
+    static var cameraTipLightBody: String { current.cameraTipLightBody }
+    static var cameraTipFrameTitle: String { current.cameraTipFrameTitle }
+    static var cameraTipFrameBody: String { current.cameraTipFrameBody }
+    static var cameraTipSteadyTitle: String { current.cameraTipSteadyTitle }
+    static var cameraTipSteadyBody: String { current.cameraTipSteadyBody }
+    static var cameraTipBackgroundTitle: String { current.cameraTipBackgroundTitle }
+    static var cameraTipBackgroundBody: String { current.cameraTipBackgroundBody }
 
     // MARK: Redaction animation
     static var redactionTitle: String { current.redactionTitle }
@@ -102,6 +117,7 @@ enum UIText {
     static var demoBadge: String { current.demoBadge }
     static var demoDocumentA11y: String { current.demoDocumentA11y }
     static var summaryCardTitle: String { current.summaryCardTitle }
+    static var urgencyCardTitle: String { current.urgencyCardTitle }
     static var summaryA11yPrefix: String { current.summaryA11yPrefix }
     static var refusedScanTitle: String { current.refusedScanTitle }
 
@@ -246,6 +262,21 @@ struct UITextStrings {
     let libraryHint: String
     let pickerFailedTitle: String
     let confirmPhotoA11y: String
+    let confirmReadabilityHint: String
+
+    // Camera tips
+    let cameraTipsTitle: String
+    let cameraTipsHeading: String
+    let cameraTipsSubheading: String
+    let cameraTipsContinue: String
+    let cameraTipLightTitle: String
+    let cameraTipLightBody: String
+    let cameraTipFrameTitle: String
+    let cameraTipFrameBody: String
+    let cameraTipSteadyTitle: String
+    let cameraTipSteadyBody: String
+    let cameraTipBackgroundTitle: String
+    let cameraTipBackgroundBody: String
 
     let redactionTitle: String
     let redactionCaption: String
@@ -276,6 +307,7 @@ struct UITextStrings {
     let demoBadge: String
     let demoDocumentA11y: String
     let summaryCardTitle: String
+    let urgencyCardTitle: String
     let summaryA11yPrefix: String
     let refusedScanTitle: String
 
@@ -381,7 +413,7 @@ extension UITextStrings {
         disclaimerClose: "I understand",
 
         cameraTitle: "Take a photo of the document",
-        cameraHint: "Place the letter on a table with good light.",
+        cameraHint: "Center the document in the frame and hold steady.",
         captureButton: "Take photo",
         captureA11y: "Take a photo of the document",
         captureA11yHint: "Activates the camera and captures the letter.",
@@ -395,6 +427,20 @@ extension UITextStrings {
         libraryHint: "Pick a photo you already have saved.",
         pickerFailedTitle: "We couldn't open that photo",
         confirmPhotoA11y: "Photo of the document you took",
+        confirmReadabilityHint: "Can you read the text? If you can read it, the app can read it too.",
+
+        cameraTipsTitle: "Before you scan",
+        cameraTipsHeading: "Tips for a clear scan",
+        cameraTipsSubheading: "A few seconds of setup makes the result much better.",
+        cameraTipsContinue: "Open the camera",
+        cameraTipLightTitle: "Good light",
+        cameraTipLightBody: "Stand near a window or turn on a lamp. Avoid shadows on the document.",
+        cameraTipFrameTitle: "Fit the whole page",
+        cameraTipFrameBody: "Center the document inside the corner marks. Edges should be visible.",
+        cameraTipSteadyTitle: "Hold steady",
+        cameraTipSteadyBody: "Take a breath and keep the phone still for a second before tapping.",
+        cameraTipBackgroundTitle: "Avoid glare",
+        cameraTipBackgroundBody: "If the page is shiny under overhead light, tilt it slightly so reflections don't wash out the words.",
 
         redactionTitle: "Protecting your information",
         redactionCaption: "We mask your data before sending anything.",
@@ -425,6 +471,7 @@ extension UITextStrings {
         demoBadge: "DEMO DOCUMENT",
         demoDocumentA11y: "Demo document. Not a real case.",
         summaryCardTitle: "Summary",
+        urgencyCardTitle: "Important date",
         summaryA11yPrefix: "Summary",
         refusedScanTitle: "We can't analyze this document",
 
@@ -530,7 +577,7 @@ extension UITextStrings {
         disclaimerClose: "Entiendo",
 
         cameraTitle: "Toma una foto del documento",
-        cameraHint: "Pon la carta en una mesa con buena luz.",
+        cameraHint: "Centra el documento en el marco y mantén la cámara firme.",
         captureButton: "Tomar foto",
         captureA11y: "Tomar foto del documento",
         captureA11yHint: "Activa la cámara y captura la carta.",
@@ -544,6 +591,20 @@ extension UITextStrings {
         libraryHint: "Elige una foto que ya tienes guardada.",
         pickerFailedTitle: "No pudimos abrir esa foto",
         confirmPhotoA11y: "Foto del documento que tomaste",
+        confirmReadabilityHint: "¿Puedes leer el texto? Si tú puedes leerlo, la app también puede.",
+
+        cameraTipsTitle: "Antes de escanear",
+        cameraTipsHeading: "Consejos para una foto clara",
+        cameraTipsSubheading: "Unos segundos de preparación mejoran mucho el resultado.",
+        cameraTipsContinue: "Abrir la cámara",
+        cameraTipLightTitle: "Buena luz",
+        cameraTipLightBody: "Acércate a una ventana o enciende una lámpara. Evita sombras sobre el documento.",
+        cameraTipFrameTitle: "Encuadra toda la página",
+        cameraTipFrameBody: "Centra el documento dentro de las esquinas. Los bordes deben verse.",
+        cameraTipSteadyTitle: "Mantén firme",
+        cameraTipSteadyBody: "Respira y mantén el teléfono quieto por un segundo antes de tomar la foto.",
+        cameraTipBackgroundTitle: "Evita los reflejos",
+        cameraTipBackgroundBody: "Si la página brilla con la luz de arriba, inclínala un poco para que los reflejos no borren las letras.",
 
         redactionTitle: "Protegiendo tu información",
         redactionCaption: "Tapamos tus datos antes de enviar nada.",
@@ -574,6 +635,7 @@ extension UITextStrings {
         demoBadge: "DOCUMENTO DE DEMOSTRACIÓN",
         demoDocumentA11y: "Documento de demostración. No es un caso real.",
         summaryCardTitle: "Resumen",
+        urgencyCardTitle: "Fecha importante",
         summaryA11yPrefix: "Resumen",
         refusedScanTitle: "No podemos analizar este documento",
 

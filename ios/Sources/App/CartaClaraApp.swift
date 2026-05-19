@@ -53,6 +53,8 @@ struct RootView: View {
     @ViewBuilder
     private func destination(for route: Route) -> some View {
         switch route {
+        case .cameraTips:
+            CameraTipsView()
         case .camera:
             CameraCaptureView()
         case .languagePicker:

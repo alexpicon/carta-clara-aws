@@ -21,6 +21,9 @@ import UIKit
 /// Destinations on the navigation stack. The splash screen is the stack root
 /// and is therefore not a case here.
 enum Route: Hashable {
+    /// Pre-capture tips screen — shown between Splash and Camera so the user
+    /// has a 5-second primer on lighting/framing before opening the viewfinder.
+    case cameraTips
     case camera
     /// Language picker shown after photo confirmation, before the scan runs.
     case languagePicker

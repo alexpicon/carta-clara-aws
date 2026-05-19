@@ -34,7 +34,7 @@ struct UrgencyCard: View {
             HStack(alignment: .firstTextBaseline) {
                 CardTitle(
                     icon: urgency.isUrgent ? "calendar.badge.exclamationmark" : "calendar",
-                    text: "Fecha importante",
+                    text: UIText.urgencyCardTitle,
                     tint: accent
                 )
                 Spacer()
@@ -68,7 +68,7 @@ struct UrgencyCard: View {
     }
 
     private var accessibilityText: String {
-        var parts = ["Fecha importante."]
+        var parts = ["\(UIText.urgencyCardTitle)."]
         if let label = urgency.deadlineLabelEs, !label.isEmpty { parts.append(label) }
         if let note = urgency.verificationNoteEs, !note.isEmpty { parts.append(note) }
         return parts.joined(separator: " ")

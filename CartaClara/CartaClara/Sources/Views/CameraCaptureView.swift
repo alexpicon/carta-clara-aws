@@ -28,6 +28,12 @@ struct CameraCaptureView: View {
     @State private var pendingImage: UIImage?
     @State private var pickerFailed = false
 
+    /// True iff the live camera (dark background) is on screen. Drives
+    /// `toolbarColorScheme` so the nav-bar title contrasts correctly.
+    private var isOnDarkCameraView: Bool {
+        pendingImage == nil && camera.authorizationStatus == .authorized
+    }
+
     var body: some View {
         ZStack {
             CCColor.ink.ignoresSafeArea()
@@ -48,6 +54,11 @@ struct CameraCaptureView: View {
         }
         .navigationTitle(UIText.cameraTitle)
         .navigationBarTitleDisplayMode(.inline)
+        // White nav-bar text on the live camera view (dark background);
+        // default (dark text) everywhere else: confirm screen, permission
+        // denied, and the loading state all sit on a light "warm paper"
+        // background where white would be invisible.
+        .toolbarColorScheme(isOnDarkCameraView ? .dark : nil, for: .navigationBar)
         .task {
             await camera.requestAccess()
         }
@@ -96,11 +107,6 @@ struct CameraCaptureView: View {
 
     private var controlBar: some View {
         VStack(spacing: CCSpacing.md) {
-            Text(UIText.cameraHint)
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.9))
-                .multilineTextAlignment(.center)
-
             // Shutter
             Button {
                 camera.capturePhoto()
@@ -181,11 +187,27 @@ struct CameraCaptureView: View {
             Spacer()
 
             VStack(spacing: CCSpacing.md) {
+                // Readability self-check — frames the decision in user-relatable
+                // terms ("if you can read it, the app can too") instead of
+                // making them guess what the OCR can handle.
+                Label {
+                    Text(UIText.confirmReadabilityHint)
+                        .font(.subheadline)
+                        .foregroundStyle(CCColor.inkSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                } icon: {
+                    Image(systemName: "eye.fill")
+                        .foregroundStyle(CCColor.primary)
+                        .accessibilityHidden(true)
+                }
+                .padding(.horizontal, CCSpacing.sm)
+
                 Button(UIText.usePhoto) {
                     CCHaptics.light()
                     appState.capturedImage = image
                     camera.stopSession()
-                    appState.path.append(.languagePicker)
+                    appState.path.append(.processing)
                 }
                 .buttonStyle(CCPrimaryButtonStyle())
 

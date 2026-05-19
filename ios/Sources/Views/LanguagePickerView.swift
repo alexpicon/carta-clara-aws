@@ -4,12 +4,14 @@
 //
 //  Choose the output language for the document analysis.
 //
-//  Shown AFTER the user confirms a photo and BEFORE the scan call runs, so
-//  the backend can produce summary/section/urgency content in the chosen
-//  language in a single pass (no second round trip, no wasted tokens).
+//  Shown FIRST after the splash — before the camera tips, before the camera.
+//  Picking here means the rest of the flow (tips screen, redaction animation,
+//  result cards, refusal text) all render in the chosen language. Picking
+//  language *before* the camera matters for accessibility: a Spanish-only
+//  user needs to see the camera tips in Spanish, not English.
 //
-//  The app's UI chrome stays English regardless — this only controls the
-//  language of the document content the backend returns.
+//  The app's pre-pick chrome stays English (this screen, splash) — only
+//  what comes AFTER the pick respects the choice.
 //
 
 import SwiftUI
@@ -32,7 +34,7 @@ struct LanguagePickerView: View {
                     .foregroundStyle(CCColor.ink)
                     .multilineTextAlignment(.center)
 
-                Text("Your document will be explained in the language you pick. You can pick another one on your next scan.")
+                Text("Pick the language for everything that comes next — tips, your document's summary, and answers. You can pick a different one on your next scan.")
                     .font(.subheadline)
                     .foregroundStyle(CCColor.inkSecondary)
                     .multilineTextAlignment(.center)
@@ -50,7 +52,10 @@ struct LanguagePickerView: View {
                         Text(language.nativeName)
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(language == .english ? AnyButtonStyle(CCPrimaryButtonStyle())
+                    // Español is the primary (filled) button because Carta Clara
+                    // is built for Spanish-speaking users first. English is the
+                    // available alternative, not the default suggestion.
+                    .buttonStyle(language == .spanish ? AnyButtonStyle(CCPrimaryButtonStyle())
                                                       : AnyButtonStyle(CCSecondaryButtonStyle()))
                     .accessibilityLabel("Explain in \(language.displayName)")
                     .ccAppear(index: offset + 2)
@@ -68,7 +73,7 @@ struct LanguagePickerView: View {
     private func pick(_ language: AppLanguage) {
         CCHaptics.light()
         appState.selectedLanguage = language
-        appState.path.append(.processing)
+        appState.path.append(.cameraTips)
     }
 }
 

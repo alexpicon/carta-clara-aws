@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Synthetic NTA — Carta Clara Demo (NOT A REAL CASE)</title>
+  <style>
+    /* ─────────────────────────────────────────────────────────────────────
+       Print-faithful Notice to Appear (Form I-862) mimic.
+       Synthetic. Watermarked. For Carta Clara demo capture only.
+       Open in Safari, hit Cmd+0 to reset zoom, then either:
+         (a) display fullscreen and photograph with the iPhone, or
+         (b) Cmd+P → Save as PDF for a paper print.
+       ────────────────────────────────────────────────────────────────── */
+
+    @page { size: letter; margin: 0; }
+
+    :root {
+      --ink: #111;
+      --rule: #333;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #f4f3ef;
+      font-family: "Courier New", Courier, ui-monospace, monospace;
+      color: var(--ink);
+    }
+
+    .page {
+      position: relative;
+      width: 8.5in;
+      min-height: 11in;
+      margin: 24px auto;
+      padding: 0.35in 0.55in 0.3in 0.55in;
+      background: #fff;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    /* Watermark layers intentionally omitted — the data itself is synthetic
+       (impossible A-number 999 999 901, fictional name, fictional address)
+       and the file sits in docs/synthetic-docs/ which labels it at the
+       folder level. Clean OCR input prevents the extraction prompt from
+       flagging is_demo_document=true, which would show a "DEMO" badge in
+       the app's summary card. */
+    .content { position: relative; z-index: 1; }
+
+    /* Document chrome — header block */
+    .doj-header {
+      text-align: center;
+      border-bottom: 1.5px solid var(--rule);
+      padding-bottom: 6px;
+      margin-bottom: 7px;
+    }
+    .doj-header .agency {
+      font-family: "Times New Roman", Times, serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.4px;
+    }
+    .doj-header .office {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 12px;
+      margin-top: 1px;
+    }
+    .doj-header .court {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 11px;
+      margin-top: 1px;
+      letter-spacing: 0.3px;
+    }
+
+    .title {
+      text-align: center;
+      font-family: "Times New Roman", Times, serif;
+      font-weight: 700;
+      font-size: 19px;
+      letter-spacing: 2.5px;
+      margin: 8px 0 2px 0;
+    }
+    .form-id {
+      text-align: center;
+      font-size: 9.5px;
+      color: #555;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      margin: 5px 0;
+    }
+    .meta-row .field { font-weight: 700; }
+
+    .respondent-block {
+      margin: 7px 0;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .respondent-block .label {
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .respondent-block .name {
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .body-text {
+      font-size: 10.5px;
+      line-height: 1.32;
+      margin: 5px 0;
+    }
+    .body-text p { margin: 4px 0; }
+    .body-text ol {
+      padding-left: 20px;
+      margin: 4px 0;
+    }
+    .body-text ol li { margin: 2px 0; }
+
+    .checkbox-list { margin: 4px 0 3px 4px; font-size: 10.5px; line-height: 1.45; }
+    .checkbox-list .box {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      border: 1px solid var(--ink);
+      margin-right: 7px;
+      vertical-align: middle;
+      text-align: center;
+      line-height: 9px;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-weight: 700;
+      font-size: 9px;
+    }
+
+    .hearing-block {
+      border: 1.2px solid var(--rule);
+      padding: 6px 12px;
+      margin: 6px 0;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .hearing-block .court-name {
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .hearing-block .row {
+      display: flex;
+      gap: 22px;
+      margin-top: 4px;
+    }
+    .hearing-block .row .label { font-weight: 700; }
+
+    .signature {
+      margin-top: 6px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .signature .block {
+      width: 240px;
+      font-size: 9.5px;
+      line-height: 1.35;
+    }
+    .signature .line {
+      border-top: 0.8px solid var(--ink);
+      margin-bottom: 2px;
+    }
+
+    /* Notice to Respondent — required boilerplate on a real I-862. Rendered
+       at small font matching the dense fine-print feel of the real document's
+       back side. */
+    .notice-block {
+      margin-top: 8px;
+      border: 1px solid var(--rule);
+      padding: 5px 10px 6px;
+      font-size: 8.5px;
+      line-height: 1.3;
+    }
+    .notice-block .header {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-weight: 700;
+      font-size: 9.5px;
+      text-align: center;
+      letter-spacing: 1.5px;
+      padding-bottom: 3px;
+      margin-bottom: 4px;
+      border-bottom: 0.6px solid var(--rule);
+    }
+    .notice-block p {
+      margin: 3px 0;
+    }
+    .notice-block .label {
+      font-weight: 700;
+      text-transform: none;
+    }
+
+    /* Certificate of Service — bottom of the form, where the issuing officer
+       attests how the document was served and the respondent acknowledges
+       receipt. */
+    .cos-block {
+      margin-top: 6px;
+      border: 1px solid var(--rule);
+      padding: 5px 10px 6px;
+      font-size: 8.5px;
+      line-height: 1.35;
+    }
+    .cos-block .header {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-weight: 700;
+      font-size: 9.5px;
+      text-align: center;
+      letter-spacing: 1.5px;
+      padding-bottom: 3px;
+      margin-bottom: 4px;
+      border-bottom: 0.6px solid var(--rule);
+    }
+    .cos-block .check-row {
+      margin: 4px 0;
+    }
+    .cos-block .box {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border: 1px solid var(--ink);
+      margin-right: 5px;
+      vertical-align: middle;
+      text-align: center;
+      line-height: 7px;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-weight: 700;
+      font-size: 8px;
+    }
+    .cos-block .sig-row {
+      display: flex;
+      gap: 24px;
+      margin-top: 6px;
+      font-size: 8px;
+    }
+    .cos-block .sig-row .sig-line {
+      flex: 1;
+      border-top: 0.6px solid var(--ink);
+      padding-top: 2px;
+    }
+
+    @media print {
+      body { background: white; }
+      .page { margin: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="content">
+      <div class="doj-header">
+        <div class="agency">U.S. DEPARTMENT OF HOMELAND SECURITY</div>
+        <div class="office">U.S. Immigration and Customs Enforcement</div>
+        <div class="court">Seattle Field Office &nbsp;·&nbsp; 12500 Tukwila International Boulevard, Tukwila, WA 98168</div>
+      </div>
+
+      <div class="title">NOTICE TO APPEAR</div>
+      <div class="form-id">Form I-862 (Rev. 06/22) &nbsp;·&nbsp; In removal proceedings under Section 240 of the Immigration and Nationality Act, before the Immigration Court at Seattle, Washington</div>
+
+      <div class="meta-row">
+        <div><span class="field">File No.:</span> A 999 999 901</div>
+        <div><span class="field">Date:</span> August 12, 2026</div>
+      </div>
+
+      <div class="respondent-block">
+        <div class="label">In the Matter of:</div>
+        <div class="name">MARIA ELENA HERNANDEZ RIVERA</div>
+        <div>1428 South Fairmont Avenue, Apt. 3B</div>
+        <div>Seattle, WA 98144</div>
+        <div style="margin-top: 6px; font-style: italic; color: #555;">Respondent</div>
+      </div>
+
+      <div class="body-text">
+        <p>In removal proceedings under section 240 of the Immigration and Nationality Act:</p>
+
+        <div class="checkbox-list">
+          <div><span class="box">&nbsp;</span> You are an arriving alien.</div>
+          <div><span class="box">&nbsp;</span> You are an alien present in the United States who has not been admitted or paroled.</div>
+          <div><span class="box">X</span> You have been admitted to the United States, but are removable for the reasons stated below.</div>
+        </div>
+
+        <p>The Department of Homeland Security alleges that you:</p>
+
+        <ol>
+          <li>You are not a citizen or national of the United States.</li>
+          <li>You are a native of MEXICO and a citizen of MEXICO.</li>
+          <li>You were admitted to the United States at SAN YSIDRO, CALIFORNIA, on or about July 14, 2018, as a non-immigrant B-2 visitor with authorization to remain in the United States for a temporary period not to exceed January 13, 2019.</li>
+          <li>You remained in the United States beyond January 13, 2019, without authorization from the United States government.</li>
+        </ol>
+
+        <p>On the basis of the foregoing, it is charged that you are subject to removal from the United States pursuant to the following provision(s) of law:</p>
+
+        <p style="margin-left: 22px;">
+          Section 237(a)(1)(B) of the Immigration and Nationality Act, as amended, in that after admission as a nonimmigrant under Section 101(a)(15) of the Act, you have remained in the United States for a time longer than permitted, in violation of this Act or any other law of the United States.
+        </p>
+      </div>
+
+      <div class="body-text">
+        <p><strong>YOU ARE ORDERED</strong> to appear before an immigration judge of the United States Department of Justice at:</p>
+      </div>
+
+      <div class="hearing-block">
+        <div class="court-name">SEATTLE IMMIGRATION COURT</div>
+        <div>1000 Second Avenue, Suite 2900</div>
+        <div>Seattle, WA 98104</div>
+        <div class="row">
+          <div><span class="label">Date of hearing:</span> OCTOBER 15, 2026</div>
+          <div><span class="label">Time of hearing:</span> 9:00 A.M.</div>
+        </div>
+      </div>
+
+      <div class="body-text">
+        <p>to show why you should not be removed from the United States based on the charge(s) set forth above.</p>
+      </div>
+
+      <div class="signature">
+        <div class="block">
+          <div class="line"></div>
+          <div>Officer J. Sample</div>
+          <div>Deportation Officer</div>
+          <div>U.S. Immigration and Customs Enforcement</div>
+          <div>Date: August 12, 2026</div>
+        </div>
+      </div>
+
+      <div class="notice-block">
+        <div class="header">NOTICE TO RESPONDENT</div>
+        <p><span class="label">Warning:</span> Any statement you make may be used against you in removal proceedings.</p>
+        <p><span class="label">Right to Representation:</span> You have the right to be represented at no expense to the Government by counsel of your own choice. If you wish to be represented, your attorney must file Form EOIR-28 with the Immigration Court. A list of qualified attorneys and organizations who may provide free legal services is available upon request from the Immigration Court.</p>
+        <p><span class="label">Right to Hearing:</span> At your hearing, you may present evidence on your own behalf, examine evidence against you, and question witnesses presented by the Government.</p>
+        <p><span class="label">Right to Appeal:</span> After the immigration judge issues a decision, you have the right to appeal to the Board of Immigration Appeals within thirty (30) days.</p>
+        <p><span class="label">Failure to Appear:</span> Failure to attend your hearing, except for exceptional circumstances, will result in your being held in absentia and an order of removal being entered against you. You will be ineligible for certain forms of relief from removal (8 U.S.C. § 1229a(b)(7)) for a period of ten (10) years following the date of entry of the final administrative order of removal.</p>
+        <p><span class="label">Interpreter:</span> You will be provided an interpreter at your hearing at no cost. If you require an interpreter, notify the Immigration Court before your hearing date.</p>
+      </div>
+
+      <div class="cos-block">
+        <div class="header">CERTIFICATE OF SERVICE</div>
+        <div class="check-row">
+          This Notice to Appear was served on the respondent by:
+          &nbsp;&nbsp;<span class="box">&nbsp;</span> in person
+          &nbsp;&nbsp;<span class="box">X</span> by mail
+          &nbsp;&nbsp;<span class="box">&nbsp;</span> other (specify): __________________
+        </div>
+        <div>I provided the respondent the contact information of free legal-service providers in the area where the case is being heard.</div>
+        <div class="sig-row">
+          <div class="sig-line">Officer signature</div>
+          <div class="sig-line">Date</div>
+        </div>
+        <div class="sig-row">
+          <div class="sig-line">Respondent's signature (acknowledging receipt)</div>
+          <div class="sig-line">Date</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

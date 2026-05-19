@@ -82,7 +82,7 @@ struct SplashView: View {
                     Button(UIText.getStarted) {
                         CCHaptics.light()
                         appState.startNewScan()
-                        appState.path.append(.camera)
+                        appState.path.append(.languagePicker)
                     }
                     .buttonStyle(CCPrimaryButtonStyle())
                     .accessibilityHint(UIText.splashCameraHint)

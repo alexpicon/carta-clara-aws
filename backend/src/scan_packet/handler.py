@@ -104,10 +104,23 @@ def _handle(event, started):
             .replace("{{KB_CHUNKS}}", "[]")
         )
         if language == "en":
-            substituted += (
-                "\n\nLANGUAGE OVERRIDE: Produce ALL output in ENGLISH. The "
-                "field names ending in `_es` are historical — write English "
-                "into them. No Spanish anywhere in this response."
+            # Put the override BOTH at the top (primes the model before it
+            # reads the prompt's Spanish example values) AND at the bottom
+            # (last-token instruction, most weighted by Claude). The packet
+            # prompt has many concrete Spanish example strings — without the
+            # top-of-prompt prime, the model mirrors them.
+            top_override = (
+                "CRITICAL LANGUAGE INSTRUCTION (overrides every example "
+                "below): Produce ALL output values in ENGLISH. The Spanish "
+                "strings inside the prompt that follows are EXAMPLES OF "
+                "STRUCTURE ONLY — do not copy them. Every string value in "
+                "your JSON output must be written in ENGLISH. Field names "
+                "ending in `_es` are historical; their VALUES must be "
+                "English.\n\n---\n\n"
+            )
+            substituted = top_override + substituted + (
+                "\n\nFINAL REMINDER: Every string in your output is ENGLISH. "
+                "No Spanish anywhere in the JSON values."
             )
         content_blocks = [h.text_block(substituted)]
         # 1500 tokens fits the packet's structured output (~7 fields with
@@ -138,7 +151,7 @@ def _handle(event, started):
             200,
             {
                 "session_id": session_id,
-                "packet": _safe_packet(),
+                "packet": _safe_packet(language),
                 "legal_aid_options": h.legal_aid_options(),
                 "pdf_url": None,
                 "latency_ms": round(h.monotonic_ms() - started),
@@ -146,7 +159,7 @@ def _handle(event, started):
         )
 
     # --- 4. assemble -----------------------------------------------------
-    packet = _normalize_packet(h.extract_json(res.text) or {}, res.text)
+    packet = _normalize_packet(h.extract_json(res.text) or {}, res.text, language)
     return h.response(
         200,
         {
@@ -179,25 +192,35 @@ def _load_document(session_id, document_id):
     raise _NotFound("document_id not found or expired (>1h old)")
 
 
-def _normalize_packet(raw: dict, raw_text: str) -> dict:
-    """Map a model packet object onto the API_CONTRACT `packet` shape."""
+def _normalize_packet(raw: dict, raw_text: str, language: str = "es") -> dict:
+    """Map a model packet object onto the API_CONTRACT `packet` shape.
+
+    Field names retain the `_es` suffix for backward compatibility with the
+    iOS Codable models, but the VALUES are written in the user's chosen
+    language (`language` param).
+    """
     deadline = raw.get("your_deadline") or {}
     if not isinstance(deadline, dict):
         deadline = {}
+    en = language == "en"
     return {
-        "title_es": raw.get("title_es") or "Paquete de preparación",
+        "title_es": raw.get("title_es")
+        or ("Preparation packet" if en else "Paquete de preparación"),
         "what_this_says_es": raw.get("what_this_says_es")
         or (raw_text.strip() if not raw else ""),
         "your_deadline": {
             "date": deadline.get("date"),
-            "label_es": deadline.get("label_es") or "Verifica la fecha con la corte.",
+            "label_es": deadline.get("label_es")
+            or ("Verify the date with the court." if en
+                else "Verifica la fecha con la corte."),
         },
         "documents_to_gather_es": _as_list(raw.get("documents_to_gather_es")),
         "extension_request_template": raw.get("extension_request_template") or "",
         "legal_aid_phone_script_es": raw.get("legal_aid_phone_script_es")
-        or _DEFAULT_PHONE_SCRIPT,
+        or (_DEFAULT_PHONE_SCRIPT_EN if en else _DEFAULT_PHONE_SCRIPT_ES),
         "questions_for_lawyer_es": _as_list(raw.get("questions_for_lawyer_es")),
-        "cover_sheet_es": raw.get("cover_sheet_es") or _DEFAULT_COVER_SHEET,
+        "cover_sheet_es": raw.get("cover_sheet_es")
+        or (_DEFAULT_COVER_SHEET_EN if en else _DEFAULT_COVER_SHEET_ES),
     }
 
 
@@ -209,20 +232,54 @@ def _as_list(value) -> list:
     return []
 
 
-_DEFAULT_PHONE_SCRIPT = (
+_DEFAULT_PHONE_SCRIPT_ES = (
     "Hola, mi nombre es ___. Recibí un documento de inmigración y necesito ayuda. "
     "¿Cuándo puedo tener una consulta gratis?"
 )
+_DEFAULT_PHONE_SCRIPT_EN = (
+    "Hello, my name is ___. I received an immigration document and I need help. "
+    "When can I have a free consultation?"
+)
 
-_DEFAULT_COVER_SHEET = (
+_DEFAULT_COVER_SHEET_ES = (
     "Lleva este paquete a tu cita con ayuda legal gratis. Tu abogado va a escribir "
     "la respuesta oficial. Este paquete te ayuda a llegar preparado."
 )
+_DEFAULT_COVER_SHEET_EN = (
+    "Bring this packet to your free legal-aid appointment. Your attorney writes "
+    "the official response. This packet helps you arrive prepared."
+)
 
 
-def _safe_packet() -> dict:
+def _safe_packet(language: str = "es") -> dict:
     """A packet that contains no document-derived claims — used when the
     Guardrail intervenes. It still routes the user to a human (TENETS §2)."""
+    if language == "en":
+        return {
+            "title_es": "Preparation packet",
+            "what_this_says_es": (
+                "We couldn't generate a safe summary of this document. For your "
+                "safety, bring the original document directly to a free legal-aid "
+                "service — they can review it with you."
+            ),
+            "your_deadline": {
+                "date": None,
+                "label_es": "Verify any date directly with the court.",
+            },
+            "documents_to_gather_es": [
+                "The original document you received",
+                "A photo ID",
+                "Any immigration paperwork you have",
+            ],
+            "extension_request_template": "",
+            "legal_aid_phone_script_es": _DEFAULT_PHONE_SCRIPT_EN,
+            "questions_for_lawyer_es": [
+                "What does this document mean in my case?",
+                "What evidence should I gather before the next appointment?",
+                "Is there anything I need to do before any deadline?",
+            ],
+            "cover_sheet_es": _DEFAULT_COVER_SHEET_EN,
+        }
     return {
         "title_es": "Paquete de preparación",
         "what_this_says_es": (
@@ -240,11 +297,11 @@ def _safe_packet() -> dict:
             "Cualquier papel de inmigración que tengas",
         ],
         "extension_request_template": "",
-        "legal_aid_phone_script_es": _DEFAULT_PHONE_SCRIPT,
+        "legal_aid_phone_script_es": _DEFAULT_PHONE_SCRIPT_ES,
         "questions_for_lawyer_es": [
             "¿Qué significa este documento en mi caso?",
             "¿Qué evidencia debería juntar antes de la próxima cita?",
             "¿Necesito hacer algo antes de alguna fecha límite?",
         ],
-        "cover_sheet_es": _DEFAULT_COVER_SHEET,
+        "cover_sheet_es": _DEFAULT_COVER_SHEET_ES,
     }
