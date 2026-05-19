@@ -14,10 +14,11 @@
 //  the selectedLanguage change, so post-language-picker screens flip
 //  immediately.
 //
-//  When the user is on a "pre-picker" screen (splash, camera), the default
-//  is English. After they pick a language, every screen from the redaction
-//  animation onward respects the choice. Going back and re-picking flips
-//  everything again.
+//  Splash and the language picker itself render in English by default,
+//  since the user hasn't made a choice yet. From the picker onward
+//  (camera tips, camera, redaction animation, results, ask chat, packet,
+//  legal help), every screen respects the chosen language. Going back
+//  and re-picking flips everything again.
 //  ──────────────────────────────────────────────────────────────────────
 //
 
@@ -28,8 +29,8 @@ import Foundation
 enum UIText {
 
     /// Active UI language. Set by AppState's `selectedLanguage` didSet.
-    /// Defaults to English so pre-picker screens render before the user
-    /// has made a choice.
+    /// Defaults to English so the splash + language-picker screens render
+    /// before the user has made a choice.
     static var currentLanguage: AppLanguage = .english
 
     /// The active string bundle. Switches based on `currentLanguage`.

@@ -99,7 +99,7 @@ flowchart TB
 ## Data flow — the 30-second story
 
 1. Grandma photographs a USCIS Notice to Appear on her iPhone.
-2. She confirms the photo, then picks her language (Spanish or Plain English) at the in-app language picker.
+2. Right after the splash, she picks her language (Spanish or Plain English) at the in-app language picker; the camera tips and capture screens render in that language. She then takes the photo and confirms it.
 3. iOS app POSTs `/scan` with the base64 image and `language=es` (or `en`).
 4. Lambda writes the image to S3 with a 1-hour TTL, then runs Amazon Textract (`DetectDocumentText`) to extract clean machine-readable text from the photographed page.
 5. Lambda calls Bedrock with Claude Sonnet 4.6 — text-only, no multimodal — passing the Textract OCR text plus the extraction prompt. Refusals and topic boundaries are enforced at the prompt level today (the Bedrock Guardrail ID is still `PLACEHOLDER`).

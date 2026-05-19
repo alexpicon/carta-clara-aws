@@ -6,8 +6,10 @@
 //
 //  Carta Clara turns a frightening English document into a plain summary
 //  in Spanish or English, a deadline, a scam check, and a path to a free
-//  lawyer — without ever giving legal advice. The UI is English-default;
-//  the output language is chosen by the user at the scan-time picker.
+//  lawyer, without ever giving legal advice. Splash and the language
+//  picker render in English; once the user picks Spanish or English at
+//  the picker (right after the splash, before the camera opens), every
+//  downstream screen respects the choice.
 //  See docs/PRESS_RELEASE.md and docs/TENETS.md.
 //
 //  Navigation is a single NavigationStack driven by `AppState.path`. The

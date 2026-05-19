@@ -59,7 +59,7 @@ Parameters:
   PollyVoiceId:
     Type: String
     Default: Lupe
-    Description: Polly Spanish voice (Lupe = neural, Mia = neural)
+    Description: Default Polly voice when language=es (Lupe neural). The English path uses Joanna neural; the per-language voice is picked inside helpers.synthesize_speech() rather than as a stack parameter.
 
 Resources:
 
@@ -86,7 +86,7 @@ Resources:
           #       content is unreachable after 1 hour regardless;
           #   (b) true 1-hour *deletion* would need a separate scheduled
           #       cleanup Lambda (EventBridge cron scanning the `ephemeral=true`
-          #       tag) — deferred, tracked in docs/worklog/koda.md.
+          #       tag) — deferred for future work.
           # This tag-scoped rule is the backstop that guarantees eventual
           # deletion and never touches non-ephemeral objects.
           - Id: ExpireEphemeralUploads

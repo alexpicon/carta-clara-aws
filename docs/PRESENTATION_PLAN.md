@@ -27,7 +27,7 @@ That is the through-line. Every slide plants one of those three.
 | Old plan said | Current build |
 |---|---|
 | Packet includes a "pre-filled extension request" letter | **Removed.** It implied a legal recommendation (whether to ask for more time is the lawyer's call). Packet now: translated summary, deadline, documents to gather, phone-call script, questions for the lawyer, cover sheet. |
-| Demo beat: "Language picker → tap Español" | **Restored.** The LanguagePickerView is live between photo confirmation and the scan — user taps Spanish or English, and everything from that point on (cards, UI chrome, errors, audio) respects the choice. |
+| Demo beat: "Language picker → tap Español" | **Restored.** The LanguagePickerView is live right after the splash, before the camera opens — user taps Spanish or English (Español is the primary button), and every screen from there on (camera tips, camera, cards, UI chrome, errors, Polly audio) respects the choice. |
 | "Six AWS services" listed loosely | Six services, **four of them Bedrock** (multimodal model, fast model, Knowledge Base, Guardrails) + Lambda + API Gateway. Textract, Polly, Transcribe, S3, DynamoDB, SAM are utilities. |
 | 3 Lambda functions | **4 Lambdas**: `scan`, `ask`, `scan_packet`, `refusal_log`. |
 

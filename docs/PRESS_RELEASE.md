@@ -34,7 +34,7 @@ Every immigrant family knows the moment: an official-looking letter arrives in E
 
 "We treated this like an AWS product, not a demo," said Picón. "One CloudFormation template provisions the whole trust stack. The same architecture works tomorrow for tenant notices, utility shutoffs, school discipline letters, and IRS mail — anywhere a frightening English document lands on a kitchen counter in America."
 
-**Carta Clara is available now as an iPhone app and is free.** The full source code is open for review at github.com/[username]/carta-clara.
+**Carta Clara is available now as an iPhone app and is free.** The full source code is open for review at github.com/alexpicon/carta-clara-aws.
 
 ---
 
@@ -54,7 +54,7 @@ A: They're stored in Amazon S3 with a one-hour automatic deletion policy. We do 
 
 **Q: Which languages does the app support?**
 
-A: The UI is bilingual — Spanish and English. The user picks their language at the language picker that appears between confirming the photo and the scan, and everything from that point on (cards, chrome, errors, audio) respects the choice. We launched with Spanish and English because those are the languages our team can validate every output against a native speaker. Korean, Hindi, Mandarin, and Tagalog are on our roadmap and will launch only as native speakers can validate each one. We refuse to ship a language we cannot verify.
+A: The UI is bilingual — Spanish and English. The user picks their language at the language picker that appears right after the splash, before the camera opens, and everything downstream (camera tips, camera screen, cards, chrome, errors, audio) respects the choice. We launched with Spanish and English because those are the languages we can validate every output against a native speaker. Korean, Mandarin, Vietnamese, and Tagalog are on our roadmap and will launch only as native speakers can validate each one. We refuse to ship a language we cannot verify.
 
 **Q: How can a 70-year-old grandmother use this?**
 

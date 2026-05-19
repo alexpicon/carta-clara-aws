@@ -215,11 +215,13 @@ We are not building for a market analysis. We are building for the people sittin
 
 **Because we will not ship a language we cannot validate.**
 
-The UI is bilingual today — the user picks Spanish or English at the language picker between confirming the photo and the scan, and everything from cards through chrome respects the choice. Two of our teammates are native speakers of Korean and Hindi respectively. They are not native Spanish speakers. Spanish and English are the languages we can validate every output in before judging. We will not ship Korean output to a Korean-speaking grandmother that we haven't validated word-for-word with someone who would actually use it.
+The UI is bilingual today — the user picks Spanish or English at the language picker right after the splash, before the camera opens, and everything downstream (camera tips, camera screen, results cards, chrome, Polly audio) respects the choice. Spanish and English are the languages we can validate every output in. We will not ship Korean output to a Korean-speaking grandmother that we haven't validated word-for-word with a native speaker who would actually use it.
 
 The architecture is language-agnostic — adding Korean is a matter of adding a Polly voice ID, a value to the `language` parameter, an entry in the iOS string bundle, and a native-speaker validation pass. It's a 3–4 hour task, gated entirely on whether we have the validator.
 
 Roadmap: Korean (Q3 2026), Mandarin (Q4 2026), Vietnamese and Tagalog (2027), with each language gated on partnership with a native-speaker community organization. We will not ship a language without one.
+
+**v1 known limitation:** the /ask chat (follow-up questions about the scanned document) currently always answers in Spanish, regardless of which language the user picked. The scan summary, urgency, sections, court brief, refusal log, and Response Packet are all fully bilingual today. Bilingual Ask responses are planned for v2.
 
 ---
 

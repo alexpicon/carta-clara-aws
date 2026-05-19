@@ -20,8 +20,10 @@ Tenets:
   §2 Refuse before answering — a Guardrail intervention degrades to a safe
      packet that routes the user to free legal aid (never a blank failure).
   §3 Information, not advice — the packet helps the user PREPARE for a lawyer;
-     it never drafts a substantive response. The extension-request template is
-     procedural only, and clearly says the lawyer writes the official response.
+     it never drafts a substantive response. The extension_request_template
+     field is returned as an empty string for backward compatibility (drafting
+     a reschedule request implies a procedural recommendation; the lawyer
+     decides). iOS no longer renders it.
   §7 Ephemeral — reads the existing S3 object; stores nothing new of substance.
 """
 
@@ -43,9 +45,8 @@ _FALLBACK_PACKET = (
     "  what_this_says_es: 1 plain-Spanish paragraph explaining the document\n"
     "  your_deadline: {date: 'YYYY-MM-DD' or null, label_es: string}\n"
     "  documents_to_gather_es: array of Spanish strings (evidence to bring)\n"
-    "  extension_request_template: Markdown for a PROCEDURAL request to "
-    "reschedule, to be used ONLY if the person has a documented conflict; it "
-    "must state the attorney writes the official response\n"
+    "  extension_request_template: always empty string \"\"; the field is "
+    "kept for backward compatibility with the iOS Codable model only\n"
     "  legal_aid_phone_script_es: a short Spanish script to call a clinic\n"
     "  questions_for_lawyer_es: array of Spanish questions to ask the attorney\n"
     "  cover_sheet_es: one Spanish sentence reminding the person to bring this "

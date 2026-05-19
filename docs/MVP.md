@@ -10,7 +10,7 @@ Everything here is consolidated from `PRESS_RELEASE.md`, `PHASE_PLAN.md`, `TENET
 
 **Carta Clara MVP** is a native iPhone app that photographs an English immigration document and returns, within 30 seconds, a plain summary, a deadline, a scam check, and a printable Response Preparation Packet for free legal aid — refusing every legal-strategy question and routing to a real lawyer instead.
 
-> **Language status:** the app is **bilingual**. After confirming the photo, the user picks Spanish or English at the LanguagePickerView; everything from that point on — cards, UI chrome, errors, and Polly audio — respects the choice via `UIText.currentLanguage` flipping the active string bundle. Splash, Camera, and the Language Picker remain English by default since they are pre-selection. The backend `/scan` accepts a `language` param (`en` or `es`) and produces all content in that language; the off-language summary field is left empty to save tokens. Korean / Hindi / others remain roadmap.
+> **Language status:** the app is **bilingual**. Right after the splash, the user picks Spanish or English at the LanguagePickerView; everything from that point on — camera tips, camera screen, results cards, UI chrome, errors, and Polly audio — respects the choice via `UIText.currentLanguage` flipping the active string bundle. Splash and the Language Picker itself remain English (they are pre-selection). The backend `/scan` accepts a `language` param (`en` or `es`) and produces all content in that language; the off-language summary field is left empty to save tokens. Korean / Hindi / others remain roadmap.
 
 ---
 
@@ -74,11 +74,12 @@ A feature is **done** when its row here is true. Not when the code compiles. Not
 
 This is the happy-path the live demo follows, beat-by-beat. Every other code path is "nice to have" relative to this one:
 
-1. **Splash + disclaimer** — Carta Clara wordmark with the open-envelope logo (SF Symbol `envelope.open.fill` with gradient + radial halo + drop shadow), "Not legal advice" disclaimer, and a single CTA: **Start scanning** (Spanish: **Empezar a escanear**). Tap to continue. (The "Use the demo document" button has been removed from splash.)
-2. **Camera screen** — large camera button. Tap. Photograph the printed synthetic NTA. Confirm the photo.
-3. **Language picker** — user taps Spanish or English. From here on, all UI chrome and content respect the choice via `UIText.currentLanguage`.
-4. **Redaction animation** — 1.5s on-screen masking pass with the line *"Your information is protected."* Visible, pedagogical. (The animation copy stays; the Results banner is the more candid statement of what's real today.)
-5. **Results screen** — scrollable cards in this order:
+1. **Splash + disclaimer** — Carta Clara wordmark with the open-envelope logo (SF Symbol `envelope.open.fill` with gradient + radial halo + drop shadow), "Not legal advice" disclaimer, and a single CTA: **Start scanning** (Spanish: **Empezar a escanear**). Tap to continue.
+2. **Language picker** — user taps Spanish or English. Español is the primary (filled) button because the audience speaks Spanish. From here on, all UI chrome and content respect the choice via `UIText.currentLanguage`.
+3. **Camera tips** — four short tips (good light, frame the page, hold steady, avoid glare) rendered in the chosen language. Tap **Open the camera** to continue.
+4. **Camera screen** — large shutter button with corner brackets framing the document. Tap. Photograph the printed synthetic NTA. Confirm the photo (with a readability hint: "If you can read it, the app can read it too").
+5. **Redaction animation** — 1.5s on-screen masking pass with the line *"Your information is protected."* Visible, pedagogical. (The animation copy stays; the Results banner is the more candid statement of what's real today.)
+6. **Results screen** — scrollable cards in this order:
    - Privacy banner: *"Your photo will be deleted in 1 hour. No account, no tracking."*
    - Headline summary (in the chosen language) + tap-to-listen Polly audio
    - Deadline / urgency card
@@ -87,10 +88,10 @@ This is the happy-path the live demo follows, beat-by-beat. Every other code pat
    - Questions for legal aid card
    - Bottom tertiary "Scan another document" / "Escanear otro documento" button
    - Top-right toolbar `arrow.clockwise.circle.fill` restart button on every post-scan screen
-6. **Ask About This Document** — tap the chat icon. Ask out loud: *"Should I argue asylum based on these allegations?"* The app refuses, visibly. The refusal counter increments. The legal-aid escalation card appears with NIRP's number.
-7. **Help Me Respond** — tap to open the Response Preparation Packet, which renders instantly from the `cachedPacket` pre-fetch. Show it on stage.
-8. **Find Legal Help** — tap the legal-aid contact. Show the three Seattle clinics with `tel:` deep-links.
-9. **Restart** — tap the top-right restart icon or the bottom "Scan another document" button. AppState.startFresh() pops the entire nav stack back to Splash.
+7. **Ask About This Document** — tap the chat icon. Ask out loud: *"Should I argue asylum based on these allegations?"* The app refuses, visibly. The refusal counter increments. The legal-aid escalation card appears with NIRP's number.
+8. **Help Me Respond** — tap to open the Response Preparation Packet, which renders instantly from the `cachedPacket` pre-fetch. Show it on stage.
+9. **Find Legal Help** — tap the legal-aid contact. Show the three Seattle clinics with `tel:` deep-links.
+10. **Restart** — tap the top-right restart icon or the bottom "Scan another document" button. AppState.startFresh() pops the entire nav stack back to Splash.
 
 The curveball moment (judges asked for one): scan a different synthetic doc — the RFE or the notario SMS — and show that the same architecture produces the correct cards (scam red-flag for the SMS; different deadline + Questions list for the RFE).
 

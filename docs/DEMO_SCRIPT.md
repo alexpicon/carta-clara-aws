@@ -42,9 +42,7 @@ This is the beat-by-beat live demo. Memorize the **bold** sentences. The rest is
 
 ## 0:25 — 0:55 — Scan + visible redaction
 
-**Stage direction:** Pick up the iPhone with your other hand. Tap the camera button. Center the printed NTA in the viewfinder. Snap.
-
-**Stage direction:** After confirming the photo, tap **Español** on the language picker — this is the moment grandma chooses her language; everything from here on respects the choice.
+**Stage direction:** Tap **Empezar a escanear** on the splash. The language picker appears immediately — tap **Español** (the primary blue button). This is the moment grandma chooses her language; everything from here on (camera tips, camera, cards, audio) respects the choice. Walk through the brief tips screen, then tap **Abrir la cámara**, center the printed NTA inside the corner brackets, and snap.
 
 **Say while the redaction animation plays:**
 

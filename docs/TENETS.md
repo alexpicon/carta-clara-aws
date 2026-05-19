@@ -40,11 +40,13 @@ User documents have a 1-hour TTL in S3. We do not store immigration documents. O
 
 We use Amazon Bedrock Guardrails, AWS-managed services, and an explicit deny-list because these are the building blocks Amazon designed for responsible AI. The architecture decision IS the trust decision.
 
-## 9. One language, polished
+## 9. Two languages, polished
 
-One language, polished — never a half-baked second language. Korean, Hindi, Mandarin, Tagalog are roadmap.
+Spanish and English are both first-class. Every UI string, every prompt path, every Polly voice, every error message exists in both. If a feature exists in one language, it exists in the other at the same fidelity.
 
-**Temporary deviation (team development phase, 2026-05-16 → pitch):** the iPhone app currently ships with **English as the default UI and content language** so the full team can review and operate it during build-out. The Spanish capability remains in the backend (`summary_es`, Polly Lupe audio) and is still the production target — the iOS app will flip back to Spanish-first before the demo. See `docs/MVP.md` for the per-feature acceptance criteria during this phase.
+The user picks at the language picker right after the splash; everything downstream (camera tips, camera, redaction, results cards, ask chat, packet, legal help) respects the choice. Going back and re-picking flips the whole app again.
+
+Korean, Mandarin, Vietnamese, and Tagalog are roadmap. The principle holds: we will not ship a language we cannot validate output for against a native speaker who would actually use it.
 
 ## 10. The roadmap is the Think Big
 
