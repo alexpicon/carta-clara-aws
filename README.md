@@ -87,6 +87,33 @@ Full rules: [`docs/TENETS.md`](docs/TENETS.md).
 
 ---
 
+## How the AI is constrained
+
+Almost every distinguishing behavior of Carta Clara lives in the prompts, not the code. The safety, the language, the formatting, the four-section structure, the refusal taxonomy, and the calm tone are all enforced at the prompt level. **The prompts ARE the product logic.**
+
+Prompts live in [`backend/prompts/`](backend/prompts/) and are vendored into each handler dir at build time. Every prompt opens with a `Contract` block specifying input, output, and parsing assumptions, so the Lambda handlers and the model both know what's expected.
+
+| Prompt | What it does |
+|---|---|
+| `system_prompt.md` | Prepended to every Bedrock call. Sets tone, target language (Spanish or English per request), plain-text formatting (no markdown), grounding, the refusal taxonomy, and PII handling. |
+| `extraction_prompt.md` | Pulls structured JSON from the Textract OCR text. Flags `names_redacted` / `a_number_redacted` / `address_redacted` so downstream prompts never see real PII. |
+| `spanish_summary_prompt.md` | Produces the headline summary plus the four mandatory section cards (who sent it · what they say · your key dates · your rights). Two reading levels (Sencillo / Detallado). Returns minified JSON; hard ceiling 1300 tokens to stay under the API Gateway 30-second timeout. |
+| `scam_check_prompt.md` | Detects scam / notario red-flag patterns from a fixed taxonomy and cites each one to an FTC or USCIS source. Returns an educational summary even when no flags are detected. |
+| `response_packet_prompt.md` | Prep packet structure: cover sheet, documents-to-gather checklist, phone-call script, questions for the lawyer. Never drafts a substantive response to USCIS or the court. |
+| Ask handler `_FALLBACK_ASK` | Strict BREVITY rule (60-word max, 5th-grade Spanish, escape-hatch sentence for deep topics) so chat answers don't read like legal briefs. |
+
+Three design choices worth calling out:
+
+**Why prompts instead of Bedrock Guardrails.** Guardrails would normally enforce denied-topic filtering, PII masking, and contextual grounding as a managed layer between the app and the model. The code path is wired: `helpers.converse()` checks `guardrail_configured()` and attaches the Guardrail to every call when one is set. In v1, the Guardrail resource itself was never created in the Bedrock console (the env var stays `GUARDRAIL_ID=PLACEHOLDER`), so the prompt-level rules above are doing the work today. **Flipping a Guardrail on is a config change, not a code change**: set the env var, redeploy, done.
+
+**Refusal categorization.** When the model refuses, it returns a `refusal_reason` from a fixed enum: `legal_strategy`, `hearing_attendance`, `admit_deny`, `eligibility`, `outcome`, `judge_bias`, `le_scripts`, `evasion`, `other_professional`, `document_authenticity`. The iOS app turns these into the human-readable category labels visible on the refusal-log screen (*"Decisiones sobre asistir a la corte"*, *"Qué decir a las autoridades"*). The taxonomy is fixed, not freeform. The model classifies; it doesn't invent.
+
+**Two-pass pipeline.** Extraction and summary are two separate Bedrock calls with separate prompts. The extraction prompt sees the raw OCR text (which contains names, A-numbers, addresses); the summary prompt sees only the redacted JSON. The summary model never reaches real PII. Worth the second round trip.
+
+If you fork this and want to retarget the app at a different document type, a different audience, or a different language, the prompts are the lowest-risk thing to change. The code barely needs to know.
+
+---
+
 ## Architecture (as built for the hackathon)
 
 ```
