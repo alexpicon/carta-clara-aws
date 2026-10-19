@@ -172,8 +172,7 @@ carta-clara/
 ├── ios/                 mirror of the iOS sources (used by tooling)
 ├── backend/             SAM template, Lambdas, prompts, tests
 ├── kb-corpus/           curated source documents (FTC, USCIS, EOIR)
-├── docs/                architecture, tenets, demo script, eval prompts
-└── outreach/            templates used to validate with immigrant-services orgs
+└── docs/                architecture, tenets, demo script, eval prompts
 ```
 
 ---
